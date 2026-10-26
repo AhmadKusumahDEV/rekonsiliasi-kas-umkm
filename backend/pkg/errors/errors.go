@@ -5,6 +5,21 @@ package errors
 
 import "errors"
 
+// DomainError carries a safe, user-facing message while still matching a
+// sentinel with errors.Is. Internal SQL/driver details never go in Message.
+type DomainError struct {
+	Kind    error
+	Message string
+}
+
+func (e *DomainError) Error() string { return e.Message }
+
+func (e *DomainError) Unwrap() error { return e.Kind }
+
+func New(kind error, message string) error {
+	return &DomainError{Kind: kind, Message: message}
+}
+
 var (
 	ErrInvalidRequest     = errors.New("invalid request")
 	ErrUnauthorized       = errors.New("unauthorized")

@@ -32,17 +32,32 @@ func NewEcho(cfg config.Config, s *service.Service, logger *slog.Logger) *echo.E
 	e.Use(middleware.Recover())
 	e.Use(securityHeaders)
 	e.Use(corsMiddleware(cfg.Server.AllowedOrigins))
-	e.Use(middleware.BodyLimit("1M"))
+	e.Use(middleware.BodyLimit("5M"))
 	e.Use(middleware.RequestID())
 	e.Use(requestLogger(logger))
 
 	e.GET("/health/live", liveness(s))
 	e.GET("/health/ready", readiness(s))
 
-	// Domain routes are registered here. Keep the group for authenticated
-	// endpoints once the authentication middleware exists:
-	//   v1 := e.Group("/v1", authMiddleware)
-	//   v1.GET("/contoh", listContoh(s))
+	v1 := e.Group(config.APIPrefix)
+	v1.GET("/config", configHandler(s))
+	v1.POST("/auth/register", register(s))
+	v1.POST("/auth/login", login(s))
+
+	protected := v1.Group("", sessionMiddleware(s))
+	protected.GET("/auth/me", me(s))
+	protected.POST("/auth/logout", logout(s))
+	protected.PUT("/auth/password", changePassword(s))
+
+	umkm := protected.Group("/umkm")
+	umkm.GET("/state", state(s))
+	umkm.GET("/suggestions", suggestions(s))
+	umkm.POST("/imports/preview", previewImport(s))
+	umkm.POST("/imports", commitImport(s))
+	umkm.POST("/imports/:id/cancel", cancelImport(s))
+	umkm.POST("/allocations", allocate(s))
+	umkm.POST("/allocations/:id/undo", undoAllocation(s))
+	umkm.GET("/export", exportCSV(s))
 
 	return e
 }

@@ -68,17 +68,21 @@ yang menerima `*service.Service` dan mengembalikan `echo.HandlerFunc`. Error dar
 handler dikembalikan apa adanya; mapping status dan pesan dilakukan satu kali di
 `echohttp_error_handler.go`.
 
-Endpoint publik saat ini:
+API domain memakai prefix `/api/v1`. Endpoint publik:
 
-- `GET /health/live`
-- `GET /health/ready`
+- `GET /health/live`, `GET /health/ready`
+- `GET /api/v1/config`
+- `POST /api/v1/auth/register`, `POST /api/v1/auth/login`
 
-Tambahkan group authenticated setelah middleware auth tersedia:
+Group privat memakai `sessionMiddleware` (cookie + CSRF):
 
-```go
-v1 := e.Group("/v1", authMiddleware)
-v1.GET("/contoh", listContoh(s))
-```
+- `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`, `PUT /api/v1/auth/password`
+- `GET /api/v1/umkm/state`, `GET /api/v1/umkm/suggestions`
+- `POST /api/v1/umkm/imports/preview`, `POST /api/v1/umkm/imports`, `POST /api/v1/umkm/imports/:id/cancel`
+- `POST /api/v1/umkm/allocations`, `POST /api/v1/umkm/allocations/:id/undo`, `GET /api/v1/umkm/export`
+
+Middleware sesi/CSRF ada di `auth_middleware.go`; handler mengambil session dari
+context, bukan dari payload klien.
 
 ## Layer service dan transaksi
 
@@ -98,9 +102,13 @@ func (s *Service) CreateContoh(ctx context.Context, req models.CreateContohReque
 	}()
 
 	queries := sqlc.New(tx)
-	if err = s.insertContoh(ctx, queries, req); err != nil {
+	if _, err = queries.LockWorkspaceForUpdate(ctx, sqlc.LockWorkspaceForUpdateParams{
+		WorkspaceID: user.WorkspaceID,
+		App:         "umkm",
+	}); err != nil {
 		return resp, err
 	}
+	// validasi, tulis query domain, audit, dan bump version di transaksi yang sama
 	if err = tx.Commit(ctx); err != nil {
 		return resp, pkgErr.ErrFailCommitTx
 	}
@@ -115,6 +123,7 @@ commit; jangan menahan transaksi database selama network call.
 ## Package yang belum berisi implementasi
 
 `internal/apiclient`, `internal/worker`, `cmd/worker`, dan `internal/testdata`
-masih berupa dokumentasi sampai domain pertama membutuhkannya. Ini disengaja;
+masih berupa dokumentasi sampai fitur yang membutuhkannya ditambahkan.
+`internal/testkit` sudah dipakai integration test PostgreSQL. Ini disengaja;
 jangan menambah file Go kosong atau service palsu hanya agar folder terlihat
-penuh.
+penuh. Panduan testing ada di `docs/TESTING_FROM_GO_CHAT.md`.

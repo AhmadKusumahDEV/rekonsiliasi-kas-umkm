@@ -7,6 +7,15 @@
 - Konfigurasi generate: `scripts/postgres/sqlc.yaml`.
 - Hasil generate: `internal/repository/rekonsiliasi_repository_sqlc/`.
 
+Schema dan query yang sudah ada:
+
+- `000001_pbl_baseline`: tabel runtime `pblg_*` dari prototipe.
+- `000002_umkm_normalized`: tabel `umkm_imports`, `umkm_entries`, dan
+  `umkm_allocations` beserta constraint/index.
+- `000003_backfill_umkm_state`: pemindahan data UMKM lama dari JSONB state.
+- `queries/auth.sql`: auth, sesi, workspace, user, audit, dan workspace lock.
+- `queries/umkm.sql`: query baca/tulis domain rekonsiliasi kas.
+
 Jangan membuat query sqlc langsung di package generated. Jangan mengedit file
 `*.sql.go`, `db.go`, atau `models.go` hasil generate.
 
@@ -51,10 +60,23 @@ nullable yang dihasilkan sqlc sebelum memakai `Valid: true`.
 make gen.pg.models
 ```
 
+Jika tool Windows bermasalah, generate lewat WSL:
+
+```powershell
+wsl -d Ubuntu -- bash -lc 'cd /mnt/d/appwebsite/rekonsiliasi-kas-umkm/backend && sqlc generate -f scripts/postgres/sqlc.yaml'
+```
+
 Periksa signature `...Params`, `...Row`, atau struct tabel yang muncul. Sesuaikan
 pemanggilan service, lalu commit file generated bersama migration dan query.
 Project ini tidak memakai `-mod=vendor`; cukup `go test ./...` dan
 `go build ./...`.
+
+Kolom `date` dan `timestamptz` dipetakan sqlc ke `pgtype.Date` dan
+`pgtype.Timestamptz`. Periksa `Valid` sebelum memakai nilai nullable.
+
+Migration backfill `000003` memakai timestamp saat backfill untuk status
+canceled/reversed bila data JSONB lama hanya menyimpan boolean. Jangan mengklaim
+waktu pembatalan asli untuk baris hasil backfill.
 
 ## Memakai query di service
 

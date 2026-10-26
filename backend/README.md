@@ -5,13 +5,86 @@ layer yang mengikuti `init-project.md`. Project ini sengaja tidak memakai
 `vendor`; dependency diambil lewat Go module seperti kebiasaan project
 `go-chat`.
 
-Status saat ini adalah kerangka yang bisa dijalankan. Migration baseline dari
-prototipe PBL sudah tersedia, tetapi domain bisnis, endpoint authenticated, dan
-query generated belum dibuat. Endpoint yang tersedia baru `/health/live` dan
-`/health/ready`.
+Status saat ini adalah kerangka yang bisa dijalankan dengan lapisan database dan
+query yang sudah disiapkan. Migration baseline PBL, tabel UMKM ternormalisasi,
+backfill dari JSONB, dan generated sqlc sudah tersedia. Service domain, endpoint
+authenticated, serta handler bisnis belum diimplementasikan; endpoint HTTP yang
+aktif baru `/health/live` dan `/health/ready`.
 
 Asal-usul schema, tabel `pblg_*`, dan keputusan mengenai JSONB dijelaskan di
-[`docs/DATABASE_FROM_PBL.md`](docs/DATABASE_FROM_PBL.md).
+[`docs/DATABASE_FROM_PBL.md`](docs/DATABASE_FROM_PBL.md). Inventaris halaman,
+endpoint, query, dan aturan bisnis ada di
+[`docs/PBL_QUERY_INVENTORY.md`](docs/PBL_QUERY_INVENTORY.md).
+
+## Schema dan query
+
+- `000001_pbl_baseline` memindahkan enam tabel runtime prototipe PBL.
+- `000002_umkm_normalized` menambahkan `umkm_imports`, `umkm_entries`, dan
+  `umkm_allocations` beserta constraint/index.
+- `000003_backfill_umkm_state` memindahkan data UMKM lama dari JSONB ke tabel
+  ternormalisasi. Timestamp pembatalan/pembalikan lama tidak tersedia, sehingga
+  backfill memakai waktu eksekusi untuk status tersebut.
+- Query source ada di `scripts/postgres/queries/auth.sql` dan `umkm.sql`; hasil
+  generate ada di `internal/repository/rekonsiliasi_repository_sqlc`.
+
+Service auth/UMKM dan endpoint `/api/v1` untuk alur inti sudah memakai query
+tersebut. Endpoint SSE events, worker, dan frontend belum ada.
+
+## API v1
+
+Endpoint publik:
+
+```text
+GET  /api/v1/config
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+GET  /health/live
+GET  /health/ready
+```
+
+Endpoint dengan cookie sesi dan CSRF (`X-CSRF-Token` untuk non-GET):
+
+```text
+GET  /api/v1/auth/me
+POST /api/v1/auth/logout
+PUT  /api/v1/auth/password
+GET  /api/v1/umkm/state
+GET  /api/v1/umkm/suggestions
+POST /api/v1/umkm/imports/preview
+POST /api/v1/umkm/imports
+POST /api/v1/umkm/imports/:id/cancel
+POST /api/v1/umkm/allocations
+POST /api/v1/umkm/allocations/:id/undo
+GET  /api/v1/umkm/export
+```
+
+## Testing
+
+Unit test tidak membutuhkan database:
+
+```powershell
+go test ./...
+```
+
+Integration test memakai `TEST_DATABASE_URL`; test akan reset schema `public`,
+jadi DSN wajib menunjuk database khusus test:
+
+```powershell
+docker compose up -d db-test
+$env:TEST_DATABASE_URL="postgres://postgres:postgres@127.0.0.1:55432/rku_test?sslmode=disable"
+go test ./internal/echohttp -run TestUMKMIntegrationFlow -count=1 -v
+```
+
+Alternatif WSL:
+
+```powershell
+wsl -d Ubuntu -- bash -lc 'cd /mnt/d/appwebsite/rekonsiliasi-kas-umkm/backend && TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/rku_test?sslmode=disable go test ./internal/echohttp -run TestUMKMIntegrationFlow -count=1 -v'
+```
+
+Pola dan batasan test yang dipelajari dari project `go-chat` dicatat di
+[`docs/TESTING_FROM_GO_CHAT.md`](docs/TESTING_FROM_GO_CHAT.md). Test integration
+akan di-skip tanpa `TEST_DATABASE_URL`; set `TEST_REQUIRE_DB=1` bila database
+harus tersedia dan ketiadaannya harus menggagalkan test.
 
 ## Mulai
 
@@ -105,6 +178,9 @@ backend/
 │   ├── migrations/                 # schema source
 │   ├── queries/                    # query source sqlc
 │   └── sqlc.yaml
+├── docs/
+│   ├── DATABASE_FROM_PBL.md
+│   └── PBL_QUERY_INVENTORY.md
 ├── configs/local.yaml.example
 ├── compose.yaml
 ├── Dockerfile

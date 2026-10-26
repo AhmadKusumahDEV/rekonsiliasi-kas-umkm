@@ -105,17 +105,21 @@ langsung.
 
 Ikut dimigrasikan:
 
-- Definisi enam tabel dan dua index.
+- Definisi enam tabel baseline dan dua index.
+- Tabel UMKM ternormalisasi dan backfill state dari migration 000002/000003.
 - Foreign key dan aturan `ON DELETE CASCADE` dari schema asli.
 
 Tidak ikut dimigrasikan:
 
 - Data demo, akun demo, dan hash password. Itu dibuat oleh kode seed PBL.
-- State workspace yang sudah ada. Data lama tetap berada di database lama.
+- State workspace milik Tilik/Ruang. Slice UMKM dibackfill, sedangkan state
+  modul suite lain tetap di JSONB.
 - Worker, auth, scheduler, dan logic aplikasi PBL.
 
-Migration hanya schema. Jika ingin memindahkan data lama, gunakan `pg_dump`
-untuk data atau buat seed/import terpisah setelah schema selesai.
+Migration `000003` memindahkan entries, imports, dan allocations UMKM yang
+valid. Data demo/akun tetap tidak disalin. Timestamp cancel/reverse memakai
+waktu backfill karena state lama hanya menyimpan boolean; jangan menganggap itu
+waktu kejadian asli.
 
 ## Cara menerapkan
 
@@ -133,14 +137,28 @@ migration tidak memperbaiki perbedaan kolom bila schema lama sudah berbeda.
 Down migration menghapus seluruh tabel `pblg_*` beserta datanya. Jangan jalankan
 `pg.migrate.down` pada database berisi data tanpa backup.
 
+## Normalisasi UMKM
+
+`000002_umkm_normalized` menambahkan:
+
+- `umkm_imports` dengan checksum unik per workspace.
+- `umkm_entries` dengan natural key `(workspace_id, kind, source_id)`.
+- `umkm_allocations` dengan ID klien sebagai idempotency key dan foreign key ke
+  entry penjualan/penerimaan pada workspace yang sama.
+
+Semua constraint, index, dan query sqlc ada di `scripts/postgres`. Handler dan
+service domain belum memakai query tersebut; itu pekerjaan berikutnya.
+
 ## Arah pengembangan berikutnya
 
 Baseline ini menjaga kompatibilitas dengan database prototipe. Untuk backend
 baru, keputusan desain berikutnya adalah:
 
-1. Tetap memakai `pblg_workspaces.state` JSONB seperti prototipe, atau
-2. menormalisasi entitas seperti entry, allocation, submission, dan ticket ke
-   tabel sendiri lewat migration baru.
+1. Menjadikan tabel `umkm_*` sebagai source of truth untuk Temu Kas.
+2. Menjaga `pblg_workspaces.state` sebagai data legacy/read-only untuk UMKM dan
+   tetap dipakai modul suite lain sampai dimigrasikan.
+3. Menambahkan service/handler yang memakai query auth dan UMKM yang sudah
+   di-generate.
 
 Jangan mengubah migration `000001` setelah migration ini pernah dijalankan.
 Tambahkan migration baru untuk perubahan schema berikutnya.
