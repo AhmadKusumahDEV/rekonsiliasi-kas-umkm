@@ -5,9 +5,13 @@ layer yang mengikuti `init-project.md`. Project ini sengaja tidak memakai
 `vendor`; dependency diambil lewat Go module seperti kebiasaan project
 `go-chat`.
 
-Status saat ini adalah kerangka yang bisa dijalankan. Belum ada domain bisnis,
-endpoint authenticated, migration, atau query generated. Endpoint yang tersedia
-baru `/health/live` dan `/health/ready`.
+Status saat ini adalah kerangka yang bisa dijalankan. Migration baseline dari
+prototipe PBL sudah tersedia, tetapi domain bisnis, endpoint authenticated, dan
+query generated belum dibuat. Endpoint yang tersedia baru `/health/live` dan
+`/health/ready`.
+
+Asal-usul schema, tabel `pblg_*`, dan keputusan mengenai JSONB dijelaskan di
+[`docs/DATABASE_FROM_PBL.md`](docs/DATABASE_FROM_PBL.md).
 
 ## Mulai
 
