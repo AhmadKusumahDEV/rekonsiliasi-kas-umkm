@@ -12,8 +12,7 @@ branch pendek, direview lewat pull request, lalu digabung setelah CI hijau.
    git pull --ff-only
    ```
 
-2. Buat branch dari `main`. Gunakan prefix `feat/`, `fix/`, `chore/`, atau
-   `codex/` untuk perubahan dari agent:
+2. Buat branch dari `main`. Gunakan prefix `feat/`, `fix/`, atau `chore/`:
 
    ```powershell
    git switch -c feat/nama-perubahan
