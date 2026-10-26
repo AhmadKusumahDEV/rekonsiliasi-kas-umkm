@@ -86,6 +86,23 @@ Pola dan batasan test yang dipelajari dari project `go-chat` dicatat di
 akan di-skip tanpa `TEST_DATABASE_URL`; set `TEST_REQUIRE_DB=1` bila database
 harus tersedia dan ketiadaannya harus menggagalkan test.
 
+## Debug di VS Code
+
+Folder ini memiliki `.vscode/launch.json` dan `.vscode/tasks.json`; root repo
+juga memiliki konfigurasi yang sama dengan path disesuaikan. Buka folder
+`backend` atau root repo di VS Code, lalu pilih salah satu konfigurasi:
+
+- `API + PostgreSQL (full env)` — menyalakan `db` lewat Docker Compose dan
+  menjalankan API dengan seluruh env development.
+- `API health only (database off)` — menjalankan API tanpa database.
+- `Integration Test: UMKM flow` — menyalakan `db-test` dan menjalankan flow HTTP
+  end-to-end dengan PostgreSQL test.
+- `Unit Test: service domain` dan `Unit Test: HTTP validation` — debug unit test
+  tanpa database.
+
+Env development dan test sudah tertulis di launch config. Kredensial di sana
+hanya untuk Docker lokal, jangan dipakai untuk production.
+
 ## Mulai
 
 ```powershell
@@ -104,6 +121,9 @@ docker compose up -d db
 
 Lalu ubah `configs/local.yaml` menjadi `database.enabled: true` dan pastikan
 DSN/field koneksi sesuai. Perintah penting:
+
+Compose memakai port host `5433` untuk database development agar tidak bentrok
+dengan PostgreSQL lokal yang biasanya memakai `5432`.
 
 ```text
 make run                 jalankan API

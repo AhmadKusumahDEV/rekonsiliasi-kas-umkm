@@ -1,0 +1,114 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "docker: start app db",
+      "type": "shell",
+      "command": "docker compose up -d db",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: wait app db",
+      "type": "shell",
+      "command": "for ($i=0; $i -lt 30; $i++) { docker compose exec -T db pg_isready -U postgres -d rekonsiliasi_kas_umkm | Out-Null; if ($LASTEXITCODE -eq 0) { exit 0 }; Start-Sleep -Seconds 1 }; exit 1",
+      "dependsOn": "docker: start app db",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: ensure app db",
+      "type": "shell",
+      "command": "Write-Output 'App database ready'",
+      "dependsOn": "docker: wait app db",
+      "problemMatcher": []
+    },
+    {
+      "label": "db: migrate app",
+      "type": "shell",
+      "command": "migrate -path scripts/postgres/migrations -database \"postgres://postgres:postgres@127.0.0.1:5433/rekonsiliasi_kas_umkm?sslmode=disable\" up",
+      "dependsOn": "docker: wait app db",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "db: prepare app",
+      "type": "shell",
+      "command": "Write-Output 'App database migrated and ready'",
+      "dependsOn": "db: migrate app",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: stop app db",
+      "type": "shell",
+      "command": "docker compose stop db",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: start test db",
+      "type": "shell",
+      "command": "docker compose up -d db-test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: wait test db",
+      "type": "shell",
+      "command": "for ($i=0; $i -lt 30; $i++) { docker compose exec -T db-test pg_isready -U postgres -d rku_test | Out-Null; if ($LASTEXITCODE -eq 0) { exit 0 }; Start-Sleep -Seconds 1 }; exit 1",
+      "dependsOn": "docker: start test db",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: ensure test db",
+      "type": "shell",
+      "command": "Write-Output 'Test database ready'",
+      "dependsOn": "docker: wait test db",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: stop test db",
+      "type": "shell",
+      "command": "docker compose stop db-test",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "go: test unit (short)",
+      "type": "shell",
+      "command": "go test -short -count=1 ./...",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "go: test integration",
+      "type": "shell",
+      "command": "go test -count=1 ./internal/echohttp -run TestUMKMIntegrationFlow -v",
+      "dependsOn": "docker: ensure test db",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "APP_ENV": "test",
+          "TEST_DATABASE_URL": "postgres://postgres:postgres@127.0.0.1:55432/rku_test?sslmode=disable",
+          "TEST_REQUIRE_DB": "1"
+        }
+      },
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "go: build api",
+      "type": "shell",
+      "command": "go build ./cmd/api",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "go: build linux",
+      "type": "shell",
+      "command": "make build-linux",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": ["$go"]
+    }
+  ]
+}

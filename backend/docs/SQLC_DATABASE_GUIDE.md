@@ -38,7 +38,7 @@ Isi file up dengan perubahan schema, lalu down dengan rollback yang benar.
 Jalankan migration memakai DSN yang sesuai:
 
 ```powershell
-make pg.migrate.up DATABASE_URL="postgres://postgres:postgres@localhost:5432/rekonsiliasi_kas_umkm?sslmode=disable"
+make pg.migrate.up DATABASE_URL="postgres://postgres:postgres@localhost:5433/rekonsiliasi_kas_umkm?sslmode=disable"
 ```
 
 ## Menulis query

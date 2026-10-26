@@ -1,0 +1,111 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API + PostgreSQL (full env)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/backend/cmd/api",
+      "cwd": "${workspaceFolder}/backend",
+      "preLaunchTask": "db: prepare app",
+      "showLog": true,
+      "env": {
+        "APP_ENV": "development",
+        "APP_NAME": "rekonsiliasi-kas-umkm",
+        "SERVER_HOST": "127.0.0.1",
+        "SERVER_PORT": "8080",
+        "CORS_ALLOWED_ORIGINS": "http://localhost:3000,http://localhost:5173",
+        "DATABASE_ENABLED": "true",
+        "DATABASE_URL": "postgres://postgres:postgres@127.0.0.1:5433/rekonsiliasi_kas_umkm?sslmode=disable",
+        "DATABASE_HOST": "127.0.0.1",
+        "DATABASE_PORT": "5433",
+        "DATABASE_USER": "postgres",
+        "DATABASE_PASSWORD": "postgres",
+        "DATABASE_NAME": "rekonsiliasi_kas_umkm",
+        "DATABASE_SSLMODE": "disable",
+        "TEST_DATABASE_URL": "postgres://postgres:postgres@127.0.0.1:55432/rku_test?sslmode=disable",
+        "TEST_REQUIRE_DB": "1"
+      }
+    },
+    {
+      "name": "API health only (database off)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/backend/cmd/api",
+      "cwd": "${workspaceFolder}/backend",
+      "showLog": true,
+      "env": {
+        "APP_ENV": "development",
+        "APP_NAME": "rekonsiliasi-kas-umkm",
+        "SERVER_HOST": "127.0.0.1",
+        "SERVER_PORT": "8080",
+        "CORS_ALLOWED_ORIGINS": "http://localhost:3000,http://localhost:5173",
+        "DATABASE_ENABLED": "false",
+        "DATABASE_URL": "",
+        "DATABASE_HOST": "127.0.0.1",
+        "DATABASE_PORT": "5433",
+        "DATABASE_USER": "postgres",
+        "DATABASE_PASSWORD": "postgres",
+        "DATABASE_NAME": "rekonsiliasi_kas_umkm",
+        "DATABASE_SSLMODE": "disable",
+        "TEST_DATABASE_URL": "",
+        "TEST_REQUIRE_DB": "0"
+      }
+    },
+    {
+      "name": "Integration Test: UMKM flow",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/backend/internal/echohttp",
+      "cwd": "${workspaceFolder}/backend",
+      "preLaunchTask": "docker: ensure test db",
+      "args": [
+        "-test.run",
+        "TestUMKMIntegrationFlow",
+        "-test.v",
+        "-test.count=1"
+      ],
+      "showLog": true,
+      "env": {
+        "APP_ENV": "test",
+        "TEST_DATABASE_URL": "postgres://postgres:postgres@127.0.0.1:55432/rku_test?sslmode=disable",
+        "TEST_REQUIRE_DB": "1"
+      }
+    },
+    {
+      "name": "Unit Test: service domain",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/backend/internal/service",
+      "cwd": "${workspaceFolder}/backend",
+      "args": ["-test.short", "-test.v"],
+      "showLog": true,
+      "env": {
+        "APP_ENV": "test",
+        "DATABASE_ENABLED": "false",
+        "TEST_DATABASE_URL": "",
+        "TEST_REQUIRE_DB": "0"
+      }
+    },
+    {
+      "name": "Unit Test: HTTP validation",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/backend/internal/echohttp",
+      "cwd": "${workspaceFolder}/backend",
+      "args": ["-test.short", "-test.v"],
+      "showLog": true,
+      "env": {
+        "APP_ENV": "test",
+        "DATABASE_ENABLED": "false",
+        "TEST_DATABASE_URL": "",
+        "TEST_REQUIRE_DB": "0"
+      }
+    }
+  ]
+}
