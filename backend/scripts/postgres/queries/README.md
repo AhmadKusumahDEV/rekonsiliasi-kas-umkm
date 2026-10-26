@@ -11,3 +11,9 @@ Gunakan named parameter `@snake_case`, tulis kolom secara eksplisit, dan hindari
 `SELECT *`. Setelah query ditambahkan, jalankan `make gen.pg.models` dari root
 `backend`. Hasil generate masuk ke
 `internal/repository/rekonsiliasi_repository_sqlc` dan tidak boleh diedit manual.
+
+Query yang sudah tersedia:
+
+- `auth.sql`: sesi, login, register, workspace, user, audit, version, dan lock.
+- `umkm.sql`: daftar transaksi/import/alokasi, suggestions, idempotensi alokasi,
+  pembatalan, dan query pendukung backfill.

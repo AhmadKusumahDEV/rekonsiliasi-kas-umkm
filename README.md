@@ -12,3 +12,9 @@ struktur folder, dan aturan arsitektur ada di
 CI backend berjalan lewat GitHub Actions pada perubahan di `backend/**`. Alur
 branch, pull request, dan branch protection ada di
 [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+Dokumen produk dan teknis:
+
+- [`docs/PRD.md`](docs/PRD.md)
+- [`docs/FRD.md`](docs/FRD.md)
+- [`backend/docs/PBL_QUERY_INVENTORY.md`](backend/docs/PBL_QUERY_INVENTORY.md)

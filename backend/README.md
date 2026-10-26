@@ -5,13 +5,31 @@ layer yang mengikuti `init-project.md`. Project ini sengaja tidak memakai
 `vendor`; dependency diambil lewat Go module seperti kebiasaan project
 `go-chat`.
 
-Status saat ini adalah kerangka yang bisa dijalankan. Migration baseline dari
-prototipe PBL sudah tersedia, tetapi domain bisnis, endpoint authenticated, dan
-query generated belum dibuat. Endpoint yang tersedia baru `/health/live` dan
-`/health/ready`.
+Status saat ini adalah kerangka yang bisa dijalankan dengan lapisan database dan
+query yang sudah disiapkan. Migration baseline PBL, tabel UMKM ternormalisasi,
+backfill dari JSONB, dan generated sqlc sudah tersedia. Service domain, endpoint
+authenticated, serta handler bisnis belum diimplementasikan; endpoint HTTP yang
+aktif baru `/health/live` dan `/health/ready`.
 
 Asal-usul schema, tabel `pblg_*`, dan keputusan mengenai JSONB dijelaskan di
-[`docs/DATABASE_FROM_PBL.md`](docs/DATABASE_FROM_PBL.md).
+[`docs/DATABASE_FROM_PBL.md`](docs/DATABASE_FROM_PBL.md). Inventaris halaman,
+endpoint, query, dan aturan bisnis ada di
+[`docs/PBL_QUERY_INVENTORY.md`](docs/PBL_QUERY_INVENTORY.md).
+
+## Schema dan query
+
+- `000001_pbl_baseline` memindahkan enam tabel runtime prototipe PBL.
+- `000002_umkm_normalized` menambahkan `umkm_imports`, `umkm_entries`, dan
+  `umkm_allocations` beserta constraint/index.
+- `000003_backfill_umkm_state` memindahkan data UMKM lama dari JSONB ke tabel
+  ternormalisasi. Timestamp pembatalan/pembalikan lama tidak tersedia, sehingga
+  backfill memakai waktu eksekusi untuk status tersebut.
+- Query source ada di `scripts/postgres/queries/auth.sql` dan `umkm.sql`; hasil
+  generate ada di `internal/repository/rekonsiliasi_repository_sqlc`.
+
+Yang belum ada adalah pemakaian query tersebut di service dan endpoint domain.
+Jangan menganggap endpoint UMKM sudah aktif hanya karena query generated sudah
+tersedia.
 
 ## Mulai
 
@@ -105,6 +123,9 @@ backend/
 │   ├── migrations/                 # schema source
 │   ├── queries/                    # query source sqlc
 │   └── sqlc.yaml
+├── docs/
+│   ├── DATABASE_FROM_PBL.md
+│   └── PBL_QUERY_INVENTORY.md
 ├── configs/local.yaml.example
 ├── compose.yaml
 ├── Dockerfile
