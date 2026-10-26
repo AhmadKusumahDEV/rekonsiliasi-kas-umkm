@@ -1,0 +1,25 @@
+# Binary dan hasil build
+/bin/
+*.exe
+*.test
+*.out
+
+# Konfigurasi lokal dan secret
+/configs/local.yaml
+.env
+.env.*
+!.env.example
+
+# Coverage dan log
+/coverage/
+coverage.html
+*.log
+
+# Project ini tidak memakai vendor. Abaikan jika folder itu muncul karena
+# perintah bawaan dari project lain.
+/vendor/
+
+# Editor/OS
+.DS_Store
+Thumbs.db
+.idea/

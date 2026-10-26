@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+.env.*
+configs/local.yaml
+bin
+coverage
+*.exe
+*.log
+vendor
