@@ -79,8 +79,9 @@ atau flag `-mod=vendor`.
 Atur di GitHub Settings → Branches untuk branch `main`:
 
 - Require a pull request before merging.
-- Require status checks to pass, pilih `Backend CI / Test and build` dan
-  `Backend CI / Lint` setelah workflow pernah berjalan.
+- Require status checks to pass, pilih `Backend CI / Test and build`,
+  `Backend CI / Lint`, dan `Backend CI / Build Linux artifact` setelah workflow
+  pernah berjalan.
 - Require branches to be up to date before merging.
 - Block force pushes dan deletion pada `main`.
 

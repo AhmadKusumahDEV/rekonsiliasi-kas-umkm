@@ -4,6 +4,7 @@
 .env.*
 configs/local.yaml
 bin
+dist
 coverage
 *.exe
 *.log

@@ -30,13 +30,50 @@ DSN/field koneksi sesuai. Perintah penting:
 
 ```text
 make run                 jalankan API
-make build               build bin/api
+make build               build untuk OS aktif -> dist/<os>-<arch>/
+make build-linux         build Linux amd64 untuk VPS -> dist/linux-amd64/
 make test                go test ./...
 make tidy                go mod tidy, tanpa vendor
 make gen.pg.models       generate sqlc
 make gen.pg.migration name=create_users
 make pg.migrate.up DATABASE_URL=postgres://...
 ```
+
+## Build untuk VPS
+
+Build Linux dari mesin lokal (Windows/Linux) dengan:
+
+```powershell
+make build-linux
+```
+
+Hasilnya ada di `backend/dist/linux-amd64/rekonsiliasi-kas-umkm-api`. Folder
+`dist/` sengaja diabaikan Git, tetapi [dist/README.md](dist/README.md) tetap
+di-commit sebagai penanda lokasi artifact.
+
+Di VPS, masuk ke root backend lalu jalankan binary. Posisi ini membuat aplikasi
+menemukan `configs/local.yaml` secara default:
+
+```bash
+cd /path/ke/rekonsiliasi-kas-umkm/backend
+make build-linux                 # jika Go dan make tersedia di VPS
+chmod +x dist/linux-amd64/rekonsiliasi-kas-umkm-api
+./dist/linux-amd64/rekonsiliasi-kas-umkm-api
+```
+
+Jika binary diunduh dari artifact GitHub Actions:
+
+```bash
+gh run download --name rekonsiliasi-kas-umkm-api-linux-amd64 -D dist/linux-amd64
+cd dist/linux-amd64
+chmod +x rekonsiliasi-kas-umkm-api
+APP_CONFIG_FILE=../../configs/local.yaml ./rekonsiliasi-kas-umkm-api
+```
+
+Atau unduh artifact dari halaman Actions GitHub, ekstrak ke
+`backend/dist/linux-amd64/`, lalu jalankan dengan `APP_CONFIG_FILE` seperti di
+atas. Pastikan `configs/local.yaml` sudah dibuat dan `database.enabled` diatur
+sesuai environment VPS.
 
 ## Struktur
 

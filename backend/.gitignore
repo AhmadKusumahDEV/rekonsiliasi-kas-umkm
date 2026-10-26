@@ -1,4 +1,6 @@
 # Binary dan hasil build
+/dist/*
+!/dist/README.md
 /bin/
 *.exe
 *.test

@@ -75,3 +75,33 @@ jobs:
           version: v2.6.1
           working-directory: backend
           args: --timeout=5m
+
+  build:
+    name: Build Linux artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - name: Download modules
+        run: go mod download
+
+      - name: Build linux/amd64 binary
+        run: make build-linux VERSION=${{ github.sha }}
+
+      - name: Upload Linux binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: rekonsiliasi-kas-umkm-api-linux-amd64
+          path: backend/dist/linux-amd64/rekonsiliasi-kas-umkm-api
+          if-no-files-found: error
+          retention-days: 14
