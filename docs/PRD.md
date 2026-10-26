@@ -17,7 +17,7 @@
 
 Temu Kas membantu pemilik usaha kecil menjelaskan hubungan antara penjualan yang tercatat dan uang yang benar-benar diterima. Alih-alih menandai setiap selisih sebagai kehilangan uang, produk menyimpan keputusan pemilik: berapa nominal yang dialokasikan, biaya layanan apa yang mengurangi tagihan, dan berapa sisa yang masih perlu ditelusuri. Keputusan dapat dibalik tanpa menghapus riwayat, impor dapat diulang tanpa menggandakan transaksi, dan hasil akhir dapat diekspor sebagai CSV.
 
-Prototipe membuktikan alur tersebut pada satu ruang kerja pemilik usaha: impor CSV penjualan dan penerimaan, usulan pasangan yang unik, alokasi sebagian atau penuh, biaya dengan alasan, pembalikan, pembatalan impor, audit, dan ekspor. Repositori ini saat ini memiliki kerangka backend Go, endpoint kesehatan, migration baseline, tabel UMKM ternormalisasi, backfill data JSONB, dan query sqlc auth/UMKM yang sudah di-generate. Service domain, endpoint terautentikasi, serta antarmuka web belum diimplementasikan.
+Prototipe membuktikan alur tersebut pada satu ruang kerja pemilik usaha: impor CSV penjualan dan penerimaan, usulan pasangan yang unik, alokasi sebagian atau penuh, biaya dengan alasan, pembalikan, pembatalan impor, audit, dan ekspor. Repositori ini sudah memiliki backend Go, migration/backfill, query sqlc, service auth/UMKM, API `/api/v1` untuk alur inti, serta unit dan integration test. Antarmuka web dan SSE events belum diimplementasikan.
 
 Prototipe yang sama juga memuat dua aplikasi lain, Tilik (review karya berbasis rubrik) dan Ruang (laporan fasilitas dan SLA). Keduanya dibaca agar pembagian peran, autentikasi, isolasi ruang kerja, dan batasan platform tidak salah digambarkan. Keduanya adalah konteks suite/modul masa depan untuk repositori ini, bukan bagian dari komitmen MVP Rekonsiliasi Kas UMKM.
 
@@ -45,18 +45,19 @@ Target di atas adalah hipotesis pilot sampai ada pengukuran pengguna dan beban k
 
 | Permukaan | Aplikasi | Peran utama | Status di prototipe | Status di repositori ini |
 |---|---|---|---|---|
-| Rekonsiliasi kas | Temu Kas (`umkm-rekonsiliasi`) | Pemilik usaha | MVP PBL lokal yang dapat dijalankan | **MVP saat ini**; backend scaffold, schema/query UMKM mulai ditambahkan, handler belum ada |
+| Rekonsiliasi kas | Temu Kas (`umkm-rekonsiliasi`) | Pemilik usaha | MVP PBL lokal yang dapat dijalankan | **MVP saat ini**; backend Go sudah memiliki auth, session/CSRF, import, suggestions, allocation, undo, cancel, export, dan integration test |
 | Review karya | Tilik (`ai-grader`) | Mentor, siswa | MVP PBL lokal yang dapat dijalankan | Konteks suite/modul masa depan; belum ada kode domain |
 | Layanan fasilitas | Ruang (`facility-sla`) | Pengelola, penghuni, teknisi | MVP PBL lokal yang dapat dijalankan | Konteks suite/modul masa depan; belum ada kode domain |
-| Platform bersama | `internal/platform` | Semua peran | Autentikasi, sesi, CSRF, state JSONB, audit, worker, aset | Sebagian: baseline schema dan migration normalisasi UMKM ada di workspace; auth/worker belum |
+| Platform bersama | `internal/platform` | Semua peran | Autentikasi, sesi, CSRF, state JSONB, audit, worker, aset | Sebagian: auth/session/CSRF + service UMKM sudah ada; worker dan frontend belum |
 
 Status nyata repositori ini:
 
-- Backend Go memakai Echo, pgx, sqlc, dan Viper; endpoint yang tersedia baru `GET /health/live` dan `GET /health/ready`.
+- Backend Go memakai Echo, pgx, sqlc, dan Viper. Endpoint health tetap tersedia, dan API domain memakai prefix `/api/v1`.
 - Migration `000001_pbl_baseline` sudah memindahkan enam tabel `pblg_*` dan dua index dari prototipe.
 - Migration `000002_umkm_normalized` menambahkan tabel domain `umkm_imports`, `umkm_entries`, dan `umkm_allocations`; migration `000003_backfill_umkm_state` memindahkan data UMKM lama dari JSONB.
-- Query sqlc `auth.sql` dan `umkm.sql` sudah di-generate. Handler dan service domain belum memakai query tersebut.
-- Endpoint terautentikasi, worker, dan frontend belum dibuat di repositori ini.
+- Query sqlc `auth.sql` dan `umkm.sql` sudah di-generate dan dipakai service.
+- Auth, session/CSRF, import, suggestions, alokasi, undo, cancel import, export, dan ganti password sudah memakai PostgreSQL serta handler Echo.
+- SSE events, worker, dan frontend belum dibuat di repositori ini.
 - README root menyebut `frontend/` sebagai ruang kerja yang belum diisi; direktori tersebut belum ada pada checkout ini.
 - CI backend menjalankan vet, test dengan race detector, build, dan lint.
 
@@ -197,19 +198,19 @@ Aturan rinci dan kasus uji ada di [`FRD.md`](FRD.md). Ringkasan keputusan produk
 
 | Area | Kebutuhan | Bukti prototipe | Status repositori |
 |---|---|---|---|
-| Keamanan sesi | Cookie `HttpOnly`, `SameSite=Strict`, `Secure` saat TLS; token sesi disimpan sebagai hash; sesi 12 jam | `auth.go:52-76`; `server.go:182-265` | Belum ada autentikasi |
-| CSRF dan origin | Setiap non-GET memerlukan `X-CSRF-Token`; permintaan lintas situs ditolak; token dibandingkan constant-time | `server.go:147-158`, `server.go:182-265` | Belum ada |
-| Header keamanan | CSP `default-src 'self'`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: same-origin` | `server.go:242-265` | Belum ada di Echo; perlu ditambahkan |
+| Keamanan sesi | Cookie `HttpOnly`, `SameSite=Strict`, `Secure` saat TLS; token sesi disimpan sebagai hash; sesi 12 jam | `backend/internal/service/auth_service.go`; `backend/internal/echohttp/auth_handler.go` | Diimplementasikan; test integration login/logout/ganti password lulus |
+| CSRF | Setiap non-GET pada route privat memerlukan `X-CSRF-Token`; token dibandingkan constant-time | `backend/internal/echohttp/auth_middleware.go` | Diimplementasikan; test menolak POST tanpa CSRF |
+| Header keamanan | X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP API | `backend/internal/echohttp/security_middleware.go` | Diimplementasikan |
 | Pembatas login | 25 percobaan per IP per aplikasi dalam 10 menit, in-memory | `server.go:159-181`; `security_test.go:148-160` | Belum ada |
-| Isolasi ruang kerja | Workspace dan app diambil dari sesi; data lintas ruang kerja tidak terlihat; foto memiliki pemeriksaan keterkaitan | `auth.go:52-67`, `auth.go:205-248`; `security_test.go:19-40` | Baseline schema ada; aturan belum diterapkan |
-| Audit | Setiap mutasi domain melalui `Mutate` menulis `pblg_audit` dengan pelaku, aksi, detail, waktu; event terbaru 120. Login/register/logout/ganti kata sandi tidak diaudit di prototipe | `store.go:87-118`, `store.go:135-153` | Tabel audit ada; penulisan belum ada |
-| Batas data | 500 baris/1 MB per impor; 10.000 transaksi per ruang kerja; field maksimal 400 karakter; ID sumber maksimal 80 karakter; nominal maksimal 1 triliun | `umkm.go:27-89`; `batasan.md:9`; constraint `umkm_*` di migration 000002 | Baseline, tabel normalized, backfill, dan query generated ada; validasi handler belum ada |
-| Konkurensi | Satu baris workspace dikunci saat mutasi; saldo divalidasi di dalam transaksi | `store.go:87-118`; `integration_test.go:146-176` | Belum ada service/transaksi domain |
+| Isolasi ruang kerja | Workspace dan app diambil dari sesi; data lintas ruang kerja tidak terlihat; foto memiliki pemeriksaan keterkaitan | `backend/internal/echohttp/auth_middleware.go`; `backend/internal/service/umkm_service.go` | Diterapkan pada query/service; RLS database belum |
+| Audit | Setiap mutasi domain menulis `pblg_audit` dengan pelaku, aksi, detail, waktu; event terbaru 120. Login/register/logout/ganti kata sandi tidak diaudit | `backend/internal/service/umkm_service.go`; `pblg_audit` | Diimplementasikan dalam transaksi yang sama dengan version bump |
+| Batas data | 500 baris/1 MB per impor; 10.000 transaksi per ruang kerja; field maksimal 400 karakter; ID sumber maksimal 80 karakter; nominal maksimal 1 triliun | `backend/internal/service/umkm_domain.go`; migration 000002 | Diimplementasikan dan diuji |
+| Konkurensi | Satu baris workspace dikunci saat mutasi; saldo divalidasi di dalam transaksi | `backend/internal/service/umkm_service.go` | Diimplementasikan dengan `LockWorkspaceForUpdate` |
 | Aksesibilitas | Skip link, fokus utama, dialog native, Escape, konfirmasi isian belum disimpan, live region, tabel dapat digeser, reduced motion | `index.html:22-33`; `app.js:121-135`, `app.js:813-827`; `style.css:202-215`, `style.css:507-509`, `style.css:1116` | Frontend belum ada |
 | Responsif | Uji 375/768/1440 px; tabel bergulir di area tabel; navigasi mobile | `README.md:16-17`; `pengujian.md:38-58` | Frontend belum ada |
 | Operasional | Satu proses menjalankan server dan worker; HOST default `127.0.0.1`; worker 2 detik; SSE 4 detik; shutdown 8 detik | `server.go:42-95`; `suite.go:18-90`; `flow.txt:152-171` | Scaffold Echo: port 8080, timeout 10/15/60 detik, shutdown 10 detik, DB nonaktif secara default |
-| Body limit | JSON dibatasi 2 MB di prototipe; CSV maksimal 1 MB | `server.go:114-126`; `umkm.go:27-35` | Echo memakai `BodyLimit("1M")`; berpotensi menolak CSV 1 MB setelah amplop JSON. Perlu keputusan |
-| Error | Pesan JSON `{"error":"..."}`; 400/401/403/404/409/429/503/500; exception database tidak dikirim mentah | `docs/api.md:74-76`; `models.go:142-151`; `server.go:136-146` | Pemetaan error Echo ada secara umum; handler domain belum ada |
+| Body limit | JSON prototipe 2 MB; CSV maksimal 1 MB | `backend/internal/echohttp/http_server.go` | Echo memakai `BodyLimit("5M")` agar CSV 1 MB + amplop JSON muat |
+| Error | Pesan JSON aman; 400/401/403/404/409/503/500; detail database tidak dikirim mentah | `backend/internal/echohttp/echohttp_error_handler.go`; `pkg/errors/errors.go` | Diimplementasikan dengan `DomainError` + central mapping |
 
 Hal yang belum dibuktikan oleh prototipe: uji beban banyak pengguna, Safari/Firefox/iOS asli, pembaca layar, audit penetrasi independen, deployment cloud, dan pengukuran manfaat bagi pengguna nyata. Karena itu dokumen ini tidak menjanjikan kesiapan produksi.
 
@@ -247,13 +248,13 @@ Metrik tidak boleh memuat data pribadi, isi karya, atau kredensial. Untuk MVP, p
 | ID | Pertanyaan | Mengapa penting | Pemilik keputusan |
 |---|---|---|---|
 | OD-01 | Setelah migrasi normalisasi dan backfill disiapkan, kapan cutover dilakukan dan kapan `pblg_workspaces.state` menjadi legacy/read-only untuk UMKM? | Memengaruhi performa, index, validasi backfill, dan audit jangka panjang | Tech lead + product owner |
-| OD-02 | Apakah API memakai prefix `/api` seperti prototipe atau `/v1` seperti komentar scaffold? | Kontrak klien dan konsistensi repositori | Tech lead |
-| OD-03 | Apakah body limit dinaikkan minimal 2 MB agar CSV 1 MB muat di amplop JSON? | CSV 1 MB dapat ditolak oleh `BodyLimit("1M")` saat ini | Tech lead |
+| OD-02 | Apakah prefix `/api/v1` dipertahankan untuk klien baru, atau perlu alias `/api` untuk kompatibilitas prototipe? | Implementasi saat ini memakai `/api/v1`; prototipe memakai `/api` | Tech lead |
+| OD-03 | Apakah body limit 5 MB cukup untuk semua klien, atau perlu route import khusus dengan limit lebih besar? | Implementasi saat ini memakai 5 MB | Tech lead |
 | OD-04 | Apakah frontend dibangun di repo ini atau repo terpisah? | Menentukan struktur monorepo dan CI | Product owner |
 | OD-05 | Apakah satu ruang kerja UMKM boleh memiliki lebih dari satu pemilik? | Mengubah model peran, undangan, dan audit | Product owner |
-| OD-06 | Apakah impor dengan batch 0 baris (semua baris sudah ada tetapi checksum file berbeda) tetap dibuat? | Perilaku aktual prototipe menciptakan batch 0 baris; bisa membingungkan | Product owner + engineer |
-| OD-07 | Apakah pembatalan alokasi yang sudah dibalik harus mengembalikan 200 atau 409? | Perilaku aktual mengembalikan 200 lagi; belum ada keputusan eksplisit | Engineer |
-| OD-08 | Apakah ekspor UMKM perlu pemeriksaan peran eksplisit bila peran lain ditambahkan? | Saat ini hanya ada owner, sehingga belum terlihat | Engineer |
+| OD-06 | Batch 0 baris tetap dibuat mengikuti prototipe; apakah perilaku ini dipertahankan setelah ada UI? | Bisa membingungkan pengguna | Product owner |
+| OD-07 | Undo alokasi yang sudah reversed mengembalikan 200 dan tetap menulis audit/version; apakah dipertahankan? | Idempotensi vs audit noise | Engineer |
+| OD-08 | Ekspor UMKM memeriksa peran owner secara eksplisit; apakah perlu peran lain nanti? | Keamanan bila peran bertambah | Engineer |
 | OD-09 | Apakah SSE dipertahankan atau diganti polling? | SSE menambah kompleksitas sesi dan proxy | Tech lead |
 | OD-10 | Apakah backfill data UMKM lama (`000003`) akan dijalankan dan diverifikasi pada database nyata? | Backfill sudah disiapkan; data Tilik/Ruang dan akun demo tetap di luar cakupan | Product owner + engineer |
 | OD-11 | Apakah batas 10.000 transaksi/ruang kerja cukup untuk pilot? | Menentukan kebutuhan normalisasi/arsip | Product owner |
@@ -274,7 +275,7 @@ Path prototipe tanpa prefix `backend/` ditulis relatif terhadap `Tiga-Prototipe-
 | PRD-07 | Kebutuhan nonfungsional | `server.go:147-306`; `auth.go:52-204`; `store.go:87-153`; `style.css:202-215`, `style.css:507-509`, `style.css:1116` |
 | PRD-08 | Metrik dan pengukuran | `docs/pengujian.md:5-37`; `docs/batasan.md:9` |
 | PRD-09 | Batasan dan kesiapan | `docs/batasan.md:35-46`; `docs/pengujian.md:65-70` |
-| PRD-10 | Status repositori saat ini | `backend/README.md:8-24`; `backend/internal/echohttp/http_server.go:30-45`; `backend/scripts/postgres/migrations/000001_pbl_baseline.up.sql:8-79`; `backend/scripts/postgres/migrations/000002_umkm_normalized.up.sql:1-84`; `backend/scripts/postgres/migrations/000003_backfill_umkm_state.up.sql:1-83`; `backend/docs/PBL_QUERY_INVENTORY.md` |
+| PRD-10 | Status repositori saat ini | `backend/README.md`; `backend/internal/echohttp/http_server.go`; `backend/internal/service/*_service.go`; `backend/scripts/postgres/migrations/000001..000003`; `backend/docs/PBL_QUERY_INVENTORY.md`; `backend/docs/TESTING_FROM_GO_CHAT.md` |
 
 ## 14. Catatan sumber dan batas dokumen
 

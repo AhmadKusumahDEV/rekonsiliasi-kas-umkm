@@ -34,6 +34,11 @@ arti folder `pkg`:
    `configs/local.yaml` dan sudah diabaikan Git.
 10. `pkg/` tidak boleh mengimpor `internal/`; `internal/echohttp` tidak boleh
     mengimpor package sqlc; `internal/service` tidak boleh mengimpor Echo.
+11. API domain baru memakai prefix `/api/v1`; session/CSRF ditangani middleware,
+    dan handler mengambil identity dari session context.
+12. Integration test memakai `internal/testkit` + `TEST_DATABASE_URL` yang
+    menunjuk database test disposable. Jangan arahkan reset schema ke database
+    produksi/development berisi data nyata.
 
 ## Alur menambah domain
 

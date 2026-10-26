@@ -30,13 +30,13 @@ Status repositori saat ini:
 
 | Komponen | Status | Bukti |
 |---|---|---|
-| Backend HTTP | Echo scaffold; hanya `GET /health/live` dan `GET /health/ready` | `backend/internal/echohttp/http_server.go:30-45`; `backend/README.md:8-11` |
+| Backend HTTP | Echo; health + `/api/v1` auth/UMKM endpoints | `backend/internal/echohttp/http_server.go`; `backend/README.md` |
 | Database schema | Baseline `pblg_*`, migration `000002_umkm_normalized`, dan backfill `000003` pada branch implementasi | `backend/scripts/postgres/migrations/000001_pbl_baseline.up.sql:8-79`; `backend/scripts/postgres/migrations/000002_umkm_normalized.up.sql:1-84`; `backend/scripts/postgres/migrations/000003_backfill_umkm_state.up.sql` |
-| Autentikasi/sesi/CSRF | Belum ada | Tidak ada route atau middleware autentikasi di `http_server.go` |
-| Domain UMKM | Query sqlc auth/UMKM sudah digenerate; handler/service belum ada | `backend/scripts/postgres/queries/auth.sql`, `backend/scripts/postgres/queries/umkm.sql`, `backend/internal/repository/rekonsiliasi_repository_sqlc/` |
+| Autentikasi/sesi/CSRF | Diimplementasikan: cookie session, bcrypt, CSRF, password change | `backend/internal/service/auth_service.go`; `backend/internal/echohttp/auth_middleware.go` |
+| Domain UMKM | Service + handler untuk import, suggestions, allocate, undo, cancel, export | `backend/internal/service/umkm_service.go`; `backend/internal/echohttp/umkm_handler.go` |
 | Frontend | Belum ada | Direktori `frontend/` belum ada; README menyebut ruang kerja yang belum diisi |
 | Worker/job | Belum ada | Worker hanya ada di prototipe |
-| CI | Vet, test race, build, lint | `.github/workflows/backend-ci.yml` |
+| CI | Vet, unit/integration test, build, lint | `.github/workflows/backend-ci.yml`; `backend/internal/testkit/postgres.go` |
 
 Legenda status di tabel:
 
@@ -210,13 +210,17 @@ Catatan: halaman daftar UMKM hanya menampilkan peran pemilik. Kode bergabung tid
 ### 4.1 Konvensi
 
 - URL relatif terhadap server aplikasi. Request JSON memakai `Content-Type: application/json`; error berbentuk `{"error":"penjelasan yang dapat ditindaklanjuti"}`.
-- Endpoint privat memerlukan cookie sesi. Perubahan (non-GET) juga memerlukan `X-CSRF-Token` dari `GET /api/me`; permintaan lintas situs ditolak.
+- Endpoint privat memerlukan cookie sesi. Perubahan (non-GET) juga memerlukan `X-CSRF-Token` dari `GET /api/v1/auth/me`; implementasi memakai `DomainError` untuk pesan publik.
 - Workspace dan app diambil dari sesi, bukan dari parameter klien. Ini mencegah pengguna memilih ruang kerja lain lewat payload.
 - Respons sukses memakai 200 untuk baca/perubahan dan 201 untuk pembuatan, termasuk idempotent retry yang mengembalikan hasil lama.
-- Body JSON prototipe dibatasi 2 MB dan menolak field tidak dikenal serta lebih dari satu objek JSON.
-- Prototipe memakai prefix `/api`; scaffold repositori ini belum menetapkan prefix domain dan masih memakai `/health/*`. Keputusan prefix ada di pertanyaan terbuka.
+- Body JSON prototipe dibatasi 2 MB. Implementasi Echo memakai batas 5 MB agar CSV 1 MB dan amplop JSON muat.
+- Implementasi repositori memakai prefix `/api/v1`; path `/api/...` di tabel berikut adalah kontrak prototipe yang dipetakan ke endpoint v1 pada bagian 4.6.
 
 ### 4.2 Endpoint akun dan data bersama
+
+Catatan: kolom `Status repo` pada tabel prototipe di bawah menandai path `/api`
+asli. Implementasi v1 yang sudah ada dipetakan pada bagian 4.6; SSE events masih
+gap.
 
 | ID | Method dan path | Auth/CSRF | Request | Respons sukses | Error/status | Bukti | Status repo |
 |---|---|---|---|---|---|---|---|
@@ -345,8 +349,14 @@ Aturan suite ringkas yang perlu dipertahankan bila modul ini diaktifkan:
 |---|---|---|
 | `GET /health/live` | Repo | Mengembalikan `status, service, version, uptime_seconds, time`. |
 | `GET /health/ready` | Repo | Mengembalikan `status, service, version, checks`; 503 bila database diaktifkan tetapi tidak siap; database nonaktif dilaporkan `disabled` dengan 200. |
-| `GET /api/config`, `/api/me`, `/api/state`, `/api/events` | Gap | Belum ada route. |
-| Seluruh endpoint UMKM `API-U01`–`API-U06` | Gap | Belum ada handler/service/query. |
+| `GET /api/v1/config` | Repo | Config publik. |
+| `POST /api/v1/auth/register`, `POST /api/v1/auth/login` | Repo | Register/login; cookie sesi; belum ada rate limit. |
+| `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`, `PUT /api/v1/auth/password` | Repo | Session + CSRF; ganti password menghapus semua sesi. |
+| `GET /api/v1/umkm/state`, `GET /api/v1/umkm/suggestions` | Repo | State ternormalisasi + suggestions. |
+| `POST /api/v1/umkm/imports/preview`, `POST /api/v1/umkm/imports` | Repo | Preview dan commit import. |
+| `POST /api/v1/umkm/imports/:id/cancel`, `POST /api/v1/umkm/allocations`, `POST /api/v1/umkm/allocations/:id/undo` | Repo | Mutasi dengan lock/audit/version. |
+| `GET /api/v1/umkm/export` | Repo | CSV rekap dengan netralisasi formula. |
+| `GET /api/v1/umkm/events` | Gap | SSE belum diimplementasikan. |
 | Endpoint Tilik/Ruang | Future | Tidak termasuk MVP repositori ini. |
 
 ### 4.7 Pemetaan error
@@ -502,7 +512,7 @@ Prototipe menyimpan data domain di `pblg_workspaces.state` JSONB, bukan satu tab
 Repositori ini bergerak ke model hibrida:
 
 - `pblg_workspaces.state` tetap ada untuk kompatibilitas database prototipe dan data suite (Tilik/Ruang).
-- Migration `000002_umkm_normalized` menambahkan tabel `umkm_imports`, `umkm_entries`, dan `umkm_allocations` untuk domain UMKM. Migration `000003_backfill_umkm_state` memindahkan state JSONB lama. Query sqlc sudah digenerate; handler/service belum ada.
+- Migration `000002_umkm_normalized` menambahkan tabel `umkm_imports`, `umkm_entries`, dan `umkm_allocations` untuk domain UMKM. Migration `000003_backfill_umkm_state` memindahkan state JSONB lama. Query sqlc, service, dan handler core sudah ada.
 - Untuk UMKM, tabel `umkm_*` sebaiknya menjadi satu-satunya sumber kebenaran setelah cutover. Jangan dual-write ke JSONB dan tabel tanpa keputusan eksplisit karena dua sumber kebenaran memperbesar drift.
 
 Konsekuensi yang perlu disadari:
@@ -510,7 +520,7 @@ Konsekuensi yang perlu disadari:
 - Mutasi mengambil satu baris workspace dengan `FOR UPDATE`, sehingga keputusan dalam satu ruang kerja diserialkan. Ini melindungi saldo dari dua alokasi bersamaan.
 - Setiap mutasi menulis ulang seluruh state JSONB; tidak ada index per transaksi dan tidak ada foreign key antar-entri.
 - Batas 10.000 transaksi/ruang kerja adalah batas MVP, bukan rancangan analitik jutaan baris.
-- Untuk produksi, normalisasi dan backfill UMKM sudah disiapkan; keputusan yang tersisa adalah commit, validasi hasil backfill, dan pemilihan waktu cutover.
+- Untuk produksi, normalisasi, backfill, service, dan handler UMKM sudah disiapkan; keputusan yang tersisa adalah validasi hasil backfill dan pemilihan waktu cutover.
 
 Migration `000001` memindahkan schema `pblg_*`; `IF NOT EXISTS` membuat baseline aman ditempel ke database prototipe tanpa menghapus data. Migration `000002` menambahkan constraint/index domain UMKM. Migration `000003` memindahkan imports, entries, dan allocations UMKM dari JSONB ke `umkm_*`; timestamp canceled/reversed memakai waktu backfill karena state lama hanya menyimpan boolean. Jumlah baris hasil backfill tetap harus diverifikasi pada environment nyata.
 
@@ -676,7 +686,7 @@ Kriteria di bawah dapat diuji pada prototipe atau pada implementasi baru. Kolom 
 | AC-31 | Repositori ini dijalankan | Panggil `/health/live` dan `/health/ready` | Respons health tersedia; readiness 503 bila dependency tidak siap | Repo; `http_server.go:30-45` |
 | AC-32 | Database kosong | Jalankan migration baseline | Enam tabel `pblg_*` dan dua index dibuat tanpa menghapus data lama | Repo; `000001_pbl_baseline.up.sql:8-79` |
 | AC-33 | Ruang kerja berisi 10.000 transaksi | Impor satu baris lagi | 400; tidak ada baris tersimpan | Prototipe; `umkm.go:241-244` |
-| AC-34 | File CSV 1 MB | Kirim sebagai JSON | Body harus cukup besar untuk amplop; batas `1M` di scaffold Echo perlu disesuaikan | Gap; `server.go:114-126` vs `http_server.go:35` |
+| AC-34 | File CSV 1 MB | Kirim sebagai JSON | Request diterima oleh body limit 5 MB; validasi domain membatasi CSV 1 MB | Repo; `http_server.go`; integration test |
 | AC-35 | Database sudah memiliki baseline `pblg_*` | Jalankan migration `000002_umkm_normalized` | Tabel `umkm_imports`, `umkm_entries`, `umkm_allocations` dan index/constraint terbentuk; `000001` tidak diubah | Repo (workspace); `000002_umkm_normalized.up.sql:1-84` |
 | AC-36 | Database lama berisi state JSONB UMKM | Jalankan migration `000003_backfill_umkm_state` | Imports, entries, dan allocations valid tersalin ke tabel `umkm_*`; jumlah baris diverifikasi; timestamp canceled/reversed adalah waktu backfill, bukan waktu asli | Repo (branch); `000003_backfill_umkm_state.up.sql` |
 
@@ -708,11 +718,10 @@ Kriteria di bawah dapat diuji pada prototipe atau pada implementasi baru. Kolom 
 
 ### 8.3 Celah repositori ini
 
-- Tidak ada autentikasi, sesi, CSRF, atau rate limit di backend saat ini.
-- Query sqlc untuk auth/UMKM sudah digenerate, tetapi handler/service untuk impor, alokasi, pembalikan, pembatalan, dan ekspor belum ada.
-- Tidak ada worker, SSE, atau audit writer.
+- Auth, sesi, CSRF, import, alokasi, pembalikan, pembatalan, ekspor, dan audit writer dasar sudah ada. Rate limit terdistribusi belum ada.
+- Query sqlc, service, dan handler core sudah ada; SSE events, worker, dan frontend belum.
 - Tidak ada frontend; halaman di dokumen ini adalah acuan implementasi.
-- `BodyLimit("1M")` lebih kecil dari amplop JSON 2 MB yang dipakai prototipe; CSV 1 MB dapat gagal sebelum validasi domain.
+- Body limit sudah dinaikkan menjadi 5 MB; route import tetap divalidasi 1 MB di domain.
 - Migration `000002` menambah tabel domain UMKM dan `000003` menyediakan backfill JSONB, tetapi backfill belum divalidasi terhadap database nyata; data demo, akun, dan state Tilik/Ruang tidak disalin.
 - Keputusan dual-write versus cutover ke `umkm_*` belum ditetapkan; dua sumber kebenaran akan menimbulkan drift.
 - CORS default hanya `localhost:3000` dan `localhost:5173`; sesuaikan dengan asal frontend sebenarnya.
@@ -758,21 +767,22 @@ Semua path tanpa prefix `backend/` merujuk ke `Tiga-Prototipe-PBL/`.
 | FR-REPO-02 | Baseline migration dan schema | `backend/scripts/postgres/migrations/000001_pbl_baseline.up.sql:8-79`; `backend/docs/DATABASE_FROM_PBL.md:11-149` | `AC-32` |
 | FR-REPO-03 | Batas body dan konfigurasi runtime | `backend/internal/echohttp/http_server.go:34-35`, `backend/internal/config/config.go:142-147` | `AC-34` |
 | FR-REPO-04 | Schema UMKM ternormalisasi, backfill, dan query sqlc | `backend/scripts/postgres/migrations/000002_umkm_normalized.up.sql:1-84`; `backend/scripts/postgres/migrations/000003_backfill_umkm_state.up.sql`; `backend/scripts/postgres/queries/umkm.sql:1-115`; `backend/scripts/postgres/queries/auth.sql:1-94` | `AC-35`, `AC-36` |
+| FR-REPO-05 | API v1, service auth/UMKM, dan integration test | `backend/internal/echohttp/http_server.go`; `backend/internal/echohttp/auth_middleware.go`; `backend/internal/service/auth_service.go`; `backend/internal/service/umkm_service.go`; `backend/internal/echohttp/integration_test.go`; `backend/docs/TESTING_FROM_GO_CHAT.md` | AC-31–AC-36; integration flow |
 
 ## 10. Pertanyaan terbuka teknis
 
 | ID | Pertanyaan | Dampak | Status |
 |---|---|---|---|
-| TQ-01 | Apakah prefix API final `/api` atau `/v1`? | Klien, dokumentasi, dan route auth | Blocking untuk implementasi |
-| TQ-02 | Berapa body limit final? CSV 1 MB membutuhkan amplop JSON lebih dari 1 MB | Impor CSV 1 MB dapat gagal di `BodyLimit("1M")` | Blocking |
-| TQ-03 | Autentikasi mana yang dipakai di Echo: cookie sesi prototipe atau mekanisme lain? | Seluruh endpoint privat dan CSRF | Blocking |
-| TQ-04 | Normalisasi (`000002`) dan backfill (`000003`) sudah disiapkan; kapan di-commit, divalidasi pada data nyata, dan `state` JSONB dijadikan legacy/read-only? | Cutover, query, index, migrasi, performa | Blocking untuk cutover |
+| TQ-01 | Apakah prefix `/api/v1` dipertahankan atau perlu alias `/api` untuk klien prototipe? | Kontrak klien | Diputuskan `/api/v1`; alias belum |
+| TQ-02 | Apakah 5 MB cukup untuk semua klien import? | Batas body | Diputuskan 5 MB; monitor |
+| TQ-03 | Apakah cookie session + CSRF cukup untuk deployment? | Keamanan endpoint privat | Diputuskan untuk implementasi saat ini |
+| TQ-04 | Normalisasi (`000002`), backfill (`000003`), service, dan handler sudah disiapkan di branch; kapan divalidasi pada data nyata dan `state` JSONB dijadikan legacy/read-only? | Cutover, query, index, migrasi, performa | Blocking untuk cutover |
 | TQ-05 | Di mana frontend akan berada? | Struktur repo, CORS, deployment | Blocking untuk rilis UI |
 | TQ-06 | Apakah SSE dipertahankan? | Kompleksitas proxy, sesi, dan Worker | Tidak blocking untuk core API |
 | TQ-07 | Bagaimana CSRF token dirotasi setelah login/logout? | Keamanan dan pengalaman form | Perlu keputusan |
 | TQ-08 | Apakah cookie `Secure` dikonfigurasi manual di belakang reverse proxy? | Sesi dapat tidak aman atau tidak berfungsi | Perlu keputusan deployment |
-| TQ-09 | Apakah batch 0 baris tetap dibuat? | Riwayat impor dapat membingungkan | Produk |
-| TQ-10 | Apakah undo pada alokasi reversed harus 200 atau 409? | Konsistensi idempotensi | Produk/engineer |
+| TQ-09 | Batch 0 baris tetap dibuat mengikuti prototipe; apakah dipertahankan setelah UI? | Riwayat impor dapat membingungkan | Produk |
+| TQ-10 | Undo pada alokasi reversed mengembalikan 200 dan tetap audit/version; apakah dipertahankan? | Konsistensi idempotensi | Produk/engineer |
 | TQ-11 | Apakah ekspor UMKM perlu cek peran eksplisit? | Keamanan bila peran bertambah | Engineer |
 | TQ-12 | Apakah panjang kata sandi dihitung byte atau karakter? | Pengguna dengan karakter multibyte | Engineer |
 | TQ-13 | Berapa retensi audit dan bagaimana pembersihan sesi kedaluwarsa? | Operasional dan privasi | Perlu keputusan |

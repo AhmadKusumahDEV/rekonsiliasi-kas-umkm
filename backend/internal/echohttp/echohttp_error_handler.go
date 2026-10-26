@@ -67,6 +67,12 @@ func statusText(statusCode int) string {
 }
 
 func mapHTTPError(err error) (int, string) {
+	var domainError *pkgErr.DomainError
+	if errors.As(err, &domainError) {
+		statusCode, _ := mapHTTPError(domainError.Kind)
+		return statusCode, domainError.Message
+	}
+
 	if errors.Is(err, context.Canceled) {
 		return statusClientClosedRequest, "Permintaan dibatalkan."
 	}

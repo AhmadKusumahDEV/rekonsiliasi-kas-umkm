@@ -4,8 +4,9 @@
 > `000002_umkm_normalized`, backfill sebagai `000003_backfill_umkm_state`, dan
 > query di bagian 5 sudah ditulis di `scripts/postgres/queries/auth.sql` serta
 > `scripts/postgres/queries/umkm.sql`. Hasil sqlc ada di
-> `internal/repository/rekonsiliasi_repository_sqlc`. Service dan handler domain
-> belum di-wire; dokumen ini tetap menjadi inventaris perilaku prototipe.
+> `internal/repository/rekonsiliasi_repository_sqlc`. Service auth/UMKM dan
+> handler `/api/v1` untuk alur inti sudah memakai query ini; SSE events, worker,
+> dan frontend belum. Dokumen ini tetap menjadi inventaris perilaku prototipe.
 
 Dokumen ini menelusuri aksi halaman Temu Kas pada prototipe **Tiga-Prototipe-PBL** sampai ke route HTTP, handler Go, aturan bisnis, dan persistence PostgreSQL. Prototipe diperlakukan read-only. Schema domain prototipe hanya berasal dari **internal/platform/store.go**; data usaha disimpan di **pblg_workspaces.state** sebagai JSONB.
 

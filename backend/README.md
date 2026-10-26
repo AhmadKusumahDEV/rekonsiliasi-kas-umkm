@@ -27,9 +27,64 @@ endpoint, query, dan aturan bisnis ada di
 - Query source ada di `scripts/postgres/queries/auth.sql` dan `umkm.sql`; hasil
   generate ada di `internal/repository/rekonsiliasi_repository_sqlc`.
 
-Yang belum ada adalah pemakaian query tersebut di service dan endpoint domain.
-Jangan menganggap endpoint UMKM sudah aktif hanya karena query generated sudah
-tersedia.
+Service auth/UMKM dan endpoint `/api/v1` untuk alur inti sudah memakai query
+tersebut. Endpoint SSE events, worker, dan frontend belum ada.
+
+## API v1
+
+Endpoint publik:
+
+```text
+GET  /api/v1/config
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+GET  /health/live
+GET  /health/ready
+```
+
+Endpoint dengan cookie sesi dan CSRF (`X-CSRF-Token` untuk non-GET):
+
+```text
+GET  /api/v1/auth/me
+POST /api/v1/auth/logout
+PUT  /api/v1/auth/password
+GET  /api/v1/umkm/state
+GET  /api/v1/umkm/suggestions
+POST /api/v1/umkm/imports/preview
+POST /api/v1/umkm/imports
+POST /api/v1/umkm/imports/:id/cancel
+POST /api/v1/umkm/allocations
+POST /api/v1/umkm/allocations/:id/undo
+GET  /api/v1/umkm/export
+```
+
+## Testing
+
+Unit test tidak membutuhkan database:
+
+```powershell
+go test ./...
+```
+
+Integration test memakai `TEST_DATABASE_URL`; test akan reset schema `public`,
+jadi DSN wajib menunjuk database khusus test:
+
+```powershell
+docker compose up -d db-test
+$env:TEST_DATABASE_URL="postgres://postgres:postgres@127.0.0.1:55432/rku_test?sslmode=disable"
+go test ./internal/echohttp -run TestUMKMIntegrationFlow -count=1 -v
+```
+
+Alternatif WSL:
+
+```powershell
+wsl -d Ubuntu -- bash -lc 'cd /mnt/d/appwebsite/rekonsiliasi-kas-umkm/backend && TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/rku_test?sslmode=disable go test ./internal/echohttp -run TestUMKMIntegrationFlow -count=1 -v'
+```
+
+Pola dan batasan test yang dipelajari dari project `go-chat` dicatat di
+[`docs/TESTING_FROM_GO_CHAT.md`](docs/TESTING_FROM_GO_CHAT.md). Test integration
+akan di-skip tanpa `TEST_DATABASE_URL`; set `TEST_REQUIRE_DB=1` bila database
+harus tersedia dan ketiadaannya harus menggagalkan test.
 
 ## Mulai
 
