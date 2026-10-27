@@ -3,8 +3,10 @@ const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const active = new Set();
 let keyboard = false;
 let lastView = "";
+let revealObserver;
 const enter = "cubic-bezier(0.22, 1, 0.36, 1)";
 function settle() {
+  revealObserver?.disconnect();
   for (const animation of active) {
     try {
       animation.finish();
@@ -13,6 +15,29 @@ function settle() {
     }
   }
   active.clear();
+}
+// reveal only content that starts below the fold; never hide anything while waiting.
+function revealOnScroll(container) {
+  if (reduced.matches || keyboard || !window.IntersectionObserver) return;
+  const candidates = [...container.querySelectorAll(
+    ":scope > section, .cash-workspace > *, .cash-transaction, tbody tr, .auth-note",
+  )].filter((element) => element.getBoundingClientRect().top > innerHeight - 24);
+  const targets = candidates.filter((element) =>
+    !candidates.some((parent) => parent !== element && parent.contains(element)),
+  ).slice(0, 60);
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      observer.unobserve(entry.target);
+      if (!entry.target.isConnected) continue;
+      play(entry.target, [
+        { opacity: .35, transform: "translateY(12px)" },
+        { opacity: 1, transform: "translateY(0)" },
+      ], 320);
+    }
+  }, { threshold: .1 });
+  revealObserver = observer;
+  targets.forEach((element) => observer.observe(element));
 }
 document.addEventListener(
   "keydown",
@@ -76,6 +101,7 @@ export function presentView(container, view) {
       Math.min(index * 35, 140),
     );
   });
+  revealOnScroll(container);
 }
 export function presentAuth(container, register) {
   if (document.body.dataset.kind !== "umkm") return;
@@ -90,12 +116,21 @@ export function presentAuth(container, register) {
     ],
     600,
   );
-  play(
-    container.querySelector(".auth-note"),
+  const note = container.querySelector(".auth-note");
+  if (note?.getBoundingClientRect().top < innerHeight) play(
+    note,
     [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "translateY(0)" }],
     460,
     90,
   );
+  play(container.querySelector(".auth-editorial-copy"), [
+    { opacity: 0, transform: "translateY(10px)" },
+    { opacity: 1, transform: "translateY(0)" },
+  ], 400, 50);
+  play(container.querySelector(".auth-form > .efa-brand"), [
+    { opacity: 0, transform: "translateY(-6px)" },
+    { opacity: 1, transform: "translateY(0)" },
+  ], 300);
   const parts = container.querySelectorAll(
     ".auth-heading, .auth-inner > form, .auth-switch",
   );
@@ -113,4 +148,5 @@ export function presentAuth(container, register) {
       Math.min(index * 45, 90),
     );
   });
+  revealOnScroll(container);
 }

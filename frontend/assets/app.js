@@ -1,7 +1,7 @@
-import { authScene } from "./auth-scene.js?v=efa3";
-import { dashboard, maxyBrand, shell } from "./design.js?v=efa3";
+import { authScene } from "./auth-scene.js?v=efa4";
+import { dashboard, maxyBrand, shell } from "./design.js?v=efa4";
 
-import { presentView, presentAuth } from "./motion.js?v=efa3";
+import { presentView, presentAuth } from "./motion.js?v=efa4";
 
 const root = document.querySelector("#app");
 
@@ -626,7 +626,7 @@ function auth(register = false) {
     (register ? "#login" : "#register") +
     '">' +
     (register ? "Masuk" : "Daftar") +
-    "</a></p><small>Prototipe PBL. Jangan unggah data keuangan nyata tanpa izin pemiliknya.</small></div></section>" + authScene(register) + "</main>";
+    "</a></p></div></section>" + authScene(register) + "</main>";
   presentAuth(root, register);
 }
 function startEvents() {

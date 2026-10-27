@@ -49,7 +49,7 @@ frontend/assets/efa.css menjadi lapisan tema EFA setelah style.css,
 brand.css, dan motion.css. Komposisi layout dan interaksi tidak diganti.
 design.js menyusun logo header, index.html memuat favicon serta metadata.
 
-Cache URL aset memakai versi efa3. Saat mengganti aset berikutnya,
+Cache URL aset memakai versi efa4. Saat mengganti aset berikutnya,
 perbarui versi agar cache browser memvalidasi file baru.
 
 ## Live dan source tim
@@ -84,5 +84,15 @@ memiliki alur backend.
 Foto dan kartu memakai animasi masuk transform/opacity. Animasi dibatalkan
 saat pengguna memakai keyboard dan mengikuti reduced motion. Tidak ada
 animasi dekoratif berulang atau tambahan library animasi.
+
+Caption foto dan catatan PBL tidak ditampilkan pada halaman autentikasi.
+Sumber foto tetap terdokumentasi di ASSETS.md. Foto memakai srcset 2400/4000
+piksel agar layar tajam tersedia tanpa selalu mengirim file terbesar ke HP.
+
+Navigasi, tombol, toast, modal, menu HP, dan pergantian halaman memakai
+feedback konsisten. Bagian yang mulai di bawah viewport diberi reveal
+singkat saat digulir menggunakan IntersectionObserver. Elemen tetap terlihat
+tanpa observer, tidak ada state bisnis yang ditunda, dan observer lama
+dilepas ketika halaman diganti atau pengguna memakai keyboard/reduced motion.
 
 Snapshot terbaru login/daftar: [auth-refresh](ui-guide/auth-refresh/).
