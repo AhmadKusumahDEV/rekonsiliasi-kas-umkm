@@ -5,11 +5,10 @@ layer yang mengikuti `init-project.md`. Project ini sengaja tidak memakai
 `vendor`; dependency diambil lewat Go module seperti kebiasaan project
 `go-chat`.
 
-Status saat ini adalah kerangka yang bisa dijalankan dengan lapisan database dan
-query yang sudah disiapkan. Migration baseline PBL, tabel UMKM ternormalisasi,
-backfill dari JSONB, dan generated sqlc sudah tersedia. Service domain, endpoint
-authenticated, serta handler bisnis belum diimplementasikan; endpoint HTTP yang
-aktif baru `/health/live` dan `/health/ready`.
+Status saat ini: autentikasi sesi dan CSRF, alur UMKM (import, alokasi, undo,
+cancel, export), serta stream SSE untuk sinkronisasi state sudah berjalan.
+Migration baseline PBL, tabel UMKM ternormalisasi, backfill dari JSONB, dan
+generated sqlc tersedia; endpoint aktif berada di bawah `/api/v1` dan `/health`.
 
 Asal-usul schema, tabel `pblg_*`, dan keputusan mengenai JSONB dijelaskan di
 [`docs/DATABASE_FROM_PBL.md`](docs/DATABASE_FROM_PBL.md). Inventaris halaman,
@@ -28,7 +27,8 @@ endpoint, query, dan aturan bisnis ada di
   generate ada di `internal/repository/rekonsiliasi_repository_sqlc`.
 
 Service auth/UMKM dan endpoint `/api/v1` untuk alur inti sudah memakai query
-tersebut. Endpoint SSE events, worker, dan frontend belum ada.
+tersebut. Stream SSE tersedia di `GET /api/v1/umkm/events`; worker dan frontend
+belum ada.
 
 ## API v1
 
@@ -59,6 +59,12 @@ POST /api/v1/umkm/imports/:id/cancel
 POST /api/v1/umkm/allocations
 POST /api/v1/umkm/allocations/:id/undo
 GET  /api/v1/umkm/export
+```
+
+Stream SSE memakai cookie sesi dan tidak memerlukan CSRF:
+
+```text
+GET  /api/v1/umkm/events
 ```
 
 ## Testing
