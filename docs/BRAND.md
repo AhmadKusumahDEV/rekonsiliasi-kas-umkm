@@ -49,7 +49,7 @@ frontend/assets/efa.css menjadi lapisan tema EFA setelah style.css,
 brand.css, dan motion.css. Komposisi layout dan interaksi tidak diganti.
 design.js menyusun logo header, index.html memuat favicon serta metadata.
 
-Cache URL aset memakai versi efa1. Saat mengganti aset berikutnya,
+Cache URL aset memakai versi efa2. Saat mengganti aset berikutnya,
 perbarui versi agar cache browser memvalidasi file baru.
 
 ## Live dan source tim
@@ -61,3 +61,17 @@ perbarui versi agar cache browser memvalidasi file baru.
 - Domain demo: https://efa.madgo.my.id/.
 
 Perubahan ini tidak memigrasikan backend demo Vercel menjadi backend tim.
+
+## Halaman masuk dan daftar
+
+`frontend/assets/auth.css` memuat komposisi navy khusus `.auth-umkm`, setelah
+`efa.css`. Warna navy #102B43 dan #153B58 merupakan turunan gelap biru EFA;
+cyan #91D4ED dipakai untuk teks tautan agar terbaca di latar gelap. Tombol
+utama tetap amber #F59E0B. Warna dashboard tidak ikut berubah.
+
+Di HP, foto dekoratif dan alur tiga langkah disembunyikan agar form cepat
+dijangkau. Di desktop, keduanya mendampingi form. Animasi memakai transform
+dan opacity, dibatalkan saat pengguna memakai keyboard, serta mengikuti
+pengaturan reduced motion. Tidak ada animasi dekoratif yang berulang.
+
+Snapshot terbaru login/daftar: [auth-refresh](ui-guide/auth-refresh/).

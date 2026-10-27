@@ -91,7 +91,7 @@ export function presentAuth(container, register) {
     600,
   );
   const parts = container.querySelectorAll(
-    ".auth-copy > *, .auth-heading, .auth-inner > form > label, .auth-inner > form > #owner-fields, .auth-inner > form > button, .auth-switch",
+    ".auth-heading, .auth-inner > form, .auth-switch",
   );
   [...parts].forEach((element, index) => {
     play(
@@ -104,7 +104,7 @@ export function presentAuth(container, register) {
         { opacity: 1, transform: "translate3d(0,0,0)" },
       ],
       340,
-      Math.min(index * 30, 180),
+      Math.min(index * 45, 90),
     );
   });
 }

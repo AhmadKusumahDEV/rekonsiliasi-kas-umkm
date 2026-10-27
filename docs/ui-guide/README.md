@@ -1,5 +1,10 @@
 # Panduan UI Easy Financial Audit
 
+**Pembaruan login/daftar:** [screenshot navy terbaru](auth-refresh/) diambil
+dari domain live setelah deployment desain baru. PDF dan manifest di bawah
+tetap menjadi snapshot versi sebelumnya; dokumentasi alur dan endpointnya
+tetap relevan. Label sumber dan hash snapshot lama tidak diubah.
+
 [PDF lengkap](../EFA-UI-Guide.pdf) memuat 42 screenshot dalam 8 kategori.
 Halaman desktop dan HP dipisahkan. Screenshot panjang dibagi ke beberapa
 halaman PDF agar tulisan tetap terbaca; PNG aslinya tetap utuh.
