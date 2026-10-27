@@ -33,7 +33,7 @@ test("static server isolates files and proxies session/CSRF requests", async () 
     assert.equal(home.status, 200);
     assert.match(await home.text(), /assets\/app\.js/);
     assert.match(home.headers.get("content-security-policy"), /connect-src 'self'/);
-    assert.equal((await fetch(base + "/assets/umkm-real.jpg")).status, 200);
+    assert.equal((await fetch(base + "/assets/efa-ledger-4k.jpg")).status, 200);
     assert.equal((await fetch(base + "/assets/motion.js")).status, 200);
     const favicon = await fetch(base + "/assets/favicon.svg");
     assert.equal(favicon.headers.get("content-type"), "image/svg+xml");

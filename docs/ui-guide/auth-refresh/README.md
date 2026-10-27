@@ -7,6 +7,7 @@ Form daftar tidak dikirim dan data keuangan tidak diubah saat pengujian.
 | --- | --- | --- |
 | Masuk | [PNG](login-1440.png) | [PNG](login-375.png) |
 | Daftar | [PNG](register-1440.png) | [PNG](register-375.png) |
+| Ringkasan | [PNG](overview-1440.png) | [PNG](overview-375.png) |
 
 Pengujian mencakup lebar 320, 375, 768 dan 1440 px. Login akun demo
 di live berhasil membuka dashboard. Tombol lihat/sembunyikan sandi,
@@ -23,13 +24,14 @@ animasi berjalan. Pengujian ini tidak mengirim perubahan transaksi.
 
 Komposisi mengikuti referensi pengguna: form kiri, input pil, panel foto
 kanan dengan takikan melengkung, dan kartu terang yang menumpuk. Foto
-login dan daftar berbeda, dengan pilihan 2400 x 3600 atau 4000 x 6000
-melalui srcset, dari Mikhail Nilov/Pexels. Kredit disimpan di ASSETS.md;
+login dan daftar berbeda, keduanya foto tampak atas 4000 x 2670 piksel
+dari Leeloo The First/Pexels. Dashboard memakai foto login yang sama.
+Kredit disimpan di ASSETS.md;
 caption foto dan catatan PBL telah dihapus dari halaman login/daftar.
 Di HP form tampil lebih dahulu, dilanjutkan panel visual; seluruh isi
 tetap bisa digulir. Tidak ada testimoni atau angka keberhasilan rekaan.
 
-Deployment: `dpl_Ca6ZyoiDM7Zc9WYNBHEToTauUjpi`.
+Deployment: `dpl_GxzYHVENzfadiD1K9y3YYxUS2o8D`.
 Source Go prototype yang dideploy tetap berbeda dari backend integrasi
 tim di repository ini; perubahan ini menyamakan UI kedua source.
 

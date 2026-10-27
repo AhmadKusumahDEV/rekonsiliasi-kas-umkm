@@ -3,7 +3,7 @@ export function authScene(register = false) {
   return `<section class="auth-story" aria-label="Tentang Easy Financial Audit">
     <svg class="auth-shapes" width="0" height="0" aria-hidden="true"><defs><clipPath id="auth-panel-cut" clipPathUnits="objectBoundingBox"><path d="M.05 0H.78Q.86 0 .86 .065Q.86 .12 .94 .12H.95Q1 .12 1 .17V.95Q1 1 .95 1H.05Q0 1 0 .95V.05Q0 0 .05 0Z"/></clipPath></defs></svg>
     <div class="auth-editorial">
-      <img class="auth-photo" src="/assets/${register ? "efa-finance-notes.jpg" : "efa-finance-desk.jpg"}" srcset="/assets/${register ? "efa-finance-notes.jpg" : "efa-finance-desk.jpg"} 2400w, /assets/${register ? "efa-finance-notes-hd.jpg" : "efa-finance-desk-hd.jpg"} 4000w" sizes="(min-width: 1530px) 640px, (min-width: 801px) 46vw, 90vw" width="4000" height="6000" alt="" fetchpriority="high">
+      <img class="auth-photo" src="/assets/${register ? "efa-planning-4k.jpg" : "efa-ledger-4k.jpg"}" width="4000" height="2670" alt="" fetchpriority="high">
       <div class="auth-editorial-copy">
         <span class="auth-kicker">Untuk usaha yang terus berjalan</span>
         <h1>Jualannya jalan.<br>Catatannya jelas.</h1>

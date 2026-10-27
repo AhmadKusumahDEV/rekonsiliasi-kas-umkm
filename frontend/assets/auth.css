@@ -130,7 +130,7 @@ body[data-kind="umkm"] .auth-umkm .auth-story .auth-photo {
   min-height: 0;
   max-height: none;
   object-fit: cover;
-  object-position: 50% 70%;
+  object-position: 36% center;
   border-radius: 0;
   outline: 0;
 }

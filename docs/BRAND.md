@@ -49,7 +49,7 @@ frontend/assets/efa.css menjadi lapisan tema EFA setelah style.css,
 brand.css, dan motion.css. Komposisi layout dan interaksi tidak diganti.
 design.js menyusun logo header, index.html memuat favicon serta metadata.
 
-Cache URL aset memakai versi efa4. Saat mengganti aset berikutnya,
+Cache URL aset memakai versi efa5. Saat mengganti aset berikutnya,
 perbarui versi agar cache browser memvalidasi file baru.
 
 ## Live dan source tim
@@ -76,7 +76,7 @@ turunan gelap #204660, #344A57 dan #52636C. Input berbentuk pil dengan latar
 Warna dashboard tidak ikut berubah.
 
 `auth-scene.js` menyusun panel visual yang dipakai bersama oleh login dan
-daftar. Keduanya memakai foto HD Mikhail Nilov yang berbeda (lihat
+daftar. Keduanya memakai foto 4K Leeloo The First yang berbeda (lihat
 [sumber dan lisensi](../frontend/ASSETS.md)); bukan testimoni pengguna.
 Tidak ditambahkan tombol login sosial atau pemulihan sandi yang belum
 memiliki alur backend.
@@ -86,8 +86,10 @@ saat pengguna memakai keyboard dan mengikuti reduced motion. Tidak ada
 animasi dekoratif berulang atau tambahan library animasi.
 
 Caption foto dan catatan PBL tidak ditampilkan pada halaman autentikasi.
-Sumber foto tetap terdokumentasi di ASSETS.md. Foto memakai srcset 2400/4000
-piksel agar layar tajam tersedia tanpa selalu mengirim file terbesar ke HP.
+Sumber foto tetap terdokumentasi di ASSETS.md. Foto pengganti diambil dari
+atas, 4000 x 2670 piksel, sehingga dokumen dan kalkulator lebih merata tajam.
+Dashboard memakai foto yang sama dengan login dan memanfaatkan cache browser.
+Tidak ada tulisan kredit atau foto referensi pada UI EFA.
 
 Navigasi, tombol, toast, modal, menu HP, dan pergantian halaman memakai
 feedback konsisten. Bagian yang mulai di bawah viewport diberi reveal

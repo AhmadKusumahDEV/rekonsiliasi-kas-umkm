@@ -1,7 +1,7 @@
-import { authScene } from "./auth-scene.js?v=efa4";
-import { dashboard, maxyBrand, shell } from "./design.js?v=efa4";
+import { authScene } from "./auth-scene.js?v=efa5";
+import { dashboard, maxyBrand, shell } from "./design.js?v=efa5";
 
-import { presentView, presentAuth } from "./motion.js?v=efa4";
+import { presentView, presentAuth } from "./motion.js?v=efa5";
 
 const root = document.querySelector("#app");
 
