@@ -23,7 +23,7 @@
 | /api/imports/:id/cancel | POST /api/v1/umkm/imports/:id/cancel |
 | /api/allocations, /api/allocations/:id/undo | POST /api/v1/umkm/allocations, /umkm/allocations/:id/undo |
 | /api/export | GET /api/v1/umkm/export |
-| /api/events | Tidak dipanggil; main dasar menggunakan polling |
+| /api/events | GET /api/v1/umkm/events; EventSource dengan cookie sesi |
 
 Cookie tim: rku_session. Error tim memakai field message. Frontend tidak membaca database dan tidak membawa credential server.
 
@@ -35,4 +35,4 @@ Tambahan: cookie Secure melalui proxy HTTPS, CORS CSRF header, limiter auth, see
 
 Tidak dibawa: UI/aset Grader dan Facility, monolit tiga prototipe, .env, cache, binary, dan konfigurasi Vercel lama. Dokumen awal disimpan utuh di docs/reference. Placeholder arsitektur dan migration tim tetap utuh.
 
-Branch SSE tim tidak diaktifkan diam-diam. Polling tidak memanggil endpoint yang belum ada. Hasil merge check berlaku pada revision yang diperiksa; update berikutnya perlu diperiksa lagi.
+Main 6cc2d6e sudah menggabungkan branch SSE tim. Integrasi ini mempertahankannya, menyambungkan EventSource, memeriksa snapshot saat reconnect, dan memakai polling sebagai fallback. Hasil merge check berlaku pada revision yang diperiksa; update berikutnya perlu diperiksa lagi.

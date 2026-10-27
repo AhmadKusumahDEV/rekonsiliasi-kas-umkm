@@ -44,7 +44,7 @@ Masuk/daftar, Ringkasan, Transaksi, Cocokkan kas, Impor CSV, Riwayat, Laporan, d
 - Bukan saldo bank langsung, akuntansi lengkap, atau perhitungan laba.
 - Tidak memakai AI untuk memutuskan pasangan.
 - Belum ada reset password email, MFA, undangan staf, atau hapus akun mandiri.
-- Penyegaran memakai polling ketika tab terlihat. Branch SSE terpisah belum termasuk implementasi dasar ini.
+- Penyegaran memakai SSE workspace milik tim, dengan pemeriksaan state saat reconnect dan polling fallback ketika tab terlihat.
 - Akun contoh sintetis; belum ada klaim validasi lapangan atau penghematan terukur.
 - Penggunaan finansial nyata memerlukan persetujuan pemilik data, kebijakan privasi, backup/restore dan penilaian keamanan.
 

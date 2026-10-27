@@ -1,6 +1,6 @@
 # Rekonsiliasi Kas UMKM — Backend
 
-Scaffold backend Go dengan Echo, PostgreSQL (`pgx`), sqlc, Viper, dan struktur
+Backend Go dengan Echo, PostgreSQL (`pgx`), sqlc, Viper, dan struktur
 layer yang mengikuti `init-project.md`. Project ini sengaja tidak memakai
 `vendor`; dependency diambil lewat Go module seperti kebiasaan project
 `go-chat`.
@@ -27,8 +27,11 @@ endpoint, query, dan aturan bisnis ada di
   generate ada di `internal/repository/rekonsiliasi_repository_sqlc`.
 
 Service auth/UMKM dan endpoint `/api/v1` untuk alur inti sudah memakai query
-tersebut. Stream SSE tersedia di `GET /api/v1/umkm/events`; worker dan frontend
-belum ada.
+tersebut. Stream SSE tersedia di `GET /api/v1/umkm/events` dan frontend Temu Kas
+di `../frontend` sudah menggunakannya. Worker domain belum diperlukan untuk
+rekonsiliasi sinkron ini. Login/register memiliki limiter per IP; cookie Secure
+mendukung proxy HTTPS terpercaya. Lihat [panduan integrasi](../docs/INTEGRATION.md),
+[demo](../docs/DEMO.md), dan [hosting](../docs/HOSTING.md).
 
 ## API v1
 

@@ -633,17 +633,55 @@ function auth(register = false) {
 function startEvents() {
   stopEvents();
   let closed = false,
-    timer;
+    timer,
+    checking = false,
+    stream;
   const epoch = state.epoch;
+  const current = () => !closed && epoch === state.epoch && state.me;
+  const applyVersion = async (version) => {
+    if (!current() || version === state.data?.workspace.version) return;
+    if (modal.open || document.activeElement?.matches("input,textarea,select")) {
+      const button = document.querySelector('[data-action="refresh"]');
+      if (button) button.hidden = false;
+    } else if (!state.refreshing) await refresh();
+  };
+  const check = async () => {
+    if (!current() || checking || document.visibilityState !== "visible") return;
+    checking = true;
+    try {
+      const next = await api("/api/v1/umkm/state");
+      if (current()) await applyVersion(next.workspace.version);
+    } catch (err) {
+      if (current() && err.status === 401) {
+        state.me = null;
+        modal.close();
+        auth();
+      }
+    } finally {
+      checking = false;
+    }
+  };
+  if ("EventSource" in window) {
+    stream = new EventSource("/api/v1/umkm/events");
+    stream.addEventListener("state", (event) => {
+      const version = Number(event.data);
+      if (Number.isSafeInteger(version)) applyVersion(version).catch(() => {});
+    });
+    // A new stream has no replay guarantee: fetch current state on every open.
+    stream.addEventListener("open", () => { void check(); });
+    stream.addEventListener("resync", () => { void check(); });
+    stream.addEventListener("server_close", () => { void check(); });
+  }
   state.source = {
     close() {
       closed = true;
       clearTimeout(timer);
+      stream?.close();
     },
   };
   const poll = async () => {
     if (closed || !state.me) return;
-    let delay = 15000;
+    let delay = stream?.readyState === 1 ? 60000 : 15000;
     try {
       if (document.visibilityState === "visible" && !state.refreshing) {
         const next = await api("/api/v1/umkm/state");

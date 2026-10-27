@@ -13,6 +13,10 @@ Prasyarat: Go sesuai backend/go.mod, PostgreSQL, dan Node.js 22+. Frontend adala
 
 API default http://127.0.0.1:8080. Isi environment API_UPSTREAM jika alamat API berbeda, PORT untuk port frontend. .env.example backend tidak dibaca otomatis.
 
+Setelah konfigurasi database siap, Windows juga bisa memakai run.bat untuk build
+dan menjalankan kedua server. Ctrl+C menghentikan keduanya; port yang sudah
+dipakai tidak diambil paksa. PORT mengatur UI, SERVER_PORT mengatur API.
+
 ## Struktur
 
 | Folder | Isi |

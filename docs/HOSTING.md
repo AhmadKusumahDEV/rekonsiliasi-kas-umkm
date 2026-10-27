@@ -31,4 +31,4 @@ TEST_DATABASE_URL harus database disposable karena harness menghapus schema. See
 
 Kembalikan frontend dan binary ke commit sebelumnya lalu restart service/reload proxy. Tidak ada rollback schema yang diperlukan untuk PR ini; jangan hapus transaksi atau reimport otomatis.
 
-SSE branch lain perlu tes streaming/shutdown saat digabung. Limiter per proses belum menjadi limiter bersama beberapa replica. Pengukuran performa dan verifikasi domain sebenarnya tetap diperlukan setelah deployment.
+SSE tim sudah tergabung; reverse proxy harus menonaktifkan buffering stream dan mengizinkan koneksi jangka panjang. Contoh Caddy memakai flush_interval -1. Pada multi-instance, hub memori memerlukan sticky routing atau bus bersama agar kejadian lintas proses sampai ke semua client. Limiter per proses belum menjadi limiter bersama beberapa replica. Pengukuran performa dan verifikasi domain sebenarnya tetap diperlukan setelah deployment.

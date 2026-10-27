@@ -80,6 +80,7 @@ Prefix **/api/v1** untuk semua path di tabel.
 | POST | /umkm/allocations | Simpan keputusan |
 | POST | /umkm/allocations/:id/undo | Balikkan keputusan |
 | GET | /umkm/export | Rekap CSV |
+| GET | /umkm/events | SSE workspace; state version, resync, server_close |
 
 Health: GET /health/live dan /health/ready. Database nonaktif dilaporkan disabled; aplikasi yang memerlukan data harus mengaktifkannya.
 
@@ -105,11 +106,11 @@ Error JSON: {code,status,message,request_id}. 400 input; 401 sesi/kredensial; 40
 - Form dinonaktifkan saat submit; commit tidak bisa ditutup selama menulis.
 - Isian berubah meminta konfirmasi penutupan. Kegagalan mempertahankan input.
 - Timeout client 32 detik bukan bukti transaksi gagal di server; refresh state sebelum mengulang hasil yang belum jelas.
-- Polling state 15 detik saat tab terlihat, retry 30 detik saat gagal. Form aktif tidak ditimpa; tombol refresh disediakan.
+- SSE state membawa version workspace; UI memuat ulang melalui REST. Saat koneksi dibuka/resync, state diperiksa kembali. Polling verifikasi 60 detik ketika stream sehat, 15 detik saat fallback, retry 30 detik jika gagal; hanya saat tab terlihat. Form aktif tidak ditimpa; tombol refresh disediakan.
 - CSV ekspor menetralkan formula spreadsheet; riwayat mempertahankan pembatalan.
 - Sesi kedaluwarsa kembali ke login; unknown hash menampilkan tautan kembali.
 - Navigasi mobile, skip link, dialog native, dan reduced motion dipertahankan.
 
 ## Rujukan operasional
 
-[Demo](DEMO.md), [API](INTEGRATION.md), [hosting](HOSTING.md), [tes](VERIFICATION.md). SSE dari branch terpisah perlu integrasi dan tes sendiri. Tidak ada perubahan Dockerfile, schema, atau kontrak API versi tim.
+[Demo](DEMO.md), [API](INTEGRATION.md), [hosting](HOSTING.md), [tes](VERIFICATION.md). SSE berasal dari main tim terbaru dan terhubung ke EventSource frontend. Tidak ada perubahan Dockerfile, schema, atau kontrak API versi tim.

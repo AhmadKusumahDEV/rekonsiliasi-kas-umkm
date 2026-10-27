@@ -5,8 +5,10 @@
 > query di bagian 5 sudah ditulis di `scripts/postgres/queries/auth.sql` serta
 > `scripts/postgres/queries/umkm.sql`. Hasil sqlc ada di
 > `internal/repository/rekonsiliasi_repository_sqlc`. Service auth/UMKM dan
-> handler `/api/v1` untuk alur inti sudah memakai query ini; SSE events, worker,
-> dan frontend belum. Dokumen ini tetap menjadi inventaris perilaku prototipe.
+> handler `/api/v1` untuk alur inti sudah memakai query ini. SSE dan frontend
+> Temu Kas sudah terintegrasi; worker domain belum diperlukan. Tabel di bawah
+> tetap inventaris historis prototipe; kontrak aktif ada di ../../docs/FRD.md
+> dan API_ROUTES.md. Path /api/... dalam inventaris bukan route aktif tim.
 
 Dokumen ini menelusuri aksi halaman Temu Kas pada prototipe **Tiga-Prototipe-PBL** sampai ke route HTTP, handler Go, aturan bisnis, dan persistence PostgreSQL. Prototipe diperlakukan read-only. Schema domain prototipe hanya berasal dari **internal/platform/store.go**; data usaha disimpan di **pblg_workspaces.state** sebagai JSONB.
 

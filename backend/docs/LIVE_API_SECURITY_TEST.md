@@ -1,5 +1,11 @@
 # Live API Security Test
 
+> Laporan ini merekam kondisi domain ketika pengujian awal dilakukan.
+> PR integrasi menambahkan Secure cookie melalui proxy HTTPS, limiter auth,
+> dan CORS header CSRF dengan regression test lokal. Perbaikan belum dipasang
+> atau diuji ulang pada domain tim; temuan live di bawah tidak dihapus agar
+> hasil historis tetap dapat ditelusuri. Lihat ../../docs/VERIFICATION.md.
+
 | Field | Nilai |
 |---|---|
 | Target | `https://temukas.madgo.my.id` |
