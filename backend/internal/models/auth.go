@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type User struct {
 	ID          string `json:"id"`
 	WorkspaceID string `json:"workspace_id"`
@@ -10,8 +12,9 @@ type User struct {
 }
 
 type Session struct {
-	User User
-	CSRF string
+	User      User
+	CSRF      string
+	ExpiresAt time.Time
 }
 
 type AuthResult struct {

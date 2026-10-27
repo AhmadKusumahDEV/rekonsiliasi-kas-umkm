@@ -49,8 +49,16 @@ func run() error {
 
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 	svc := service.NewService(cfg, db, httpClient)
+	sseManager, err := echohttp.NewSSEManager(cfg, svc, logger)
+	if err != nil {
+		return fmt.Errorf("create sse manager: %w", err)
+	}
+	if err := sseManager.Start(ctx); err != nil {
+		return fmt.Errorf("start sse manager: %w", err)
+	}
+	svc.SetStateNotifier(echohttp.NewSSENotifier(sseManager, logger))
 
-	return echohttp.RunEchoHTTPService(ctx, cfg, svc, logger)
+	return echohttp.RunEchoHTTPService(ctx, cfg, svc, logger, sseManager)
 }
 
 func newLogger(cfg config.Config) *slog.Logger {

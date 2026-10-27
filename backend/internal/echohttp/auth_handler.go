@@ -54,15 +54,17 @@ func me(s *service.Service) echo.HandlerFunc {
 		if !ok {
 			return echo.ErrUnauthorized
 		}
-		return c.JSON(http.StatusOK, models.AuthResponse(session))
+		return c.JSON(http.StatusOK, models.AuthResponse{User: session.User, CSRF: session.CSRF})
 	}
 }
 
 func logout(s *service.Service) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		session, _ := currentSession(c)
 		if err := s.Logout(c.Request().Context(), sessionToken(c)); err != nil {
 			return err
 		}
+		s.DisconnectUser(session.User.ID)
 		clearSessionCookie(c)
 		return c.JSON(http.StatusOK, map[string]bool{"ok": true})
 	}
@@ -84,6 +86,7 @@ func changePassword(s *service.Service) echo.HandlerFunc {
 		if err := s.ChangePassword(c.Request().Context(), session.User, req); err != nil {
 			return err
 		}
+		s.DisconnectUser(session.User.ID)
 		clearSessionCookie(c)
 		return c.JSON(http.StatusOK, map[string]bool{"ok": true})
 	}

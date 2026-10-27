@@ -48,7 +48,8 @@ func (s *Service) GetSession(ctx context.Context, token string) (models.Session,
 			Email:       row.Email,
 			Role:        row.Role,
 		},
-		CSRF: row.Csrf,
+		CSRF:      row.Csrf,
+		ExpiresAt: timeValue(row.ExpiresAt),
 	}, nil
 }
 

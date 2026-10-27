@@ -11,18 +11,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const bumpWorkspaceVersion = `-- name: BumpWorkspaceVersion :execrows
+const bumpWorkspaceVersion = `-- name: BumpWorkspaceVersion :one
 UPDATE public.pblg_workspaces
 SET version = version + 1
 WHERE id = $1
+RETURNING version
 `
 
 func (q *Queries) BumpWorkspaceVersion(ctx context.Context, workspaceID string) (int64, error) {
-	result, err := q.db.Exec(ctx, bumpWorkspaceVersion, workspaceID)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+	row := q.db.QueryRow(ctx, bumpWorkspaceVersion, workspaceID)
+	var version int64
+	err := row.Scan(&version)
+	return version, err
 }
 
 const createSession = `-- name: CreateSession :exec
@@ -143,7 +143,8 @@ SELECT
     u.name,
     u.email,
     u.role,
-    s.csrf
+    s.csrf,
+    s.expires_at
 FROM public.pblg_sessions s
 JOIN public.pblg_users u ON u.id = s.user_id
 WHERE s.token_hash = $1
@@ -157,13 +158,14 @@ type GetSessionUserParams struct {
 }
 
 type GetSessionUserRow struct {
-	UserID      string `json:"user_id"`
-	WorkspaceID string `json:"workspace_id"`
-	App         string `json:"app"`
-	Name        string `json:"name"`
-	Email       string `json:"email"`
-	Role        string `json:"role"`
-	Csrf        string `json:"csrf"`
+	UserID      string             `json:"user_id"`
+	WorkspaceID string             `json:"workspace_id"`
+	App         string             `json:"app"`
+	Name        string             `json:"name"`
+	Email       string             `json:"email"`
+	Role        string             `json:"role"`
+	Csrf        string             `json:"csrf"`
+	ExpiresAt   pgtype.Timestamptz `json:"expires_at"`
 }
 
 func (q *Queries) GetSessionUser(ctx context.Context, arg GetSessionUserParams) (GetSessionUserRow, error) {
@@ -177,6 +179,7 @@ func (q *Queries) GetSessionUser(ctx context.Context, arg GetSessionUserParams) 
 		&i.Email,
 		&i.Role,
 		&i.Csrf,
+		&i.ExpiresAt,
 	)
 	return i, err
 }

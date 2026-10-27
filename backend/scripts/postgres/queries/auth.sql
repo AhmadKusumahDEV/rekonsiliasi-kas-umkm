@@ -6,7 +6,8 @@ SELECT
     u.name,
     u.email,
     u.role,
-    s.csrf
+    s.csrf,
+    s.expires_at
 FROM public.pblg_sessions s
 JOIN public.pblg_users u ON u.id = s.user_id
 WHERE s.token_hash = @token_hash
@@ -82,10 +83,11 @@ WHERE id = @workspace_id;
 INSERT INTO public.pblg_audit (workspace_id, actor, action, detail)
 VALUES (@workspace_id, @actor, @action, @detail);
 
--- name: BumpWorkspaceVersion :execrows
+-- name: BumpWorkspaceVersion :one
 UPDATE public.pblg_workspaces
 SET version = version + 1
-WHERE id = @workspace_id;
+WHERE id = @workspace_id
+RETURNING version;
 
 -- name: LockWorkspaceForUpdate :one
 SELECT version

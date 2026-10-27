@@ -32,6 +32,9 @@ tersebut. Endpoint SSE events, worker, dan frontend belum ada.
 
 ## API v1
 
+Kontrak lengkap untuk frontend, termasuk request/response dan catatan auth/CSRF,
+ada di [`docs/API_ROUTES.md`](docs/API_ROUTES.md).
+
 Endpoint publik:
 
 ```text

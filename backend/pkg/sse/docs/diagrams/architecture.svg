@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" role="img" aria-labelledby="title desc">
+  <title id="title">pkg/sse connection and publish paths</title>
+  <desc id="desc">Browser connects to the manager, which authenticates and registers the stream in the hub. REST handlers persist data and publish through the manager, optionally through a bus to every pod.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4B0082"/>
+    </marker>
+    <marker id="arrowSoft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B9A8C9"/>
+    </marker>
+    <style>
+      .box { fill: #FAF8FC; stroke: #D8CCE4; stroke-width: 1.4; }
+      .boxWhite { fill: #FFFFFF; stroke: #D8CCE4; stroke-width: 1.4; }
+      .title { font: 700 14.5px Segoe UI, Arial, sans-serif; fill: #2D1B3D; }
+      .big { font: 700 15.5px Segoe UI, Arial, sans-serif; fill: #2D1B3D; }
+      .label { font: 400 11.4px Segoe UI, Arial, sans-serif; fill: #4A4450; }
+      .small { font: 400 10.5px Segoe UI, Arial, sans-serif; fill: #6F6876; }
+      .accent { font: 700 10.8px Segoe UI, Arial, sans-serif; fill: #B45309; }
+      .section { font: 700 11px Segoe UI, Arial, sans-serif; fill: #4B0082; letter-spacing: 1px; }
+      .arrow { stroke: #4B0082; stroke-width: 1.8; fill: none; }
+      .soft { stroke: #B9A8C9; stroke-width: 1.6; fill: none; stroke-dasharray: 5 4; }
+    </style>
+  </defs>
+  <rect width="1280" height="820" fill="#FFFFFF"/>
+  <text x="48" y="52" fill="#2D1B3D" style="font: 700 26px Segoe UI, Arial, sans-serif">pkg/sse</text>
+  <text x="170" y="52" style="font: 400 26px Segoe UI, Arial, sans-serif" fill="#4B0082">connection and publish paths</text>
+  <text x="48" y="78" class="label">SSE is one-way: clients receive, commands arrive over REST or a broker.</text>
+
+  <text x="48" y="120" class="section">A. CONNECT</text>
+
+  <rect x="48" y="140" width="190" height="104" rx="12" class="boxWhite"/>
+  <text x="66" y="168" class="title">Browser / app</text>
+  <text x="66" y="192" class="label">EventSource / fetch</text>
+  <text x="66" y="212" class="label">GET /events</text>
+  <text x="66" y="232" class="small">cookie or Bearer token</text>
+
+  <line x1="242" y1="192" x2="290" y2="192" class="arrow" marker-end="url(#arrow)"/>
+
+  <rect x="296" y="140" width="180" height="104" rx="12" class="box"/>
+  <text x="314" y="168" class="title">http.ServeMux</text>
+  <text x="314" y="192" class="label">/events route</text>
+  <text x="314" y="212" class="small">GET and OPTIONS</text>
+
+  <line x1="480" y1="192" x2="528" y2="192" class="arrow" marker-end="url(#arrow)"/>
+
+  <rect x="534" y="128" width="250" height="128" rx="12" class="box"/>
+  <text x="552" y="156" class="big">sse.Manager</text>
+  <text x="552" y="180" class="label">Authenticate -> Identity</text>
+  <text x="552" y="200" class="label">origin + connection limits</text>
+  <text x="552" y="220" class="label">heartbeat + graceful close</text>
+  <text x="552" y="242" class="accent">Start before serving</text>
+
+  <line x1="788" y1="192" x2="836" y2="192" class="arrow" marker-end="url(#arrow)"/>
+
+  <rect x="842" y="128" width="196" height="128" rx="12" class="box"/>
+  <text x="860" y="156" class="big">Hub</text>
+  <text x="860" y="180" class="label">users[userID]</text>
+  <text x="860" y="200" class="label">rooms[roomID]</text>
+  <text x="860" y="220" class="small">copy-on-write slices</text>
+
+  <line x1="1042" y1="192" x2="1090" y2="192" class="arrow" marker-end="url(#arrow)"/>
+
+  <rect x="1096" y="140" width="136" height="104" rx="12" class="box"/>
+  <text x="1112" y="168" class="title">Client</text>
+  <text x="1112" y="192" class="small">bounded queue</text>
+  <text x="1112" y="210" class="small">writer goroutine</text>
+  <text x="1112" y="228" class="small">flush per event</text>
+
+  <path d="M1164 244 V300 H143 V244" class="soft" marker-end="url(#arrowSoft)"/>
+  <text x="500" y="318" class="small">text/event-stream, heartbeat comments and server_close</text>
+
+  <text x="48" y="366" class="section">B. PUBLISH</text>
+
+  <rect x="48" y="386" width="200" height="112" rx="12" class="boxWhite"/>
+  <text x="66" y="414" class="title">REST handler</text>
+  <text x="66" y="438" class="label">POST /api/messages</text>
+  <text x="66" y="458" class="label">validate + authorize</text>
+  <text x="66" y="478" class="small">never publish before commit</text>
+
+  <line x1="252" y1="442" x2="300" y2="442" class="arrow" marker-end="url(#arrow)"/>
+
+  <rect x="306" y="386" width="180" height="112" rx="12" class="box"/>
+  <text x="324" y="414" class="title">Database</text>
+  <text x="324" y="438" class="label">insert message</text>
+  <text x="324" y="458" class="label">commit or outbox</text>
+  <text x="324" y="478" class="small">source of truth</text>
+
+  <line x1="490" y1="442" x2="538" y2="442" class="arrow" marker-end="url(#arrow)"/>
+
+  <rect x="544" y="374" width="264" height="136" rx="12" class="box"/>
+  <text x="562" y="404" class="big">Manager.Publish*</text>
+  <text x="562" y="428" class="label">PublishEventToRoom</text>
+  <text x="562" y="448" class="label">PublishEventToUser</text>
+  <text x="562" y="468" class="label">PublishEventToRoomExcept</text>
+  <text x="562" y="492" class="accent">bus-aware: use this in production</text>
+
+  <line x1="812" y1="442" x2="860" y2="442" class="arrow" marker-end="url(#arrow)"/>
+
+  <rect x="866" y="386" width="172" height="112" rx="12" class="box"/>
+  <text x="884" y="414" class="title">Bus (optional)</text>
+  <text x="884" y="438" class="label">RabbitMQ fanout</text>
+  <text x="884" y="458" class="label">Redis Streams</text>
+  <text x="884" y="478" class="label">NATS JetStream</text>
+
+  <line x1="1042" y1="442" x2="1090" y2="442" class="arrow" marker-end="url(#arrow)"/>
+
+  <rect x="1096" y="374" width="136" height="136" rx="12" class="box"/>
+  <text x="1112" y="402" class="title">All pods</text>
+  <text x="1112" y="426" class="small">apply to Hub</text>
+  <text x="1112" y="444" class="small">local queues</text>
+  <text x="1112" y="462" class="small">one copy per</text>
+  <text x="1112" y="478" class="small">socket</text>
+
+  <path d="M1164 374 V252" class="soft" marker-end="url(#arrowSoft)"/>
+  <text x="1174" y="330" class="small">fanout</text>
+
+  <text x="48" y="556" class="section">OPTIONAL ADAPTERS</text>
+
+  <rect x="48" y="576" width="250" height="86" rx="12" class="boxWhite"/>
+  <text x="66" y="602" class="title">ReplayStore</text>
+  <text x="66" y="626" class="label">Last-Event-ID -> events</text>
+  <text x="66" y="646" class="small">ascending IDs, bounded and authorized</text>
+
+  <rect x="318" y="576" width="250" height="86" rx="12" class="boxWhite"/>
+  <text x="336" y="602" class="title">Presence</text>
+  <text x="336" y="626" class="label">connection IDs, not user IDs</text>
+  <text x="336" y="646" class="small">Refresh keeps TTL entries alive</text>
+
+  <rect x="588" y="576" width="644" height="86" rx="12" fill="#F7F3FB" stroke="#D8CCE4" stroke-width="1.4"/>
+  <text x="610" y="604" class="title">Adapters are optional</text>
+  <text x="610" y="628" class="label">The hub is local. Bus, Presence and ReplayStore extend it across pods and reconnects.</text>
+  <text x="610" y="648" class="small">Keep them behind the interfaces in config; the transport does not import a broker or a database.</text>
+
+  <line x1="48" y1="700" x2="1232" y2="700" stroke="#E8E1EF" stroke-width="1"/>
+
+  <text x="48" y="730" class="label">One stream = one handler goroutine + one bounded queue + one heartbeat ticker.</text>
+  <text x="48" y="752" class="label">Publish* reaches every pod when Config.Bus is set. Send* and Broadcast* stay in this process.</text>
+  <text x="48" y="774" class="label">The package trusts Identity.Rooms; re-check membership before publishing sensitive events.</text>
+
+  <line x1="860" y1="752" x2="900" y2="752" class="soft"/>
+  <text x="912" y="756" class="small">optional or cross-pod path</text>
+</svg>
