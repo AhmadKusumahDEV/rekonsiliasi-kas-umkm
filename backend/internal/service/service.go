@@ -17,10 +17,11 @@ import (
 var Version = "dev"
 
 type Service struct {
-	cfg        config.Config
-	db         *database.DB
-	httpClient *http.Client
-	startedAt  time.Time
+	cfg           config.Config
+	db            *database.DB
+	httpClient    *http.Client
+	startedAt     time.Time
+	stateNotifier StateNotifier
 }
 
 func NewService(cfg config.Config, db *database.DB, httpClient *http.Client) *Service {
