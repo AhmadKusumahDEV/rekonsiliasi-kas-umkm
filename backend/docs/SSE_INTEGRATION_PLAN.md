@@ -122,7 +122,7 @@ ketergantungan service pada Echo dan memastikan query session yang sama dengan
 endpoint REST.
 
 ```go
-// backend/internal/echohttp/sse.go
+// Bentuk yang disarankan; implementasi saat ini ada di backend/internal/echohttp/sse.go.
 package echohttp
 
 import (
@@ -222,10 +222,12 @@ Catatan penting:
 - `GetSession` sudah memfilter `u.app = umkm`
   (`backend/internal/service/auth_service.go:23-53`), jadi room tidak bisa
   berasal dari aplikasi lain.
-- `mapHTTPError` adalah mapper yang sudah dipakai handler Echo
-  (`backend/internal/echohttp/echohttp_error_handler.go:69-98`). Untuk 401/403
-  hasilnya aman untuk body; untuk 5xx, callback mengembalikan error asli agar
-  manager memberi 500 tanpa mengubahnya menjadi “session invalid”.
+- Implementasi saat ini memetakan `pkgErr.ErrUnauthorized` ke 401 dan
+  `pkgErr.ErrServiceUnavailable` ke 503 dengan `errors.Is`; error lain
+  dikembalikan sebagai error agar manager memberi 500, bukan “session invalid”
+  (`backend/internal/echohttp/sse.go:26-43`). `mapHTTPError` di
+  `backend/internal/echohttp/echohttp_error_handler.go:69-98` dapat dipakai bila
+  ingin satu pemetaan status yang sama untuk semua domain error.
 - Jangan menaruh token di query string. Cookie HttpOnly lebih aman dan tidak
   bocor ke access log (`backend/pkg/sse/INTEGRATION.md:127-137`).
 
