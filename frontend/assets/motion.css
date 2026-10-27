@@ -148,6 +148,34 @@ body[data-kind="umkm"] form[data-busy="true"] button[type="submit"]::after {
     background-color: #0054d1;
   }
 }
+/* shared feedback across all seven views; content never waits for an animation. */
+body[data-kind="umkm"] .efa-brand img {
+  transition: transform 220ms var(--motion-enter);
+}
+body[data-kind="umkm"] :is(.cash-subnav .nav-icon, .balance-link span) {
+  transition: transform 180ms var(--motion-enter);
+}
+body[data-kind="umkm"] .toast {
+  transition: opacity 180ms var(--motion-enter), transform 180ms var(--motion-enter);
+}
+body[data-kind="umkm"] .password-field button {
+  transition: transform 130ms var(--motion-enter), color 150ms ease, background-color 150ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  body[data-kind="umkm"] :is(button, .button):hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  body[data-kind="umkm"] .efa-brand:hover img {
+    transform: rotate(-4deg) scale(1.04);
+  }
+  body[data-kind="umkm"] .cash-subnav .navlink:hover .nav-icon {
+    transform: translateY(-2px);
+  }
+}
+body[data-kind="umkm"] :is(button, .button):active:not(:disabled),
+body[data-kind="umkm"] .auth-umkm .primary:active:not(:disabled) {
+  transform: scale(.975);
+}
 body[data-kind="umkm"][data-input="keyboard"] *,
 body[data-kind="umkm"][data-input="keyboard"] *::before,
 body[data-kind="umkm"][data-input="keyboard"] *::after,
@@ -156,6 +184,9 @@ body[data-kind="umkm"][data-input="keyboard"] dialog::backdrop {
   animation: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
+  body[data-kind="umkm"] :is(button, .button, .efa-brand img, .nav-icon):hover {
+    transform: none !important;
+  }
   body[data-kind="umkm"] *,
   body[data-kind="umkm"] *::before,
   body[data-kind="umkm"] *::after,

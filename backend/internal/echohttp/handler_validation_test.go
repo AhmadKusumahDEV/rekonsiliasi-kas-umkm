@@ -25,7 +25,7 @@ func TestPublicConfigAndValidationWithoutDatabase(t *testing.T) {
 	configRequest := httptest.NewRequest(http.MethodGet, "/api/v1/config", nil)
 	configRecorder := httptest.NewRecorder()
 	e.ServeHTTP(configRecorder, configRequest)
-	if configRecorder.Code != http.StatusOK || !strings.Contains(configRecorder.Body.String(), "Temu Kas") {
+	if configRecorder.Code != http.StatusOK || !strings.Contains(configRecorder.Body.String(), "Easy Financial Audit") {
 		t.Fatalf("config = %d %s", configRecorder.Code, configRecorder.Body.String())
 	}
 

@@ -1,0 +1,109 @@
+/* Easy Financial Audit: supplied palette; darker text shades keep it readable. */
+:root,
+body[data-kind="umkm"] {
+  --efa-blue: #5aa2e0;
+  --efa-cyan: #54b0d9;
+  --efa-amber: #f59e0b;
+  --efa-coral: #eb7a7a;
+  --efa-charcoal: #3d414a;
+  --efa-white: #ffffff;
+  --efa-link: #285f8c;
+  --paper: #ffffff;
+  --surface: #ffffff;
+  --ink: #3d414a;
+  --muted: #5c6570;
+  --line: #dce5ec;
+  --soft: #edf5fc;
+  --accent: #f59e0b;
+  --accent-hover: #e4a52b;
+  --sidebar: #3d414a;
+}
+body[data-kind="umkm"] .efa-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  flex-shrink: 0;
+}
+body[data-kind="umkm"] .efa-brand img,
+body[data-kind="umkm"] .auth-story .efa-brand img {
+  width: 48px;
+  height: 48px;
+  max-height: none;
+  min-height: 0;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  object-fit: contain;
+}
+.efa-wordmark { display: grid; gap: 2px; }
+body[data-kind="umkm"] .efa-brand .efa-wordmark strong {
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.25;
+  letter-spacing: -.04em;
+}
+.efa-wordmark > span {
+  color: var(--efa-link);
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+}
+body[data-kind="umkm"] .primary {
+  background: var(--efa-amber);
+  border-color: transparent;
+  color: var(--efa-charcoal);
+}
+body[data-kind="umkm"] .primary:hover:not(:disabled) {
+  background: #ffbf47;
+  color: var(--efa-charcoal);
+}
+body[data-kind="umkm"] :focus-visible { outline-color: var(--efa-link); }
+body[data-kind="umkm"] :is(input,textarea,select):focus-visible {
+  border-color: var(--efa-blue);
+  background: #f5faff;
+}
+body[data-kind="umkm"] .cash-subnav .navlink[aria-current="page"] {
+  color: var(--efa-link);
+  border-bottom-color: var(--efa-blue);
+}
+body[data-kind="umkm"] .cash-subnav .navlink::after { background: var(--efa-blue); }
+body[data-kind="umkm"] .cash-subnav .navlink:hover { color: var(--efa-link); background: var(--soft); }
+body[data-kind="umkm"] .cash-account { background: var(--efa-charcoal); }
+body[data-kind="umkm"] :is(.account-caption,.cash-balance p,.cash-account-foot) { color: #e4edf5; }
+body[data-kind="umkm"] .balance-link span { color: var(--efa-amber); }
+body[data-kind="umkm"] .cash-business-photo::after { background: linear-gradient(transparent,rgba(61,65,74,.88)); }
+body[data-kind="umkm"] .cash-business-photo figcaption span { color: #edf5fc; }
+body[data-kind="umkm"] .cash-receipt { background: #fff7e5; border-bottom-color: #f1d495; }
+body[data-kind="umkm"] :is(.receipt-header,.receipt-total) { border-color: #e1cfaa; }
+body[data-kind="umkm"] :is(.receipt-header span,.cash-receipt p) { color: #6d5631; }
+body[data-kind="umkm"] :is(.cash-receipt>a,.auth-product,.auth-switch a) { color: var(--efa-link); }
+body[data-kind="umkm"] .content a:not(.button) { color: var(--efa-link); }
+body[data-kind="umkm"] .auth-umkm .auth-story { background: #edf5fc; }
+body[data-kind="umkm"] .auth-umkm .auth-copy h1 { color: var(--ink); }
+body[data-kind="umkm"] .auth-umkm .auth-copy p { color: #4b6072; }
+body[data-kind="umkm"] .auth-umkm .auth-story>small { color: #4b6072; }
+body[data-kind="umkm"] .connection::before { background: var(--efa-link); }
+body[data-kind="umkm"] .connection[data-online="false"]::before { background: var(--efa-coral); }
+body[data-kind="umkm"] :is(.tag,.tag.info) { color: #285f8c; background: #edf5fc; }
+body[data-kind="umkm"] :is(.tag.good,.success) { color: #20566c; background: #e5f4fa; }
+body[data-kind="umkm"] :is(.tag.warn,.warning) { color: #694700; background: #fff3d7; }
+body[data-kind="umkm"] :is(.tag.bad,.error) { color: #8a3030; background: #fce9e9; }
+body[data-kind="umkm"] .danger { color: #9c3737; }
+body[data-kind="umkm"] .work-initial { color: var(--efa-link); border-color: #bdd9ef; }
+body[data-kind="umkm"] #mobile-menu { background: var(--efa-charcoal); }
+body[data-kind="umkm"] #mobile-menu .navlink { color: #edf5fc; }
+body[data-kind="umkm"] #mobile-menu .navlink[aria-current="page"] { background: rgba(84,176,217,.18); color: #ffffff; }
+body[data-kind="umkm"] .cash-transaction:hover,
+body[data-kind="umkm"] tbody tr:hover { background-color: #f4f9fd; }
+body[data-kind="umkm"] dialog::backdrop { background: rgba(61,65,74,.45); }
+body[data-kind="umkm"] .toast { background: var(--efa-charcoal); color: #ffffff; }
+@media(max-width:600px) {
+  body[data-kind="umkm"] .efa-brand { gap: 8px; }
+  body[data-kind="umkm"] .efa-brand img,
+  body[data-kind="umkm"] .auth-story .efa-brand img { width: 40px; height: 40px; }
+  body[data-kind="umkm"] .efa-brand .efa-wordmark strong { font-size: 15px; }
+  body[data-kind="umkm"] .efa-wordmark>span { font-size: 10px; letter-spacing: .22em; }
+}
+

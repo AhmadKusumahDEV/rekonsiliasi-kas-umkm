@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-10-27T07:07:32.669Z",
+  "live": "https://efa.madgo.my.id",
+  "local": "http://127.0.0.1:3044",
+  "checks": [
+    {
+      "file": "app.js",
+      "liveSha256": "23f58f69a07a643776bed174ed541ba470a9c6f044d47fda53cb932c0358be00",
+      "localSha256": "23f58f69a07a643776bed174ed541ba470a9c6f044d47fda53cb932c0358be00",
+      "equal": true
+    },
+    {
+      "file": "design.js",
+      "liveSha256": "17d9dcd7a74ff356d91750f0b952a7251e7acb530426cdc29286a4c3b5be48b5",
+      "localSha256": "17d9dcd7a74ff356d91750f0b952a7251e7acb530426cdc29286a4c3b5be48b5",
+      "equal": true
+    },
+    {
+      "file": "efa.css",
+      "liveSha256": "0fe57acdc26e61983662341bd03b7526a84e3c00ecd308697b913054b7f7d3d7",
+      "localSha256": "0fe57acdc26e61983662341bd03b7526a84e3c00ecd308697b913054b7f7d3d7",
+      "equal": true
+    },
+    {
+      "file": "efa-mark.svg",
+      "liveSha256": "582f3130891344befa8ee92cf164fe4ad39ebd8e6dade49db695b2420ee1728e",
+      "localSha256": "582f3130891344befa8ee92cf164fe4ad39ebd8e6dade49db695b2420ee1728e",
+      "equal": true
+    }
+  ]
+}

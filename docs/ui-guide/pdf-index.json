@@ -1,0 +1,987 @@
+{
+  "pdf": "EFA-UI-Guide.pdf",
+  "pages": 61,
+  "screenshots": 42,
+  "live": 19,
+  "local": 23,
+  "bytes": 16268668,
+  "runtimeErrors": [],
+  "categories": {
+    "01-akses": 5,
+    "02-ringkasan": 4,
+    "03-transaksi": 5,
+    "04-rekonsiliasi": 7,
+    "05-impor": 9,
+    "06-laporan": 6,
+    "07-pengaturan": 4,
+    "08-navigasi": 2
+  },
+  "index": [
+    {
+      "category": "01-akses",
+      "categoryLabel": "Akses akun",
+      "slug": "01-masuk",
+      "title": "Masuk ke akun",
+      "text": "Login menggunakan email dan kata sandi, bukan memilih peran demo.",
+      "steps": [
+        "Gunakan email terdaftar.",
+        "Tekan Masuk untuk membuka usaha."
+      ],
+      "endpoint": "POST /api/login",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LIVE",
+      "file": "screenshots/01-akses/desktop/01-masuk.png",
+      "capturedAt": "2026-10-27T07:09:48.227Z",
+      "pdfPage": 3,
+      "pdfParts": 1,
+      "sha256": "01758d7349ccb55d623921e6598ff7af9c83833907b06f14924d6ca6a26f9f95"
+    },
+    {
+      "category": "01-akses",
+      "categoryLabel": "Akses akun",
+      "slug": "01-masuk",
+      "title": "Masuk ke akun",
+      "text": "Login menggunakan email dan kata sandi, bukan memilih peran demo.",
+      "steps": [
+        "Gunakan email terdaftar.",
+        "Tekan Masuk untuk membuka usaha."
+      ],
+      "endpoint": "POST /api/login",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/01-akses/mobile/01-masuk.png",
+      "capturedAt": "2026-10-27T07:09:48.894Z",
+      "pdfPage": 4,
+      "pdfParts": 1,
+      "sha256": "20fcc5ace3b050ccfc7425b3a909ad2e6b9529b6987bf4bf08a044785599e172"
+    },
+    {
+      "category": "01-akses",
+      "categoryLabel": "Akses akun",
+      "slug": "02-daftar",
+      "title": "Mendaftarkan pemilik",
+      "text": "Form meminta identitas pemilik dan nama usaha. Akun baru memiliki ruang kerja terpisah.",
+      "steps": [
+        "Isi nama, email, kata sandi dan nama usaha.",
+        "Dokumentasi tidak mengirim formulir daftar di server live."
+      ],
+      "endpoint": "POST /api/register",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LIVE",
+      "file": "screenshots/01-akses/desktop/02-daftar.png",
+      "capturedAt": "2026-10-27T07:09:48.586Z",
+      "pdfPage": 5,
+      "pdfParts": 1,
+      "sha256": "1dee4fd69a09b50c3d42761f470b32719c42a402c1e7f00a3a44a2886c92b452"
+    },
+    {
+      "category": "01-akses",
+      "categoryLabel": "Akses akun",
+      "slug": "02-daftar",
+      "title": "Mendaftarkan pemilik",
+      "text": "Form meminta identitas pemilik dan nama usaha. Akun baru memiliki ruang kerja terpisah.",
+      "steps": [
+        "Isi nama, email, kata sandi dan nama usaha.",
+        "Dokumentasi tidak mengirim formulir daftar di server live."
+      ],
+      "endpoint": "POST /api/register",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/01-akses/mobile/02-daftar.png",
+      "capturedAt": "2026-10-27T07:09:49.205Z",
+      "pdfPage": 6,
+      "pdfParts": 2,
+      "sha256": "4891bdb199d3b22b86e2b70d8ca4f4a2e15ce646870b53f7ab67c692d9a04274"
+    },
+    {
+      "category": "01-akses",
+      "categoryLabel": "Akses akun",
+      "slug": "03-login-ditolak",
+      "title": "Login belum cocok",
+      "text": "Error berasal dari penolakan server lokal yang nyata. Pengguna tetap dapat memperbaiki isian.",
+      "steps": [
+        "Periksa email dan kata sandi.",
+        "Jangan mengulang percobaan tanpa memeriksa isian."
+      ],
+      "endpoint": "401 dari POST /api/login",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/01-akses/desktop/03-login-ditolak.png",
+      "capturedAt": "2026-10-27T07:10:02.026Z",
+      "pdfPage": 8,
+      "pdfParts": 1,
+      "sha256": "cd98431d3a0fba7e89052d2e0c366ec28cdabf736d7cb04cb01183ab71294c47"
+    },
+    {
+      "category": "02-ringkasan",
+      "categoryLabel": "Ringkasan usaha",
+      "slug": "01-ringkasan",
+      "title": "Ringkasan usaha",
+      "text": "Melihat tagihan yang belum cocok, total penjualan, penerimaan dan kanal pembayaran. Angka memakai seluruh data aktif; penerimaan bukan laba.",
+      "steps": [
+        "Tentukan penjualan yang perlu ditelusuri.",
+        "Lanjutkan ke Cocokkan kas atau Impor CSV."
+      ],
+      "endpoint": "GET /api/state",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LIVE",
+      "file": "screenshots/02-ringkasan/desktop/01-ringkasan.png",
+      "capturedAt": "2026-10-27T07:09:51.091Z",
+      "pdfPage": 9,
+      "pdfParts": 2,
+      "sha256": "06c8453a82ed61395839fd737f9738706783ed6eef0f377161f63d8e31342bf8"
+    },
+    {
+      "category": "02-ringkasan",
+      "categoryLabel": "Ringkasan usaha",
+      "slug": "01-ringkasan",
+      "title": "Ringkasan usaha",
+      "text": "Melihat tagihan yang belum cocok, total penjualan, penerimaan dan kanal pembayaran. Angka memakai seluruh data aktif; penerimaan bukan laba.",
+      "steps": [
+        "Tentukan penjualan yang perlu ditelusuri.",
+        "Lanjutkan ke Cocokkan kas atau Impor CSV."
+      ],
+      "endpoint": "GET /api/state",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/02-ringkasan/mobile/01-ringkasan.png",
+      "capturedAt": "2026-10-27T07:09:56.050Z",
+      "pdfPage": 11,
+      "pdfParts": 3,
+      "sha256": "03c15b34065d41a9baac9043a1b66ae4eeea55342b05c2c41cf1b556eee08e6b"
+    },
+    {
+      "category": "02-ringkasan",
+      "categoryLabel": "Ringkasan usaha",
+      "slug": "02-usaha-baru",
+      "title": "Ruang kerja tanpa transaksi",
+      "text": "Keadaan kosong mengarahkan pemilik untuk mulai mengimpor catatan. Data kosong bukan kegagalan mengambil data.",
+      "steps": [
+        "Mulai dari Impor CSV.",
+        "Isi penjualan dan penerimaan secara terpisah."
+      ],
+      "endpoint": "GET /api/state",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/02-ringkasan/desktop/02-usaha-baru.png",
+      "capturedAt": "2026-10-27T07:10:04.198Z",
+      "pdfPage": 14,
+      "pdfParts": 2,
+      "sha256": "0a2cf95a01d1882f9259ededa9b8f117e8f9d825227210fb78fe85138ee3211d"
+    },
+    {
+      "category": "02-ringkasan",
+      "categoryLabel": "Ringkasan usaha",
+      "slug": "10-skenario-01-ringkasan",
+      "title": "Ringkasan usaha - skenario contoh",
+      "text": "Melihat tagihan yang belum cocok, total penjualan, penerimaan dan kanal pembayaran. Angka memakai seluruh data aktif; penerimaan bukan laba. Ruang kerja lokal ini berisi pembayaran sebagian, biaya layanan, penerimaan gabungan dan koreksi.",
+      "steps": [
+        "Tentukan penjualan yang perlu ditelusuri.",
+        "Lanjutkan ke Cocokkan kas atau Impor CSV."
+      ],
+      "endpoint": "GET /api/state",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/02-ringkasan/desktop/10-skenario-01-ringkasan.png",
+      "capturedAt": "2026-10-27T07:10:15.305Z",
+      "pdfPage": 16,
+      "pdfParts": 2,
+      "sha256": "b2a415b4079507d09a2670195f64ad8a512aff43893e8542f6e0e03880c1cbea"
+    },
+    {
+      "category": "03-transaksi",
+      "categoryLabel": "Transaksi dan pencarian",
+      "slug": "01-transaksi",
+      "title": "Daftar transaksi",
+      "text": "Penjualan dan penerimaan ditampilkan bersama nominal, sisa alokasi dan status. Pencarian serta filter membantu menelusuri catatan tertentu.",
+      "steps": [
+        "Cari nama atau referensi.",
+        "Gunakan filter dan pilihan 20/50/100 baris."
+      ],
+      "endpoint": "GET /api/state",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LIVE",
+      "file": "screenshots/03-transaksi/desktop/01-transaksi.png",
+      "capturedAt": "2026-10-27T07:09:51.770Z",
+      "pdfPage": 18,
+      "pdfParts": 2,
+      "sha256": "4f96cc32312f55b1262031a01937f92d58ae9ddd9b55df78653f8ec3821f5c4e"
+    },
+    {
+      "category": "03-transaksi",
+      "categoryLabel": "Transaksi dan pencarian",
+      "slug": "01-transaksi",
+      "title": "Daftar transaksi",
+      "text": "Penjualan dan penerimaan ditampilkan bersama nominal, sisa alokasi dan status. Pencarian serta filter membantu menelusuri catatan tertentu.",
+      "steps": [
+        "Cari nama atau referensi.",
+        "Gunakan filter dan pilihan 20/50/100 baris."
+      ],
+      "endpoint": "GET /api/state",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/03-transaksi/mobile/01-transaksi.png",
+      "capturedAt": "2026-10-27T07:09:56.776Z",
+      "pdfPage": 20,
+      "pdfParts": 3,
+      "sha256": "d8859196e32964efe1f654a2040ec98c82998847dd59d3ec2686c76090944445"
+    },
+    {
+      "category": "03-transaksi",
+      "categoryLabel": "Transaksi dan pencarian",
+      "slug": "02-filter",
+      "title": "Filter penerimaan",
+      "text": "Filter mengubah isi tabel tanpa menghapus data atau membatasi total usaha.",
+      "steps": [
+        "Pilih jenis transaksi.",
+        "Kembalikan ke Semua status untuk melihat semuanya."
+      ],
+      "endpoint": "Filter lokal",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/03-transaksi/desktop/02-filter.png",
+      "capturedAt": "2026-10-27T07:10:18.823Z",
+      "pdfPage": 23,
+      "pdfParts": 1,
+      "sha256": "a2bfaef27c192a04fcd6c4d725130091a8d1879a4f3944a72995c4b8db579f9c"
+    },
+    {
+      "category": "03-transaksi",
+      "categoryLabel": "Transaksi dan pencarian",
+      "slug": "03-pencarian-kosong",
+      "title": "Pencarian tanpa hasil",
+      "text": "Pesan kosong memberi petunjuk mengganti kata kunci. Catatan usaha tetap tersimpan.",
+      "steps": [
+        "Ubah atau hapus pencarian.",
+        "Periksa filter yang masih aktif."
+      ],
+      "endpoint": "Pencarian lokal",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/03-transaksi/desktop/03-pencarian-kosong.png",
+      "capturedAt": "2026-10-27T07:10:19.234Z",
+      "pdfPage": 24,
+      "pdfParts": 1,
+      "sha256": "47843956aa626bfd181dc9077b4fb42c0ede10436898a66f047b16ddfb711f80"
+    },
+    {
+      "category": "03-transaksi",
+      "categoryLabel": "Transaksi dan pencarian",
+      "slug": "04-pagination",
+      "title": "Halaman kedua tabel",
+      "text": "Batch lokal tambahan membuat halaman kedua tersedia. Ukuran halaman tidak membatasi ringkasan usaha.",
+      "steps": [
+        "Pilih 20/50/100 baris.",
+        "Gunakan Sebelumnya atau Berikutnya."
+      ],
+      "endpoint": "Skenario pagination terpisah",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/03-transaksi/desktop/04-pagination.png",
+      "capturedAt": "2026-10-27T07:10:23.316Z",
+      "pdfPage": 25,
+      "pdfParts": 2,
+      "sha256": "acdc2486d2d1db65baa60e0dcc5f510d7132c80941e5b5faf46dac35e79e18a6"
+    },
+    {
+      "category": "04-rekonsiliasi",
+      "categoryLabel": "Pencocokan pembayaran",
+      "slug": "01-cocokkan-kas",
+      "title": "Usulan dan keputusan",
+      "text": "Usulan unik perlu diperiksa pemilik sebelum disimpan. Tabel keputusan menyimpan alokasi dan koreksi yang pernah dibuat.",
+      "steps": [
+        "Periksa pasangan yang diusulkan.",
+        "Pakai alokasi manual untuk sebagian, biaya atau pencairan gabungan."
+      ],
+      "endpoint": "GET /api/suggestions",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LIVE",
+      "file": "screenshots/04-rekonsiliasi/desktop/01-cocokkan-kas.png",
+      "capturedAt": "2026-10-27T07:09:52.251Z",
+      "pdfPage": 27,
+      "pdfParts": 1,
+      "sha256": "721d2e59d61889d13dea4f4e1c527c7ec0966eb022ca25c807389cd6f06be4b9"
+    },
+    {
+      "category": "04-rekonsiliasi",
+      "categoryLabel": "Pencocokan pembayaran",
+      "slug": "01-cocokkan-kas",
+      "title": "Usulan dan keputusan",
+      "text": "Usulan unik perlu diperiksa pemilik sebelum disimpan. Tabel keputusan menyimpan alokasi dan koreksi yang pernah dibuat.",
+      "steps": [
+        "Periksa pasangan yang diusulkan.",
+        "Pakai alokasi manual untuk sebagian, biaya atau pencairan gabungan."
+      ],
+      "endpoint": "GET /api/suggestions",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/04-rekonsiliasi/mobile/01-cocokkan-kas.png",
+      "capturedAt": "2026-10-27T07:09:57.283Z",
+      "pdfPage": 28,
+      "pdfParts": 2,
+      "sha256": "471893a9d01ef2f31381851cd92853b55f71ba72368a62a98f840e3246e4f415"
+    },
+    {
+      "category": "04-rekonsiliasi",
+      "categoryLabel": "Pencocokan pembayaran",
+      "slug": "02-alokasi-manual",
+      "title": "Form alokasi manual",
+      "text": "Pilihan transaksi menampilkan sisa yang masih dapat dipakai. Server memeriksa saldo lagi ketika disimpan.",
+      "steps": [
+        "Pilih penjualan dan penerimaan yang benar.",
+        "Isi nominal lalu periksa sebelum menyimpan."
+      ],
+      "endpoint": "POST /api/allocations",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/04-rekonsiliasi/desktop/02-alokasi-manual.png",
+      "capturedAt": "2026-10-27T07:10:06.164Z",
+      "pdfPage": 30,
+      "pdfParts": 1,
+      "sha256": "62fa9b3700d9a4e862641ccb3a25568c13057452f47a148b271d313a2f4b58c1"
+    },
+    {
+      "category": "04-rekonsiliasi",
+      "categoryLabel": "Pencocokan pembayaran",
+      "slug": "02-alokasi-manual",
+      "title": "Form alokasi manual",
+      "text": "Pilihan transaksi menampilkan sisa yang masih dapat dipakai. Server memeriksa saldo lagi ketika disimpan.",
+      "steps": [
+        "Pilih penjualan dan penerimaan yang benar.",
+        "Isi nominal lalu periksa sebelum menyimpan."
+      ],
+      "endpoint": "POST /api/allocations",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LOCAL",
+      "file": "screenshots/04-rekonsiliasi/mobile/02-alokasi-manual.png",
+      "capturedAt": "2026-10-27T07:10:10.395Z",
+      "pdfPage": 31,
+      "pdfParts": 1,
+      "sha256": "ac02c6c624a93788917455bffc800d4470c56ae1262ab771fa993dd2d1745f0f"
+    },
+    {
+      "category": "04-rekonsiliasi",
+      "categoryLabel": "Pencocokan pembayaran",
+      "slug": "03-biaya-layanan",
+      "title": "Memeriksa potongan biaya",
+      "text": "Penerimaan Rp190.000 dan biaya Rp10.000 menjelaskan tagihan Rp200.000. Biaya tidak menambah uang yang diterima.",
+      "steps": [
+        "Jelaskan alasan biaya.",
+        "Periksa kedua transaksi sebelum menyimpan."
+      ],
+      "endpoint": "amount + fee <= sisa penjualan",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/04-rekonsiliasi/desktop/03-biaya-layanan.png",
+      "capturedAt": "2026-10-27T07:10:06.780Z",
+      "pdfPage": 32,
+      "pdfParts": 1,
+      "sha256": "763673f0e3e72563a72f0b8d2672eb26743ae7fd4af2b59e198faa419d6a1495"
+    },
+    {
+      "category": "04-rekonsiliasi",
+      "categoryLabel": "Pencocokan pembayaran",
+      "slug": "03-biaya-layanan",
+      "title": "Memeriksa potongan biaya",
+      "text": "Penerimaan Rp190.000 dan biaya Rp10.000 menjelaskan tagihan Rp200.000. Biaya tidak menambah uang yang diterima.",
+      "steps": [
+        "Jelaskan alasan biaya.",
+        "Periksa kedua transaksi sebelum menyimpan."
+      ],
+      "endpoint": "amount + fee <= sisa penjualan",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LOCAL",
+      "file": "screenshots/04-rekonsiliasi/mobile/03-biaya-layanan.png",
+      "capturedAt": "2026-10-27T07:10:10.925Z",
+      "pdfPage": 33,
+      "pdfParts": 1,
+      "sha256": "e0adeb6d4bb77dc1ea85ba76deccaf7a0163275bc45f3d071b777e365165d1ff"
+    },
+    {
+      "category": "04-rekonsiliasi",
+      "categoryLabel": "Pencocokan pembayaran",
+      "slug": "10-skenario-01-cocokkan-kas",
+      "title": "Usulan dan keputusan - skenario contoh",
+      "text": "Usulan unik perlu diperiksa pemilik sebelum disimpan. Tabel keputusan menyimpan alokasi dan koreksi yang pernah dibuat. Ruang kerja lokal ini berisi pembayaran sebagian, biaya layanan, penerimaan gabungan dan koreksi.",
+      "steps": [
+        "Periksa pasangan yang diusulkan.",
+        "Pakai alokasi manual untuk sebagian, biaya atau pencairan gabungan."
+      ],
+      "endpoint": "GET /api/suggestions",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/04-rekonsiliasi/desktop/10-skenario-01-cocokkan-kas.png",
+      "capturedAt": "2026-10-27T07:10:16.008Z",
+      "pdfPage": 34,
+      "pdfParts": 1,
+      "sha256": "951813e015fa0611cea4e97859ae9e08d18d5a627c4d8fce6ce23f4e0beb3d78"
+    },
+    {
+      "category": "05-impor",
+      "categoryLabel": "Impor dan validasi CSV",
+      "slug": "01-batch-impor",
+      "title": "Riwayat impor CSV",
+      "text": "Setiap file tersimpan sebagai batch. Pembatalan batch tidak menghapus jejak; batch beralokasi aktif perlu dikoreksi lebih dahulu.",
+      "steps": [
+        "Unduh template jika diperlukan.",
+        "Periksa CSV sebelum menyimpannya."
+      ],
+      "endpoint": "GET /api/state",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LIVE",
+      "file": "screenshots/05-impor/desktop/01-batch-impor.png",
+      "capturedAt": "2026-10-27T07:09:52.853Z",
+      "pdfPage": 35,
+      "pdfParts": 2,
+      "sha256": "a56a8a5f3a9235d667475c336f1ae754fb67a21fd7ae04093a751bd1a81aceb6"
+    },
+    {
+      "category": "05-impor",
+      "categoryLabel": "Impor dan validasi CSV",
+      "slug": "01-batch-impor",
+      "title": "Riwayat impor CSV",
+      "text": "Setiap file tersimpan sebagai batch. Pembatalan batch tidak menghapus jejak; batch beralokasi aktif perlu dikoreksi lebih dahulu.",
+      "steps": [
+        "Unduh template jika diperlukan.",
+        "Periksa CSV sebelum menyimpannya."
+      ],
+      "endpoint": "GET /api/state",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/05-impor/mobile/01-batch-impor.png",
+      "capturedAt": "2026-10-27T07:09:57.888Z",
+      "pdfPage": 37,
+      "pdfParts": 2,
+      "sha256": "3449a4e3bd580f3fb7f9d9f19ddbbed89d8c9ba73eb3b49d3fe1480987fb54f2"
+    },
+    {
+      "category": "05-impor",
+      "categoryLabel": "Impor dan validasi CSV",
+      "slug": "02-pilih-file",
+      "title": "Memilih file CSV",
+      "text": "Pilih jenis penjualan/penerimaan dan unduh template jika diperlukan. File dibaca sebagai teks oleh browser.",
+      "steps": [
+        "CSV UTF-8 maksimal 1 MB, 500 baris.",
+        "Periksa dahulu sebelum menyimpan."
+      ],
+      "endpoint": "POST /api/imports/preview",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/05-impor/desktop/02-pilih-file.png",
+      "capturedAt": "2026-10-27T07:10:07.688Z",
+      "pdfPage": 39,
+      "pdfParts": 1,
+      "sha256": "0504b612eb83449050d6a8c568284bae656607a201f5aff94f77d8c48961c242"
+    },
+    {
+      "category": "05-impor",
+      "categoryLabel": "Impor dan validasi CSV",
+      "slug": "02-pilih-file",
+      "title": "Memilih file CSV",
+      "text": "Pilih jenis penjualan/penerimaan dan unduh template jika diperlukan. File dibaca sebagai teks oleh browser.",
+      "steps": [
+        "CSV UTF-8 maksimal 1 MB, 500 baris.",
+        "Periksa dahulu sebelum menyimpan."
+      ],
+      "endpoint": "POST /api/imports/preview",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LOCAL",
+      "file": "screenshots/05-impor/mobile/02-pilih-file.png",
+      "capturedAt": "2026-10-27T07:10:11.725Z",
+      "pdfPage": 40,
+      "pdfParts": 1,
+      "sha256": "79b41fb828c2e5f44833204601fffd0f976ab7a7eadc28b530a68d7f955e15ce"
+    },
+    {
+      "category": "05-impor",
+      "categoryLabel": "Impor dan validasi CSV",
+      "slug": "03-pratinjau",
+      "title": "Pratinjau CSV valid",
+      "text": "Jumlah baris, total dan cuplikan muncul sebelum commit. Pratinjau tidak menambah transaksi.",
+      "steps": [
+        "Periksa nominal dan jenis.",
+        "Simpan hanya jika isinya benar."
+      ],
+      "endpoint": "POST /api/imports/preview",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/05-impor/desktop/03-pratinjau.png",
+      "capturedAt": "2026-10-27T07:10:08.363Z",
+      "pdfPage": 41,
+      "pdfParts": 1,
+      "sha256": "467bd2ade81dc8742995b3596a3d0fcf9de46b0ed4a78473cb88a139537765ba"
+    },
+    {
+      "category": "05-impor",
+      "categoryLabel": "Impor dan validasi CSV",
+      "slug": "03-pratinjau",
+      "title": "Pratinjau CSV valid",
+      "text": "Jumlah baris, total dan cuplikan muncul sebelum commit. Pratinjau tidak menambah transaksi.",
+      "steps": [
+        "Periksa nominal dan jenis.",
+        "Simpan hanya jika isinya benar."
+      ],
+      "endpoint": "POST /api/imports/preview",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LOCAL",
+      "file": "screenshots/05-impor/mobile/03-pratinjau.png",
+      "capturedAt": "2026-10-27T07:10:12.297Z",
+      "pdfPage": 42,
+      "pdfParts": 1,
+      "sha256": "9d08e2b1abca258dabc2c42f1bbc5ef2cbb763a676c1bfba680e4ba20e9d28a4"
+    },
+    {
+      "category": "05-impor",
+      "categoryLabel": "Impor dan validasi CSV",
+      "slug": "04-validasi-error",
+      "title": "CSV ditolak oleh server",
+      "text": "Header yang salah menghasilkan pesan koreksi. File tidak disimpan sebagian.",
+      "steps": [
+        "Gunakan tujuh kolom sesuai template.",
+        "Perbaiki file lalu periksa kembali."
+      ],
+      "endpoint": "400 dari POST /api/imports/preview",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/05-impor/desktop/04-validasi-error.png",
+      "capturedAt": "2026-10-27T07:10:08.852Z",
+      "pdfPage": 43,
+      "pdfParts": 1,
+      "sha256": "1e65354e061e03323867a7015b66aca492335cf64efec5ad8d6d84de5a7d95df"
+    },
+    {
+      "category": "05-impor",
+      "categoryLabel": "Impor dan validasi CSV",
+      "slug": "04-validasi-error",
+      "title": "CSV ditolak oleh server",
+      "text": "Header yang salah menghasilkan pesan koreksi. File tidak disimpan sebagian.",
+      "steps": [
+        "Gunakan tujuh kolom sesuai template.",
+        "Perbaiki file lalu periksa kembali."
+      ],
+      "endpoint": "400 dari POST /api/imports/preview",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LOCAL",
+      "file": "screenshots/05-impor/mobile/04-validasi-error.png",
+      "capturedAt": "2026-10-27T07:10:12.844Z",
+      "pdfPage": 44,
+      "pdfParts": 1,
+      "sha256": "f591859f40875b023974dd5584c1ebf1a36cd8bfacd22edc4d5d0f287e9715b4"
+    },
+    {
+      "category": "05-impor",
+      "categoryLabel": "Impor dan validasi CSV",
+      "slug": "10-skenario-01-batch-impor",
+      "title": "Riwayat impor CSV - skenario contoh",
+      "text": "Setiap file tersimpan sebagai batch. Pembatalan batch tidak menghapus jejak; batch beralokasi aktif perlu dikoreksi lebih dahulu. Ruang kerja lokal ini berisi pembayaran sebagian, biaya layanan, penerimaan gabungan dan koreksi.",
+      "steps": [
+        "Unduh template jika diperlukan.",
+        "Periksa CSV sebelum menyimpannya."
+      ],
+      "endpoint": "GET /api/state",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/05-impor/desktop/10-skenario-01-batch-impor.png",
+      "capturedAt": "2026-10-27T07:10:16.623Z",
+      "pdfPage": 45,
+      "pdfParts": 1,
+      "sha256": "076905c38872132862370656d150ca1272864b1d2ce97f54dc8a1da78d510247"
+    },
+    {
+      "category": "06-laporan",
+      "categoryLabel": "Laporan dan jejak aktivitas",
+      "slug": "01-riwayat",
+      "title": "Jejak aktivitas",
+      "text": "Riwayat mencatat waktu, pelaksana, tindakan dan keterangan. Keputusan yang dibatalkan tetap dapat ditelusuri.",
+      "steps": [
+        "Cari tindakan yang diperlukan.",
+        "Bandingkan aktivitas dengan keputusan pencocokan."
+      ],
+      "endpoint": "GET /api/state - events",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LIVE",
+      "file": "screenshots/06-laporan/desktop/01-riwayat.png",
+      "capturedAt": "2026-10-27T07:09:53.474Z",
+      "pdfPage": 46,
+      "pdfParts": 2,
+      "sha256": "54c456eb040e21214a9db931a8a70e14afd26fab8ba9bdcaaad8bb562aebda0e"
+    },
+    {
+      "category": "06-laporan",
+      "categoryLabel": "Laporan dan jejak aktivitas",
+      "slug": "01-riwayat",
+      "title": "Jejak aktivitas",
+      "text": "Riwayat mencatat waktu, pelaksana, tindakan dan keterangan. Keputusan yang dibatalkan tetap dapat ditelusuri.",
+      "steps": [
+        "Cari tindakan yang diperlukan.",
+        "Bandingkan aktivitas dengan keputusan pencocokan."
+      ],
+      "endpoint": "GET /api/state - events",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/06-laporan/mobile/01-riwayat.png",
+      "capturedAt": "2026-10-27T07:09:58.636Z",
+      "pdfPage": 48,
+      "pdfParts": 3,
+      "sha256": "e65c1e090d72a9bf3eb88bbfb13225779692ea9649a00bf7188312217de7b906"
+    },
+    {
+      "category": "06-laporan",
+      "categoryLabel": "Laporan dan jejak aktivitas",
+      "slug": "02-laporan",
+      "title": "Laporan dan ekspor",
+      "text": "Rekap memperlihatkan penjualan, penerimaan, sisa dan biaya yang dikonfirmasi. CSV dapat diunduh untuk pemeriksaan; ini bukan perhitungan laba.",
+      "steps": [
+        "Periksa ringkasan seluruh data.",
+        "Gunakan Unduh rekap CSV."
+      ],
+      "endpoint": "GET /api/export",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LIVE",
+      "file": "screenshots/06-laporan/desktop/02-laporan.png",
+      "capturedAt": "2026-10-27T07:09:54.196Z",
+      "pdfPage": 51,
+      "pdfParts": 1,
+      "sha256": "73980b2dc91adb732a510d7a2e2964b2087fb53e252bb122826d3761029693e7"
+    },
+    {
+      "category": "06-laporan",
+      "categoryLabel": "Laporan dan jejak aktivitas",
+      "slug": "02-laporan",
+      "title": "Laporan dan ekspor",
+      "text": "Rekap memperlihatkan penjualan, penerimaan, sisa dan biaya yang dikonfirmasi. CSV dapat diunduh untuk pemeriksaan; ini bukan perhitungan laba.",
+      "steps": [
+        "Periksa ringkasan seluruh data.",
+        "Gunakan Unduh rekap CSV."
+      ],
+      "endpoint": "GET /api/export",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/06-laporan/mobile/02-laporan.png",
+      "capturedAt": "2026-10-27T07:09:59.105Z",
+      "pdfPage": 52,
+      "pdfParts": 1,
+      "sha256": "490a24e561bc2e8abfe6026fd1cf2c3e9a1b5f321ec710cb1a4537abe6384ded"
+    },
+    {
+      "category": "06-laporan",
+      "categoryLabel": "Laporan dan jejak aktivitas",
+      "slug": "10-skenario-01-riwayat",
+      "title": "Jejak aktivitas - skenario contoh",
+      "text": "Riwayat mencatat waktu, pelaksana, tindakan dan keterangan. Keputusan yang dibatalkan tetap dapat ditelusuri. Ruang kerja lokal ini berisi pembayaran sebagian, biaya layanan, penerimaan gabungan dan koreksi.",
+      "steps": [
+        "Cari tindakan yang diperlukan.",
+        "Bandingkan aktivitas dengan keputusan pencocokan."
+      ],
+      "endpoint": "GET /api/state - events",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/06-laporan/desktop/10-skenario-01-riwayat.png",
+      "capturedAt": "2026-10-27T07:10:17.495Z",
+      "pdfPage": 53,
+      "pdfParts": 1,
+      "sha256": "add50353362272f195451ab904a941c79e5150f657b470896f7b15252db30fab"
+    },
+    {
+      "category": "06-laporan",
+      "categoryLabel": "Laporan dan jejak aktivitas",
+      "slug": "10-skenario-02-laporan",
+      "title": "Laporan dan ekspor - skenario contoh",
+      "text": "Rekap memperlihatkan penjualan, penerimaan, sisa dan biaya yang dikonfirmasi. CSV dapat diunduh untuk pemeriksaan; ini bukan perhitungan laba. Ruang kerja lokal ini berisi pembayaran sebagian, biaya layanan, penerimaan gabungan dan koreksi.",
+      "steps": [
+        "Periksa ringkasan seluruh data.",
+        "Gunakan Unduh rekap CSV."
+      ],
+      "endpoint": "GET /api/export",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/06-laporan/desktop/10-skenario-02-laporan.png",
+      "capturedAt": "2026-10-27T07:10:18.165Z",
+      "pdfPage": 54,
+      "pdfParts": 1,
+      "sha256": "8272a2cc8e9163667c56f7aec5ff9f18bf3b2e8c6e28d160adbbdafd1d51144e"
+    },
+    {
+      "category": "07-pengaturan",
+      "categoryLabel": "Pengaturan akun",
+      "slug": "01-akun",
+      "title": "Pengaturan akun",
+      "text": "Pemilik melihat identitas akun dan usaha yang sedang dibuka. Perubahan kata sandi tidak menghapus transaksi.",
+      "steps": [
+        "Pastikan ruang kerja yang dibuka benar.",
+        "Pilih Ganti kata sandi atau Keluar akun."
+      ],
+      "endpoint": "GET /api/me dan GET /api/state",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LIVE",
+      "file": "screenshots/07-pengaturan/desktop/01-akun.png",
+      "capturedAt": "2026-10-27T07:09:54.924Z",
+      "pdfPage": 55,
+      "pdfParts": 1,
+      "sha256": "10d1758cf2a1cfde0376c9d3108a936b33fcd456fdec4dfa04068f13a6460b5b"
+    },
+    {
+      "category": "07-pengaturan",
+      "categoryLabel": "Pengaturan akun",
+      "slug": "01-akun",
+      "title": "Pengaturan akun",
+      "text": "Pemilik melihat identitas akun dan usaha yang sedang dibuka. Perubahan kata sandi tidak menghapus transaksi.",
+      "steps": [
+        "Pastikan ruang kerja yang dibuka benar.",
+        "Pilih Ganti kata sandi atau Keluar akun."
+      ],
+      "endpoint": "GET /api/me dan GET /api/state",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/07-pengaturan/mobile/01-akun.png",
+      "capturedAt": "2026-10-27T07:09:59.677Z",
+      "pdfPage": 56,
+      "pdfParts": 1,
+      "sha256": "bd7d785c1607de999963cdb01d576242fe3f1fd376d038edc3feafc776737ca8"
+    },
+    {
+      "category": "07-pengaturan",
+      "categoryLabel": "Pengaturan akun",
+      "slug": "02-ganti-password",
+      "title": "Form ganti kata sandi",
+      "text": "Form meminta kata sandi saat ini dan kata sandi baru. Seluruh sesi berakhir setelah perubahan berhasil.",
+      "steps": [
+        "Isi kedua kata sandi.",
+        "Form ini tidak dikirim saat pengambilan screenshot."
+      ],
+      "endpoint": "POST /api/password pada prototipe",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/07-pengaturan/desktop/02-ganti-password.png",
+      "capturedAt": "2026-10-27T07:10:09.672Z",
+      "pdfPage": 57,
+      "pdfParts": 1,
+      "sha256": "55158bc7f3fab8aa8479743214f946046c5f7b762d31e67be1d3b0ed7670c202"
+    },
+    {
+      "category": "07-pengaturan",
+      "categoryLabel": "Pengaturan akun",
+      "slug": "02-ganti-password",
+      "title": "Form ganti kata sandi",
+      "text": "Form meminta kata sandi saat ini dan kata sandi baru. Seluruh sesi berakhir setelah perubahan berhasil.",
+      "steps": [
+        "Isi kedua kata sandi.",
+        "Form ini tidak dikirim saat pengambilan screenshot."
+      ],
+      "endpoint": "POST /api/password pada prototipe",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LOCAL",
+      "file": "screenshots/07-pengaturan/mobile/02-ganti-password.png",
+      "capturedAt": "2026-10-27T07:10:13.535Z",
+      "pdfPage": 58,
+      "pdfParts": 1,
+      "sha256": "5020243f1dbbe7f79803e932f59defe3706095b6382c26054aace01ace4552e7"
+    },
+    {
+      "category": "08-navigasi",
+      "categoryLabel": "Navigasi dan halaman cadangan",
+      "slug": "01-menu-hp",
+      "title": "Menu navigasi HP",
+      "text": "Menu membuka halaman yang sama dengan desktop, dalam ruang layar yang lebih kecil.",
+      "steps": [
+        "Pilih halaman yang diperlukan.",
+        "Tutup menu untuk kembali bekerja."
+      ],
+      "endpoint": "Navigasi hash di browser",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "source": "LIVE",
+      "file": "screenshots/08-navigasi/mobile/01-menu-hp.png",
+      "capturedAt": "2026-10-27T07:10:00.113Z",
+      "pdfPage": 59,
+      "pdfParts": 1,
+      "sha256": "e206983649af4cc6a358a6d6bb177bdfcc2414946beb821b937f8a565943ac02"
+    },
+    {
+      "category": "08-navigasi",
+      "categoryLabel": "Navigasi dan halaman cadangan",
+      "slug": "02-fallback",
+      "title": "Halaman tidak tersedia",
+      "text": "Hash yang tidak dikenal menampilkan tautan kembali. Ini fallback UI, bukan klaim HTTP 404 hosting.",
+      "steps": [
+        "Tekan Ringkasan.",
+        "Periksa tautan yang diketik manual."
+      ],
+      "endpoint": "Fallback navigasi hash",
+      "device": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "source": "LOCAL",
+      "file": "screenshots/08-navigasi/desktop/02-fallback.png",
+      "capturedAt": "2026-10-27T07:10:19.824Z",
+      "pdfPage": 60,
+      "pdfParts": 1,
+      "sha256": "609205970103f4f10f2faeb4fb7fb04eb5d447fc362559e8911a68359dc1958b"
+    }
+  ]
+}
