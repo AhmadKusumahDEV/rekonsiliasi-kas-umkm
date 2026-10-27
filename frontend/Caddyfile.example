@@ -1,0 +1,24 @@
+# Point the domain's existing site to this layout after the PR is merged.
+# Adjust the directory and API port to match the owner's server.
+temukas.madgo.my.id {
+	encode zstd gzip
+
+	@api path /api/v1/* /health/*
+	handle @api {
+		reverse_proxy 127.0.0.1:8080 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		root * /srv/temukas/frontend
+		header {
+			X-Content-Type-Options nosniff
+			X-Frame-Options DENY
+			Referrer-Policy same-origin
+			Cache-Control no-cache
+			Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+		}
+		file_server
+	}
+}

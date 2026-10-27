@@ -1,0 +1,166 @@
+/* Fast feedback for everyday controls; more personality at page entry. */
+body[data-kind="umkm"] {
+  --motion-enter: cubic-bezier(0.22, 1, 0.36, 1);
+}
+body[data-kind="umkm"] :is(button, .button) {
+  transition:
+    transform 130ms var(--motion-enter),
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+body[data-kind="umkm"] :is(button, .button):active:not(:disabled) {
+  transform: scale(0.975);
+}
+body[data-kind="umkm"] :is(input, textarea, select) {
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+body[data-kind="umkm"] :is(input, textarea, select):focus-visible {
+  border-color: #0066ff;
+  background-color: #f8fbff;
+}
+body[data-kind="umkm"] .cash-subnav .navlink {
+  position: relative;
+  border-bottom-color: transparent;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
+}
+body[data-kind="umkm"] .cash-subnav .navlink::after {
+  content: "";
+  position: absolute;
+  inset: auto 9px -2px;
+  height: 2px;
+  background: #0066ff;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 180ms var(--motion-enter);
+}
+body[data-kind="umkm"] .cash-subnav .navlink[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+body[data-kind="umkm"] .cash-transaction,
+body[data-kind="umkm"] tbody tr {
+  transition: background-color 140ms ease;
+}
+body[data-kind="umkm"] .cash-business-photo img {
+  transition: transform 350ms var(--motion-enter);
+}
+body[data-kind="umkm"] .cash-business-photo {
+  overflow: hidden;
+}
+body[data-kind="umkm"] .balance-link span {
+  display: inline-block;
+  transition: transform 150ms var(--motion-enter);
+}
+body[data-kind="umkm"] .auth-switch a {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: transparent;
+  transition:
+    text-decoration-color 150ms ease,
+    color 150ms ease;
+}
+body[data-kind="umkm"] .auth-switch a:is(:hover, :focus-visible) {
+  text-decoration-color: currentColor;
+}
+body[data-kind="umkm"] dialog {
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  transition:
+    opacity 180ms var(--motion-enter),
+    transform 180ms var(--motion-enter),
+    overlay 180ms allow-discrete,
+    display 180ms allow-discrete;
+}
+body[data-kind="umkm"] dialog[open] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition-duration: 240ms;
+}
+body[data-kind="umkm"] dialog::backdrop {
+  background: rgb(0 18 51 / 0);
+  transition:
+    background-color 180ms ease,
+    overlay 180ms allow-discrete,
+    display 180ms allow-discrete;
+}
+body[data-kind="umkm"] dialog[open]::backdrop {
+  background: rgb(0 18 51 / 0.4);
+}
+body[data-kind="umkm"] #mobile-menu {
+  transform: translateX(-14px);
+}
+body[data-kind="umkm"] #mobile-menu[open] {
+  transform: translateX(0);
+}
+body[data-kind="umkm"] .success {
+  transition: opacity 200ms ease;
+}
+body[data-kind="umkm"] form[data-busy="true"] button[type="submit"]::after {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: temu-busy 700ms linear infinite;
+}
+@keyframes temu-busy {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@starting-style {
+  body[data-kind="umkm"] dialog[open] {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  body[data-kind="umkm"] #mobile-menu[open] {
+    transform: translateX(-14px);
+  }
+  body[data-kind="umkm"] dialog[open]::backdrop {
+    background: rgb(0 18 51 / 0);
+  }
+  body[data-kind="umkm"] .cash-subnav .navlink[aria-current="page"]::after {
+    transform: scaleX(0.35);
+  }
+  body[data-kind="umkm"] .success {
+    opacity: 0;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  body[data-kind="umkm"] .cash-business-photo:hover img {
+    transform: scale(1.018);
+  }
+  body[data-kind="umkm"] .balance-link:hover span {
+    transform: translate(2px, -2px);
+  }
+  body[data-kind="umkm"] .cash-transaction:hover,
+  body[data-kind="umkm"] tbody tr:hover {
+    background-color: #f0f6ff;
+  }
+  body[data-kind="umkm"] .primary:hover:not(:disabled) {
+    background-color: #0054d1;
+  }
+}
+body[data-kind="umkm"][data-input="keyboard"] *,
+body[data-kind="umkm"][data-input="keyboard"] *::before,
+body[data-kind="umkm"][data-input="keyboard"] *::after,
+body[data-kind="umkm"][data-input="keyboard"] dialog::backdrop {
+  transition: none !important;
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-kind="umkm"] *,
+  body[data-kind="umkm"] *::before,
+  body[data-kind="umkm"] *::after,
+  body[data-kind="umkm"] dialog::backdrop {
+    transition: none !important;
+    animation: none !important;
+  }
+}

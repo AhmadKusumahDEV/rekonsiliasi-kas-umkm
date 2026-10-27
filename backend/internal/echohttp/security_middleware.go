@@ -2,6 +2,7 @@ package echohttp
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -37,9 +38,19 @@ func corsMiddleware(allowedOrigins []string) echo.MiddlewareFunc {
 			echo.HeaderAccept,
 			echo.HeaderAuthorization,
 			"X-Request-ID",
+			"X-CSRF-Token",
 		},
 		ExposeHeaders:    []string{"X-Request-ID"},
 		AllowCredentials: true,
 		MaxAge:           12 * 60 * 60,
 	})
+}
+
+// The production API listens only behind the trusted reverse proxy, which
+// overwrites forwarded client headers. Direct local clients use their peer IP.
+func authRateLimiter() echo.MiddlewareFunc {
+	store := middleware.NewRateLimiterMemoryStoreWithConfig(middleware.RateLimiterMemoryStoreConfig{
+		Rate: 25.0 / 600, Burst: 25, ExpiresIn: 10 * time.Minute,
+	})
+	return middleware.RateLimiter(store)
 }

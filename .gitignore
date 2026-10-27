@@ -3,3 +3,7 @@
 
 # Hasil build lokal backend.
 /backend/dist/
+/.cache/
+/test-results/
+**/node_modules/
+**/.env.local

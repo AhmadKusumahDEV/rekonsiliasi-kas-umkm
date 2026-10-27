@@ -1,20 +1,55 @@
-# Rekonsiliasi Kas UMKM
+# Temu Kas
 
-Monorepo untuk aplikasi rekonsiliasi kas UMKM.
+Temu Kas membantu pemilik UMKM mencocokkan penjualan dengan uang masuk, termasuk pembayaran sebagian, pencairan gabungan, dan biaya layanan. Tampilan memakai prototipe Temu Kas milik Evan; backend memakai struktur tim: Go, Echo, PostgreSQL, pgx, sqlc, dan Viper.
 
-- `backend/` — API Go dengan Echo, PostgreSQL/pgx, sqlc, dan Viper.
-- `frontend/` — ruang kerja frontend yang belum diisi.
+## Mulai lokal
 
-Backend saat ini berupa scaffold yang sudah bisa dijalankan. Panduan mulai,
-struktur folder, dan aturan arsitektur ada di
-[`backend/README.md`](backend/README.md).
+Prasyarat: Go sesuai backend/go.mod, PostgreSQL, dan Node.js 22+. Frontend adalah HTML/CSS/JavaScript biasa; tidak membutuhkan React, Vite, atau instalasi npm.
 
-CI backend berjalan lewat GitHub Actions pada perubahan di `backend/**`. Alur
-branch, pull request, dan branch protection ada di
-[`CONTRIBUTING.md`](CONTRIBUTING.md).
+1. Salin backend/configs/local.yaml.example menjadi backend/configs/local.yaml. Aktifkan database dan isi koneksi lokal. File ini tidak ikut Git.
+2. Terapkan migration sesuai [panduan backend](backend/README.md). Pakai database kosong untuk demo.
+3. Dari backend, jalankan `go run ./cmd/api`.
+4. Dari frontend di terminal kedua, jalankan `node dev.mjs`. Buka http://127.0.0.1:3000.
 
-Dokumen produk dan teknis:
+API default http://127.0.0.1:8080. Isi environment API_UPSTREAM jika alamat API berbeda, PORT untuk port frontend. .env.example backend tidak dibaca otomatis.
 
-- [`docs/PRD.md`](docs/PRD.md)
-- [`docs/FRD.md`](docs/FRD.md)
-- [`backend/docs/PBL_QUERY_INVENTORY.md`](backend/docs/PBL_QUERY_INVENTORY.md)
+Setelah konfigurasi database siap, Windows juga bisa memakai run.bat untuk build
+dan menjalankan kedua server. Ctrl+C menghentikan keduanya; port yang sudah
+dipakai tidak diambil paksa. PORT mengatur UI, SERVER_PORT mengatur API.
+
+## Struktur
+
+| Folder | Isi |
+| --- | --- |
+| frontend/assets | UI, foto, font, animasi, dan contoh CSV Temu Kas |
+| frontend/dev.mjs | Server statis dan proxy lokal tanpa dependency |
+| frontend/tests | Tes isolasi file dan forwarding cookie/CSRF |
+| backend/cmd/api | Composition root API |
+| backend/cmd/seed-demo | Pembuat akun sintetis secara manual |
+| backend/internal/echohttp | Routing, middleware, binding dan respons HTTP |
+| backend/internal/service | Otorisasi, aturan kas, transaksi database |
+| backend/internal/models | Kontrak input/output |
+| backend/scripts/postgres | Migration dan sumber query sqlc |
+| backend/pkg | Utilitas dan infrastruktur |
+| docs | Produk, kontrak fungsi, demo, hosting dan hasil tes |
+
+Folder placeholder backend tetap dipertahankan sesuai konvensi tim. Tidak ada UI Grader/Facility atau monolit tiga prototipe dalam aplikasi ini.
+
+## Dokumentasi
+
+- [PRD](docs/PRD.md) dan [FRD](docs/FRD.md)
+- [Akun demo](docs/DEMO.md), [alur API](docs/INTEGRATION.md)
+- [Hosting](docs/HOSTING.md), [hasil tes](docs/VERIFICATION.md)
+- [Atribusi aset](frontend/ASSETS.md)
+- [Backend](backend/README.md), [kontribusi](CONTRIBUTING.md)
+- [PRD awal](docs/reference/PRD-prototype.md), [FRD awal](docs/reference/FRD-prototype.md): dokumen lengkap sebelumnya, termasuk dua ide di luar Temu Kas.
+
+## Tes
+
+Dari backend: `go test ./...`, `go vet ./...`, `go build ./...`.
+
+Tes database memerlukan TEST_DATABASE_URL. Set TEST_REQUIRE_DB=1 agar tidak diam-diam skip. **Harness menghapus schema database uji; jangan arahkan ke database pengguna.**
+
+Dari frontend: `node --test tests/*.test.mjs`. GitHub Actions juga menjalankan backend dengan PostgreSQL, race detector, lint, build Linux, dan tes frontend.
+
+Data contoh bersifat sintetis. Ini proyek PBL, bukan klaim layanan keuangan resmi MAXY atau produk yang sudah digunakan UMKM nyata.
