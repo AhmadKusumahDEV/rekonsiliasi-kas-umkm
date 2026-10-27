@@ -469,7 +469,8 @@ session dan login ulang, bukan langsung reconnect buta.
 
 Route final: `GET /api/v1/umkm/events`. Ini konsisten dengan prefix domain
 `/api/v1/umkm` yang sudah dipakai (`backend/internal/echohttp/http_server.go:47-60`)
-dan dengan catatan route yang belum tersedia (`backend/docs/API_ROUTES.md:322-325`).
+dan dengan kontrak route di `backend/docs/API_ROUTES.md:35` serta bagian SSE
+`backend/docs/API_ROUTES.md:303-327`.
 
 | Aspek | Perilaku |
 |---|---|
@@ -853,9 +854,9 @@ dasar. Yang masih perlu diselesaikan:
    `DisconnectUser`; tambahkan test untuk memastikan 4001 terkirim.
 4. `backend/internal/echohttp/sse_integration_test.go`: tambahkan test 401,
    405, origin, rollback tanpa event, shutdown 1012, dan goleak.
-5. `backend/docs/API_ROUTES.md`: tambahkan baris
-   `GET /api/v1/umkm/events` dan kontrak `state`; `backend/README.md` masih
-   menyatakan endpoint SSE belum ada.
+5. `backend/docs/API_ROUTES.md` sudah memuat route dan kontrak `state`; jaga
+   agar tetap sinkron. `backend/README.md` masih menyatakan endpoint SSE belum
+   ada dan perlu diperbarui.
 6. Deployment: blok nginx, timeout, dan uji stream melalui proxy.
 7. Frontend: supervisor EventSource, refresh state saat open/reconnect, dan
    penundaan refresh saat modal/input aktif.
