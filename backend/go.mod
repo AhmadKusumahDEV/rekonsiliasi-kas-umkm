@@ -7,6 +7,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/spf13/viper v1.19.0
+	go.uber.org/goleak v1.3.0
 	golang.org/x/crypto v0.42.0
 )
 

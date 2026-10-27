@@ -158,12 +158,14 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 		if existingImport.CanceledAt.Valid {
 			return models.CommitImportResponse{}, pkgErr.New(pkgErr.ErrConflict, "Impor ini sudah dibatalkan. Gunakan ID sumber baru jika ingin mencatat ulang.")
 		}
-		if err = insertAuditAndBump(ctx, queries, user, "Impor transaksi", "Data CSV tervalidasi"); err != nil {
-			return models.CommitImportResponse{}, err
+		version, bumpErr := insertAuditAndBump(ctx, queries, user, "Impor transaksi", "Data CSV tervalidasi")
+		if bumpErr != nil {
+			return models.CommitImportResponse{}, bumpErr
 		}
 		if err = tx.Commit(ctx); err != nil {
 			return models.CommitImportResponse{}, pkgErr.ErrFailCommitTx
 		}
+		s.publishState(user.WorkspaceID, version)
 		return models.CommitImportResponse{ID: existingImport.ID, Duplicate: true}, nil
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
@@ -239,12 +241,14 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 		}
 	}
 
-	if err = insertAuditAndBump(ctx, queries, user, "Impor transaksi", "Data CSV tervalidasi"); err != nil {
-		return models.CommitImportResponse{}, err
+	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Impor transaksi", "Data CSV tervalidasi")
+	if bumpErr != nil {
+		return models.CommitImportResponse{}, bumpErr
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return models.CommitImportResponse{}, pkgErr.ErrFailCommitTx
 	}
+	s.publishState(user.WorkspaceID, version)
 	return models.CommitImportResponse{ID: importID, Imported: len(newRows), Skipped: skipped}, nil
 }
 
@@ -278,12 +282,14 @@ func (s *Service) Allocate(ctx context.Context, user models.User, req models.All
 			existing.Amount != req.Amount || existing.Fee != req.Fee || existing.Reason != req.Reason {
 			return models.Allocation{}, pkgErr.New(pkgErr.ErrConflict, "ID permintaan sudah digunakan untuk keputusan berbeda. Buka formulir baru.")
 		}
-		if err = insertAuditAndBump(ctx, queries, user, "Konfirmasi pasangan", "Alokasi penerimaan ke penjualan"); err != nil {
-			return models.Allocation{}, err
+		version, bumpErr := insertAuditAndBump(ctx, queries, user, "Konfirmasi pasangan", "Alokasi penerimaan ke penjualan")
+		if bumpErr != nil {
+			return models.Allocation{}, bumpErr
 		}
 		if err = tx.Commit(ctx); err != nil {
 			return models.Allocation{}, pkgErr.ErrFailCommitTx
 		}
+		s.publishState(user.WorkspaceID, version)
 		return mapAllocation(existing), nil
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
@@ -339,12 +345,14 @@ func (s *Service) Allocate(ctx context.Context, user models.User, req models.All
 	if err != nil {
 		return models.Allocation{}, fmt.Errorf("create allocation: %w", err)
 	}
-	if err = insertAuditAndBump(ctx, queries, user, "Konfirmasi pasangan", "Alokasi penerimaan ke penjualan"); err != nil {
-		return models.Allocation{}, err
+	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Konfirmasi pasangan", "Alokasi penerimaan ke penjualan")
+	if bumpErr != nil {
+		return models.Allocation{}, bumpErr
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return models.Allocation{}, pkgErr.ErrFailCommitTx
 	}
+	s.publishState(user.WorkspaceID, version)
 	return mapAllocation(created), nil
 }
 
@@ -383,12 +391,14 @@ func (s *Service) UndoAllocation(ctx context.Context, user models.User, id strin
 			return fmt.Errorf("reverse allocation: %w", err)
 		}
 	}
-	if err = insertAuditAndBump(ctx, queries, user, "Batalkan pasangan", "Saldo alokasi dikembalikan; riwayat tetap ada"); err != nil {
-		return err
+	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Batalkan pasangan", "Saldo alokasi dikembalikan; riwayat tetap ada")
+	if bumpErr != nil {
+		return bumpErr
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return pkgErr.ErrFailCommitTx
 	}
+	s.publishState(user.WorkspaceID, version)
 	return nil
 }
 
@@ -434,12 +444,14 @@ func (s *Service) CancelImport(ctx context.Context, user models.User, id string)
 	if _, err = queries.CancelUmkmImportEntries(ctx, sqlc.CancelUmkmImportEntriesParams{WorkspaceID: user.WorkspaceID, ImportID: id}); err != nil {
 		return fmt.Errorf("cancel import entries: %w", err)
 	}
-	if err = insertAuditAndBump(ctx, queries, user, "Batalkan impor", "Baris ditandai batal tanpa menghapus audit"); err != nil {
-		return err
+	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Batalkan impor", "Baris ditandai batal tanpa menghapus audit")
+	if bumpErr != nil {
+		return bumpErr
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return pkgErr.ErrFailCommitTx
 	}
+	s.publishState(user.WorkspaceID, version)
 	return nil
 }
 
@@ -497,19 +509,20 @@ func lockWorkspace(ctx context.Context, queries *sqlc.Queries, workspaceID strin
 	return nil
 }
 
-func insertAuditAndBump(ctx context.Context, queries *sqlc.Queries, user models.User, action, detail string) error {
+func insertAuditAndBump(ctx context.Context, queries *sqlc.Queries, user models.User, action, detail string) (int64, error) {
 	if err := queries.InsertAuditEvent(ctx, sqlc.InsertAuditEventParams{
 		WorkspaceID: user.WorkspaceID,
 		Actor:       user.Name,
 		Action:      action,
 		Detail:      detail,
 	}); err != nil {
-		return fmt.Errorf("insert audit: %w", err)
+		return 0, fmt.Errorf("insert audit: %w", err)
 	}
-	if _, err := queries.BumpWorkspaceVersion(ctx, user.WorkspaceID); err != nil {
-		return fmt.Errorf("bump workspace version: %w", err)
+	version, err := queries.BumpWorkspaceVersion(ctx, user.WorkspaceID)
+	if err != nil {
+		return 0, fmt.Errorf("bump workspace version: %w", err)
 	}
-	return nil
+	return version, nil
 }
 
 func validHexID(value string) bool {

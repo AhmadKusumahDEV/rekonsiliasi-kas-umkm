@@ -9,16 +9,18 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/config"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/service"
+	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/pkg/sse"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 // NewEcho builds the HTTP engine. It is exported so handler and route tests can
 // exercise the real middleware and error mapping without opening a socket.
-func NewEcho(cfg config.Config, s *service.Service, logger *slog.Logger) *echo.Echo {
+func NewEcho(cfg config.Config, s *service.Service, logger *slog.Logger, sseManagers ...*sse.Manager) *echo.Echo {
 	if logger == nil {
 		logger = slog.Default()
 	}
@@ -60,18 +62,25 @@ func NewEcho(cfg config.Config, s *service.Service, logger *slog.Logger) *echo.E
 	umkm.POST("/allocations/:id/undo", undoAllocation(s))
 	umkm.GET("/export", exportCSV(s))
 
+	if len(sseManagers) > 0 && sseManagers[0] != nil {
+		e.Match([]string{http.MethodGet, http.MethodOptions}, config.APIPrefix+"/umkm/events", echo.WrapHandler(sseManagers[0]))
+	}
+
 	return e
 }
 
-func RunEchoHTTPService(ctx context.Context, cfg config.Config, s *service.Service, logger *slog.Logger) error {
+func RunEchoHTTPService(ctx context.Context, cfg config.Config, s *service.Service, logger *slog.Logger, sseManager *sse.Manager) error {
 	if logger == nil {
 		logger = slog.Default()
 	}
 
-	e := NewEcho(cfg, s, logger)
+	e := NewEcho(cfg, s, logger, sseManager)
 	e.Server.ReadTimeout = cfg.Server.ReadTimeout
-	e.Server.WriteTimeout = cfg.Server.WriteTimeout
+	// SSE streams are long-lived. A global WriteTimeout would terminate them.
+	// The SSE manager enforces its own per-write deadline.
+	e.Server.WriteTimeout = 0
 	e.Server.IdleTimeout = cfg.Server.IdleTimeout
+	e.Server.ReadHeaderTimeout = 5 * time.Second
 
 	serverErrors := make(chan error, 1)
 	go func() {
@@ -89,12 +98,22 @@ func RunEchoHTTPService(ctx context.Context, cfg config.Config, s *service.Servi
 		defer cancel()
 
 		logger.Info("stopping http server")
+		if sseManager != nil {
+			if err := sseManager.Shutdown(shutdownContext); err != nil {
+				logger.Warn("sse shutdown failed", "error", err)
+			}
+		}
 		if err := e.Shutdown(shutdownContext); err != nil {
 			return fmt.Errorf("shutdown http server: %w", err)
 		}
 
 		return nil
 	case err := <-serverErrors:
+		if sseManager != nil {
+			shutdownContext, cancel := context.WithTimeout(context.Background(), cfg.Server.ShutdownTimeout)
+			_ = sseManager.Shutdown(shutdownContext)
+			cancel()
+		}
 		if err == nil || errors.Is(err, http.ErrServerClosed) {
 			return nil
 		}

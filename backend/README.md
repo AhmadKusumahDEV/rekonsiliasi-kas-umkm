@@ -5,11 +5,10 @@ layer yang mengikuti `init-project.md`. Project ini sengaja tidak memakai
 `vendor`; dependency diambil lewat Go module seperti kebiasaan project
 `go-chat`.
 
-Status saat ini adalah kerangka yang bisa dijalankan dengan lapisan database dan
-query yang sudah disiapkan. Migration baseline PBL, tabel UMKM ternormalisasi,
-backfill dari JSONB, dan generated sqlc sudah tersedia. Service domain, endpoint
-authenticated, serta handler bisnis belum diimplementasikan; endpoint HTTP yang
-aktif baru `/health/live` dan `/health/ready`.
+Status saat ini: autentikasi sesi dan CSRF, alur UMKM (import, alokasi, undo,
+cancel, export), serta stream SSE untuk sinkronisasi state sudah berjalan.
+Migration baseline PBL, tabel UMKM ternormalisasi, backfill dari JSONB, dan
+generated sqlc tersedia; endpoint aktif berada di bawah `/api/v1` dan `/health`.
 
 Asal-usul schema, tabel `pblg_*`, dan keputusan mengenai JSONB dijelaskan di
 [`docs/DATABASE_FROM_PBL.md`](docs/DATABASE_FROM_PBL.md). Inventaris halaman,
@@ -28,9 +27,13 @@ endpoint, query, dan aturan bisnis ada di
   generate ada di `internal/repository/rekonsiliasi_repository_sqlc`.
 
 Service auth/UMKM dan endpoint `/api/v1` untuk alur inti sudah memakai query
-tersebut. Endpoint SSE events, worker, dan frontend belum ada.
+tersebut. Stream SSE tersedia di `GET /api/v1/umkm/events`; worker dan frontend
+belum ada.
 
 ## API v1
+
+Kontrak lengkap untuk frontend, termasuk request/response dan catatan auth/CSRF,
+ada di [`docs/API_ROUTES.md`](docs/API_ROUTES.md).
 
 Endpoint publik:
 
@@ -56,6 +59,12 @@ POST /api/v1/umkm/imports/:id/cancel
 POST /api/v1/umkm/allocations
 POST /api/v1/umkm/allocations/:id/undo
 GET  /api/v1/umkm/export
+```
+
+Stream SSE memakai cookie sesi dan tidak memerlukan CSRF:
+
+```text
+GET  /api/v1/umkm/events
 ```
 
 ## Testing
@@ -86,6 +95,23 @@ Pola dan batasan test yang dipelajari dari project `go-chat` dicatat di
 akan di-skip tanpa `TEST_DATABASE_URL`; set `TEST_REQUIRE_DB=1` bila database
 harus tersedia dan ketiadaannya harus menggagalkan test.
 
+## Debug di VS Code
+
+Folder ini memiliki `.vscode/launch.json` dan `.vscode/tasks.json`; root repo
+juga memiliki konfigurasi yang sama dengan path disesuaikan. Buka folder
+`backend` atau root repo di VS Code, lalu pilih salah satu konfigurasi:
+
+- `API + PostgreSQL (full env)` — menyalakan `db` lewat Docker Compose dan
+  menjalankan API dengan seluruh env development.
+- `API health only (database off)` — menjalankan API tanpa database.
+- `Integration Test: UMKM flow` — menyalakan `db-test` dan menjalankan flow HTTP
+  end-to-end dengan PostgreSQL test.
+- `Unit Test: service domain` dan `Unit Test: HTTP validation` — debug unit test
+  tanpa database.
+
+Env development dan test sudah tertulis di launch config. Kredensial di sana
+hanya untuk Docker lokal, jangan dipakai untuk production.
+
 ## Mulai
 
 ```powershell
@@ -104,6 +130,9 @@ docker compose up -d db
 
 Lalu ubah `configs/local.yaml` menjadi `database.enabled: true` dan pastikan
 DSN/field koneksi sesuai. Perintah penting:
+
+Compose memakai port host `5433` untuk database development agar tidak bentrok
+dengan PostgreSQL lokal yang biasanya memakai `5432`.
 
 ```text
 make run                 jalankan API
