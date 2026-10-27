@@ -7,3 +7,4 @@
 /test-results/
 **/node_modules/
 **/.env.local
+**/__pycache__/

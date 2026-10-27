@@ -40,6 +40,8 @@ Folder placeholder backend tetap dipertahankan sesuai konvensi tim. Tidak ada UI
 
 ## Dokumentasi
 
+- [Panduan seluruh UI - PDF](docs/EFA-UI-Guide.pdf) dan [indeks screenshot](docs/ui-guide/SCREENSHOT-INDEX.md)
+- [Daftar dokumentasi](docs/README.md)
 - [Arsitektur, direktori, alur dan semua endpoint](architecture.md)
 - [PRD](docs/PRD.md) dan [FRD](docs/FRD.md)
 - [Akun demo](docs/DEMO.md), [alur API](docs/INTEGRATION.md)
