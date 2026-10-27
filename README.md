@@ -1,4 +1,7 @@
-# Temu Kas
+# Easy Financial Audit (EFA)
+
+Nama tampilan baru Temu Kas. [Palet, logo dan favicon](docs/BRAND.md)
+mengikuti referensi terbaru; folder, data dan endpoint tetap kompatibel.
 
 Temu Kas membantu pemilik UMKM mencocokkan penjualan dengan uang masuk, termasuk pembayaran sebagian, pencairan gabungan, dan biaya layanan. Tampilan memakai prototipe Temu Kas milik Evan; backend memakai struktur tim: Go, Echo, PostgreSQL, pgx, sqlc, dan Viper.
 
@@ -37,6 +40,7 @@ Folder placeholder backend tetap dipertahankan sesuai konvensi tim. Tidak ada UI
 
 ## Dokumentasi
 
+- [Arsitektur, direktori, alur dan semua endpoint](architecture.md)
 - [PRD](docs/PRD.md) dan [FRD](docs/FRD.md)
 - [Akun demo](docs/DEMO.md), [alur API](docs/INTEGRATION.md)
 - [Hosting](docs/HOSTING.md), [hasil tes](docs/VERIFICATION.md)

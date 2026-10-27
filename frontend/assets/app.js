@@ -1,6 +1,6 @@
-import { dashboard, maxyBrand, shell } from "./design.js";
+import { dashboard, maxyBrand, shell } from "./design.js?v=efa1";
 
-import { presentView, presentAuth } from "./motion.js";
+import { presentView, presentAuth } from "./motion.js?v=efa1";
 
 const root = document.querySelector("#app");
 
@@ -565,13 +565,13 @@ function auth(register = false) {
   state.refreshing = false;
   state.data = null;
   stopEvents();
-  document.title = (register ? "Daftar" : "Masuk") + " · Temu Kas";
+  document.title = (register ? "Daftar" : "Masuk") + " · Easy Financial Audit";
   root.innerHTML =
     '<main id="main" class="auth auth-umkm ' +
     (register ? "is-register" : "") +
     '"><section class="auth-story">' +
-    maxyBrand("Temu Kas", "/") +
-    '<img src="/assets/umkm-real.jpg" alt="" width="2400" height="3000"><div class="auth-copy"><h1>Setiap penerimaan, jelas pasangannya.</h1><p>Catatan penjualan, pembayaran masuk, dan selisihnya. Lebih jelas sebelum menutup hari.</p></div><small class="muted">Foto referensi · Farhad Ibrahimzade / Unsplash</small></section><section class="auth-form"><div class="auth-inner"><div class="auth-heading"><span class="auth-product">Temu Kas / Maxy Academy</span><small>' +
+    maxyBrand("Easy Financial Audit", "/") +
+    '<img src="/assets/umkm-real.jpg" alt="" width="2400" height="3000"><div class="auth-copy"><h1>Setiap penerimaan, jelas pasangannya.</h1><p>Catatan penjualan, pembayaran masuk, dan selisihnya. Lebih jelas sebelum menutup hari.</p></div><small class="muted">Foto referensi · Farhad Ibrahimzade / Unsplash</small></section><section class="auth-form"><div class="auth-inner"><div class="auth-heading"><span class="auth-product">Easy Financial Audit</span><small>' +
     (register ? "Mulai catatan usahamu" : "Selamat datang kembali") +
     "</small><h2>" +
     (register ? "Buat akunmu" : "Masuk ke ruang kerja") +

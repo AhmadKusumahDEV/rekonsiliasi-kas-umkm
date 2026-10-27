@@ -1,11 +1,14 @@
 # Aset frontend
 
-Tampilan dan animasi berasal dari prototipe Temu Kas Evan. Hanya aset yang dipakai Temu Kas yang disalin.
+Layout dan animasi berasal dari prototipe Temu Kas Evan. Logo, favicon dan
+palet sekarang mengikuti Easy Financial Audit; lihat ../docs/BRAND.md.
 
 | File | Penggunaan |
 | --- | --- |
 | umkm-real.jpg | Foto usaha Farhad Ibrahimzade / Unsplash; atribusi tampil pada UI |
-| maxy-logo.png, favicon.png | Identitas proyek PBL MAXY |
+| efa-mark.svg, efa-logo.svg, efa-logo-hd.png | Identitas Easy Financial Audit dari referensi pemilik proyek |
+| favicon.svg, favicon-32.png, favicon.ico, favicon.png | Ikon browser EFA |
+| apple-touch-icon.png, icon-192.png, icon-512.png | Ikon resolusi tinggi perangkat |
 | InterVariable.woff2, Inter-LICENSE.txt | Font Inter dan lisensi |
 | poppins-semibold.ttf, Poppins-OFL.txt | Font judul dan lisensi |
 | contoh-penjualan.csv, contoh-penerimaan.csv | Contoh sintetis untuk unduhan dan seed |
@@ -13,5 +16,6 @@ Tampilan dan animasi berasal dari prototipe Temu Kas Evan. Hanya aset yang dipak
 | design.js | Komposisi visual Temu Kas |
 | style.css, brand.css | Tampilan asli |
 | motion.js, motion.css | Animasi progresif dan reduced motion |
+| efa.css | Palet EFA terbaru dan penyesuaian kontras |
 
 Branding menunjukkan konteks PBL, bukan klaim layanan keuangan resmi MAXY. Aset prototipe Grader/Facility tidak disertakan.

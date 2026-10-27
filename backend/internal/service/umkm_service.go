@@ -489,7 +489,7 @@ func (s *Service) ExportCSV(ctx context.Context, user models.User) ([]byte, stri
 func (s *Service) Config() models.ConfigResponse {
 	return models.ConfigResponse{
 		Kind:    config.AppKindUMKM,
-		Brand:   "Temu Kas",
+		Brand:   "Easy Financial Audit",
 		Tagline: "Setiap penerimaan, jelas pasangannya.",
 		Roles:   []string{"owner"},
 	}

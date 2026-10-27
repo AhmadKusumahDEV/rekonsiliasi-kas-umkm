@@ -9,7 +9,7 @@ const escape = (value) =>
   );
 
 export function maxyBrand(product, href = "#overview") {
-  return `<a class="maxy-brand" href="${href}" aria-label="${escape(product)} — Maxy Academy"><img src="/assets/maxy-logo.png" width="122" height="36" alt="Maxy Academy"><span class="brand-separator" aria-hidden="true"></span><strong>${escape(product)}</strong></a>`;
+  return `<a class="maxy-brand efa-brand" href="${href}" aria-label="Easy Financial Audit — Beranda"><img src="/assets/efa-mark.svg" width="48" height="48" alt=""><span class="efa-wordmark"><strong>Easy Financial</strong><span>Audit</span></span></a>`;
 }
 export function shell({ brandName, menu, account, context, nav, footer }) {
   const main = '<main id="main" class="content"></main>';

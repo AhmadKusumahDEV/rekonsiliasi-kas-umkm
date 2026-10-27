@@ -35,6 +35,9 @@ test("static server isolates files and proxies session/CSRF requests", async () 
     assert.match(home.headers.get("content-security-policy"), /connect-src 'self'/);
     assert.equal((await fetch(base + "/assets/umkm-real.jpg")).status, 200);
     assert.equal((await fetch(base + "/assets/motion.js")).status, 200);
+    const favicon = await fetch(base + "/assets/favicon.svg");
+    assert.equal(favicon.headers.get("content-type"), "image/svg+xml");
+    assert.match(await favicon.text(), /Easy Financial Audit/);
     assert.equal((await fetch(base + "/assets/style.css", {method:"HEAD"})).headers.get("content-type"), "text/css; charset=utf-8");
     for (const path of ["/.env", "/backend/configs/local.yaml", "/../.git/config", "/assets/../.env"]) {
       assert.equal((await fetch(base + path)).status, 404);
