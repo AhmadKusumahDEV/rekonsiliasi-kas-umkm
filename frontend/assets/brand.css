@@ -1,0 +1,727 @@
+@font-face {
+  font-family: MaxyDisplay;
+  src: url("/assets/poppins-semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+body[data-kind] {
+  --accent: #0066ff;
+  --accent-hover: #0054d1;
+  --sidebar: #001233;
+  --ink: #102441;
+  --muted: #61718a;
+  --line: rgba(0, 18, 51, 0.12);
+  --soft: #edf4ff;
+  --surface: #fff;
+  --paper: #f6f8fc;
+}
+body[data-kind="umkm"] {
+  --paper: #fff;
+}
+h1,
+h2 {
+  font-family: MaxyDisplay, InterVariable, sans-serif;
+}
+h1 {
+  font-size: 30px;
+  letter-spacing: -0.045em;
+}
+button,
+.button {
+  border-radius: 9px;
+}
+.maxy-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  width: fit-content;
+}
+.maxy-brand img {
+  display: block;
+  width: 122px;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  padding: 7px 9px;
+  background: #001233;
+  border-radius: 7px;
+  object-fit: contain;
+  outline: 0;
+  flex-shrink: 0;
+}
+.maxy-brand strong {
+  font-family: MaxyDisplay, InterVariable, sans-serif;
+  font-size: 20px;
+  color: var(--ink);
+  letter-spacing: -0.04em;
+}
+.brand-separator {
+  height: 24px;
+  border-left: 1px solid var(--line);
+}
+.navlink {
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.65;
+  outline: 0;
+}
+.view-date,
+.small-label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+.page-title {
+  margin-bottom: 4px;
+}
+.page-title p {
+  font-size: 14px;
+}
+.connection {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.connection::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #147452;
+  flex-shrink: 0;
+}
+.connection[data-online="false"]::before {
+  background: #a8531e;
+}
+.account {
+  min-width: 0;
+}
+.context strong {
+  overflow-wrap: anywhere;
+}
+.cash-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Temu Kas: top navigation and an open, finance-first ledger. */
+.cash-shell {
+  display: block;
+}
+.cash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1280px;
+  margin: auto;
+  padding: 24px 32px;
+}
+.cash-subnav {
+  max-width: 1280px;
+  margin: auto;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+.cash-subnav .context {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  padding: 12px 0;
+}
+.cash-subnav .context strong {
+  font-size: 14px;
+}
+.cash-subnav .context small {
+  font-size: 12px;
+}
+.cash-subnav nav {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.cash-subnav .navlink {
+  border-radius: 0;
+  padding: 18px 9px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.cash-subnav .navlink[aria-current="page"] {
+  color: #0054d1;
+  background: transparent;
+  border-bottom-color: #0066ff;
+}
+.cash-subnav .navlink:hover {
+  color: #0054d1;
+  background: #f5f8ff;
+}
+.cash-subnav .nav-icon {
+  display: none;
+}
+body[data-kind="umkm"] main.content {
+  max-width: 1280px;
+  padding: 36px 32px 52px;
+  gap: 30px;
+}
+.cash-account {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  border-radius: 24px;
+  overflow: hidden;
+  background: #001233;
+}
+.cash-balance {
+  padding: 34px 36px 24px;
+  color: #fff;
+  min-width: 0;
+}
+.account-caption {
+  color: #c4d7f6;
+  font-size: 14px;
+}
+.account-amount {
+  display: block;
+  font-size: 50px;
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  font-variant-numeric: tabular-nums;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.cash-balance p {
+  color: #bccde7;
+  font-size: 14px;
+}
+.balance-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 30px;
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+  font-size: 13px;
+}
+.balance-link span {
+  color: #ffb800;
+}
+.cash-account-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  color: #c1d4f0;
+}
+.cash-business-photo {
+  position: relative;
+  margin: 0;
+  min-width: 0;
+  min-height: 300px;
+}
+.cash-business-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 56%;
+}
+.cash-business-photo::after {
+  content: "";
+  position: absolute;
+  inset: 40% 0 0;
+  background: linear-gradient(transparent, rgba(0, 18, 51, 0.84));
+}
+.cash-business-photo figcaption {
+  position: absolute;
+  z-index: 1;
+  bottom: 24px;
+  left: 28px;
+  right: 20px;
+  color: #fff;
+  display: grid;
+  gap: 7px;
+}
+.cash-business-photo figcaption strong {
+  font-size: 18px;
+}
+.cash-business-photo figcaption span {
+  font-size: 11px;
+  color: #dce7f7;
+}
+.cash-totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 0 0 26px;
+  border-bottom: 1px solid var(--line);
+}
+.cash-totals > div {
+  display: grid;
+  gap: 7px;
+  padding: 0 30px;
+  border-left: 1px solid var(--line);
+  min-width: 0;
+}
+.cash-totals > div:first-child {
+  padding-left: 0;
+  border: 0;
+}
+.cash-totals > div:last-child {
+  padding-right: 0;
+}
+.cash-totals span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.cash-totals strong {
+  font-size: 27px;
+  letter-spacing: -0.04em;
+  font-weight: 600;
+}
+.cash-totals strong small {
+  font-size: 15px;
+}
+.cash-totals small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.cash-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+.cash-transaction {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.cash-transaction > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.transaction-ref {
+  font-size: 11px;
+  color: var(--muted);
+}
+.cash-transaction h3 {
+  font-size: 15px;
+  margin: 3px 0;
+}
+.cash-transaction p {
+  font-size: 12px;
+  color: var(--muted);
+}
+.transaction-amount {
+  text-align: right;
+  display: grid;
+  gap: 3px;
+}
+.transaction-amount strong {
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.transaction-amount small {
+  font-size: 11px;
+}
+.cash-receipt {
+  padding: 24px;
+  background: #fff8e8;
+  border-radius: 16px;
+  border-bottom: 3px dashed rgba(170, 112, 0, 0.2);
+}
+.receipt-header {
+  display: grid;
+  gap: 5px;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed rgba(101, 74, 10, 0.25);
+}
+.receipt-header span {
+  font-size: 12px;
+  color: #7f662e;
+}
+.receipt-header strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+.receipt-line,
+.receipt-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 18px;
+  font-size: 13px;
+}
+.receipt-line strong,
+.receipt-total strong {
+  font-weight: 600;
+}
+.receipt-total {
+  margin-top: 20px;
+  border-top: 1px dashed rgba(101, 74, 10, 0.25);
+}
+.cash-receipt p {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #78623b;
+}
+.cash-receipt > a {
+  display: inline-block;
+  margin-top: 18px;
+  color: #0054d1;
+  font-weight: 600;
+  font-size: 13px;
+}
+.cash-footer {
+  max-width: 1280px;
+  margin: auto;
+  padding: 22px 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+.cash-footer button {
+  margin-left: auto;
+}
+.work-initial {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #0054d1;
+  border: 1px solid rgba(0, 102, 255, 0.22);
+  font-weight: 600;
+}
+.task-index {
+  font:
+    12px ui-monospace,
+    monospace;
+  color: #8295af;
+}
+.side-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 14px 8px 0;
+}
+.auth-product {
+  color: #0054d1;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.auth-copy h1 {
+  font-family: MaxyDisplay, InterVariable, sans-serif;
+  font-size: 38px;
+}
+.auth-inner {
+  width: 320px;
+}
+.auth-inner h2 {
+  font-size: 25px;
+}
+.auth-story .maxy-brand img {
+  filter: none;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  border-radius: 7px;
+}
+.auth-story .maxy-brand strong {
+  color: #fff;
+}
+.auth-story .brand-separator {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.auth-story > small {
+  font-size: 10px;
+}
+.auth-umkm {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+.auth-umkm .auth-story {
+  background: #0066ff;
+  padding: 40px;
+  gap: 26px;
+}
+.auth-umkm .auth-story img:not(.maxy-brand img) {
+  order: 3;
+  border-radius: 18px;
+  max-height: 370px;
+  height: 370px;
+  min-height: 220px;
+  object-position: center 55%;
+}
+.auth-umkm .auth-story .auth-copy {
+  order: 2;
+  padding: 0;
+}
+.auth-umkm .auth-copy h1 {
+  max-width: 17ch;
+  font-size: 40px;
+}
+.auth-umkm .auth-copy p {
+  color: #e1edff;
+  max-width: 48ch;
+}
+.auth-umkm .auth-story > small {
+  order: 4;
+  color: #d7e8ff;
+}
+.auth-umkm .auth-form {
+  background: #fff;
+}
+#mobile-menu {
+  background: #001233;
+  color: #fff;
+}
+#mobile-menu .navlink {
+  color: #c0d3f0;
+  font-size: 16px;
+}
+#mobile-menu .navlink[aria-current="page"] {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+#mobile-menu .nav-icon {
+  filter: invert(1);
+}
+#mobile-menu button {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+@media (max-width: 1200px) {
+  .cash-subnav {
+    gap: 20px;
+  }
+  .cash-subnav .navlink {
+    padding: 18px 6px;
+    font-size: 12px;
+  }
+}
+@media (max-width: 1000px) {
+  .cash-subnav nav {
+    display: none;
+  }
+  .cash-header .mobile-toggle {
+    display: inline-flex;
+  }
+  .cash-subnav {
+    border-bottom: 1px solid var(--line);
+  }
+  .cash-workspace {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 26px;
+  }
+  .account-amount {
+    font-size: 38px;
+  }
+  .auth-umkm .auth-copy h1 {
+    font-size: 32px;
+  }
+}
+@media (max-width: 800px) {
+  body[data-kind] .shell {
+    display: block;
+  }
+  .maxy-brand {
+    gap: 12px;
+  }
+  .maxy-brand img {
+    width: 100px;
+  }
+  .maxy-brand strong {
+    font-size: 17px;
+  }
+  .maxy-brand .brand-separator {
+    height: 22px;
+  }
+  .cash-header {
+    padding: 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .cash-brand-row {
+    gap: 12px;
+  }
+  .cash-header .account {
+    margin-left: auto;
+  }
+  .cash-header .account strong {
+    display: none;
+  }
+  .cash-header .connection {
+    font-size: 11px;
+  }
+  .cash-subnav {
+    padding: 0 20px;
+  }
+  body[data-kind] main.content {
+    padding: 26px 20px 40px;
+    gap: 26px;
+  }
+  .page-title p {
+    font-size: 16px;
+  }
+  .view-date {
+    font-size: 13px;
+  }
+  .cash-account {
+    grid-template-columns: minmax(0, 1fr);
+    border-radius: 18px;
+  }
+  .cash-balance {
+    padding: 26px;
+  }
+  .account-amount {
+    font-size: 39px;
+  }
+  .cash-business-photo {
+    min-height: 200px;
+  }
+  .cash-business-photo figcaption {
+    left: 24px;
+  }
+  .cash-totals {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .cash-totals > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0 0 18px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .cash-totals > div:last-child {
+    padding: 0;
+    border: 0;
+  }
+  .cash-totals strong {
+    font-size: 24px;
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+    text-align: right;
+    max-width: 170px;
+  }
+  .cash-totals span,
+  .cash-totals small {
+    font-size: 14px;
+  }
+  .cash-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .cash-transaction {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .cash-transaction h3 {
+    font-size: 17px;
+  }
+  .cash-transaction p,
+  .transaction-ref,
+  .transaction-amount small {
+    font-size: 14px;
+  }
+  .cash-transaction > div:first-child {
+    flex-basis: 150px;
+  }
+  .transaction-amount strong {
+    font-size: 17px;
+  }
+  .cash-transaction button {
+    margin-left: auto;
+  }
+  .cash-receipt p,
+  .cash-receipt > a,
+  .receipt-line,
+  .receipt-total,
+  .receipt-header span {
+    font-size: 16px;
+  }
+  .cash-footer {
+    padding: 22px 20px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    gap: 14px;
+  }
+  .cash-footer button {
+    margin-left: 0;
+  }
+  .auth {
+    min-height: 100dvh;
+  }
+  .auth .maxy-brand img {
+    width: 106px;
+  }
+  .auth .maxy-brand strong {
+    font-size: 19px;
+  }
+  .auth .auth-copy h1 {
+    font-size: 30px;
+    max-width: 20ch;
+  }
+  .auth .auth-copy p {
+    display: block;
+    font-size: 16px;
+  }
+  .auth-umkm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .auth-umkm .auth-story {
+    padding: 24px;
+    gap: 20px;
+  }
+  .auth-umkm .auth-story img:not(.maxy-brand img) {
+    display: block;
+    height: 190px;
+    max-height: none;
+    min-height: 0;
+  }
+  .auth-umkm .auth-copy p {
+    display: none;
+  }
+  .auth-umkm .auth-form {
+    padding: 32px 24px;
+  }
+  .auth .auth-inner {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

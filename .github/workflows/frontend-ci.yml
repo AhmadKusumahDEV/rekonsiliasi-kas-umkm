@@ -1,0 +1,25 @@
+name: Frontend CI
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/**", ".github/workflows/frontend-ci.yml"]
+  pull_request:
+    paths: ["frontend/**", ".github/workflows/frontend-ci.yml"]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax and proxy tests
+        working-directory: frontend
+        run: |
+          node --check assets/app.js
+          node --check assets/design.js
+          node --check assets/motion.js
+          node --test tests/*.test.mjs
