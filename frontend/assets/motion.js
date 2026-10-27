@@ -81,7 +81,7 @@ export function presentAuth(container, register) {
   if (document.body.dataset.kind !== "umkm") return;
   lastView = "";
   settle();
-  const photo = container.querySelector(".auth-story > img");
+  const photo = container.querySelector(".auth-photo");
   play(
     photo,
     [
@@ -89,6 +89,12 @@ export function presentAuth(container, register) {
       { opacity: 1, transform: "scale(1)" },
     ],
     600,
+  );
+  play(
+    container.querySelector(".auth-note"),
+    [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "translateY(0)" }],
+    460,
+    90,
   );
   const parts = container.querySelectorAll(
     ".auth-heading, .auth-inner > form, .auth-switch",

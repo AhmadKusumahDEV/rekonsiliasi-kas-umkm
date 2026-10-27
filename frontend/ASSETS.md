@@ -17,5 +17,14 @@ palet sekarang mengikuti Easy Financial Audit; lihat ../docs/BRAND.md.
 | style.css, brand.css | Tampilan asli |
 | motion.js, motion.css | Animasi progresif dan reduced motion |
 | efa.css | Palet EFA terbaru dan penyesuaian kontras |
+| auth.css, auth-scene.js | Form kiri, panel foto bertakik kanan dan kartu bertumpuk, khusus login/daftar |
+| efa-finance-desk.jpg | Foto Mikhail Nilov / Pexels, ID 8296991; versi lokal 2400 x 3600 untuk login |
+| efa-finance-notes.jpg | Foto Mikhail Nilov / Pexels, ID 8297220; versi lokal 2400 x 3600 untuk daftar |
 
 Branding menunjukkan konteks PBL, bukan klaim layanan keuangan resmi MAXY. Aset prototipe Grader/Facility tidak disertakan.
+
+Foto baru berasal dari [halaman laptop dan kalkulator](https://www.pexels.com/photo/person-using-a-calculator-and-a-laptop-8296991/)
+dan [halaman pencatatan keuangan](https://www.pexels.com/photo/a-person-working-on-the-documents-using-a-calculator-8297220/),
+diunduh sesuai [lisensi Pexels](https://www.pexels.com/license/). Kredit ditampilkan
+pada masing-masing halaman. Foto adalah referensi visual, bukan pengguna EFA
+atau bukti penerapan pada perusahaan tertentu.

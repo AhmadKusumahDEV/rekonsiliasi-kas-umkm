@@ -1,6 +1,7 @@
-import { dashboard, maxyBrand, shell } from "./design.js?v=efa2";
+import { authScene } from "./auth-scene.js?v=efa3";
+import { dashboard, maxyBrand, shell } from "./design.js?v=efa3";
 
-import { presentView, presentAuth } from "./motion.js?v=efa2";
+import { presentView, presentAuth } from "./motion.js?v=efa3";
 
 const root = document.querySelector("#app");
 
@@ -569,12 +570,10 @@ function auth(register = false) {
   root.innerHTML =
     '<main id="main" class="auth auth-umkm ' +
     (register ? "is-register" : "") +
-    '"><section class="auth-story">' +
-    maxyBrand("Easy Financial Audit", "/") +
-    '<img src="/assets/umkm-real.jpg" alt="" width="2400" height="3000"><div class="auth-copy"><h1>Setiap penerimaan, jelas pasangannya.</h1><p>Catatan penjualan, pembayaran masuk, dan selisihnya. Lebih jelas sebelum menutup hari.</p></div><div class="auth-flow" aria-label="Alur rekonsiliasi"><span><b>01</b> Penjualan</span><i aria-hidden="true">→</i><span><b>02</b> Penerimaan</span><i aria-hidden="true">→</i><span><b>03</b> Cocokkan</span></div><small class="muted">Foto referensi · Farhad Ibrahimzade / Unsplash</small></section><section class="auth-form"><div class="auth-inner"><div class="auth-heading"><span class="auth-product">Easy Financial Audit</span><small>' +
+    '"><section class="auth-form">' + maxyBrand("Easy Financial Audit", "#login") + '<div class="auth-inner"><div class="auth-heading"><span class="auth-product">Easy Financial Audit</span><small>' +
     (register ? "Mulai catatan usahamu" : "Selamat datang kembali") +
     "</small><h2>" +
-    (register ? "Buat akunmu" : "Masuk ke ruang kerja") +
+    (register ? "Mulai catatan usahamu." : "Selamat datang kembali.") +
     '</h2><p class="muted">' +
     (register
       ? "Satu akun pemilik untuk catatan usaha yang terpisah."
@@ -627,7 +626,7 @@ function auth(register = false) {
     (register ? "#login" : "#register") +
     '">' +
     (register ? "Masuk" : "Daftar") +
-    "</a></p><small>Prototipe PBL. Jangan unggah data keuangan nyata tanpa izin pemiliknya.</small></div></section></main>";
+    "</a></p><small>Prototipe PBL. Jangan unggah data keuangan nyata tanpa izin pemiliknya.</small></div></section>" + authScene(register) + "</main>";
   presentAuth(root, register);
 }
 function startEvents() {

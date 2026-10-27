@@ -1,4 +1,4 @@
-# Login dan daftar — EFA navy
+# Login dan daftar — EFA editorial
 
 Screenshot LIVE dari https://efa.madgo.my.id/, 27 Oktober 2026.
 Form daftar tidak dikirim dan data keuangan tidak diubah saat pengujian.
@@ -15,7 +15,13 @@ navigasi login–daftar, validasi input wajib, dan reduced motion diuji
 pada preview lokal dengan source UI yang sama. Registrasi akun baru
 tidak diuji di production.
 
-Deployment: `dpl_TPGFiyq3TVRzctuk19KdGHLnSF3M`.
+Komposisi mengikuti referensi pengguna: form kiri, input pil, panel foto
+kanan dengan takikan melengkung, dan kartu terang yang menumpuk. Foto
+login dan daftar berbeda, keduanya 2400 x 3600 dari Mikhail Nilov/Pexels.
+Di HP form tampil lebih dahulu, dilanjutkan panel visual; seluruh isi
+tetap bisa digulir. Tidak ada testimoni atau angka keberhasilan rekaan.
+
+Deployment: `dpl_B1wtobXbhVajRQBGMpDajtXtmTWc`.
 Source Go prototype yang dideploy tetap berbeda dari backend integrasi
 tim di repository ini; perubahan ini menyamakan UI kedua source.
 

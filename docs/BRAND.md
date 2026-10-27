@@ -49,7 +49,7 @@ frontend/assets/efa.css menjadi lapisan tema EFA setelah style.css,
 brand.css, dan motion.css. Komposisi layout dan interaksi tidak diganti.
 design.js menyusun logo header, index.html memuat favicon serta metadata.
 
-Cache URL aset memakai versi efa2. Saat mengganti aset berikutnya,
+Cache URL aset memakai versi efa3. Saat mengganti aset berikutnya,
 perbarui versi agar cache browser memvalidasi file baru.
 
 ## Live dan source tim
@@ -64,14 +64,25 @@ Perubahan ini tidak memigrasikan backend demo Vercel menjadi backend tim.
 
 ## Halaman masuk dan daftar
 
-`frontend/assets/auth.css` memuat komposisi navy khusus `.auth-umkm`, setelah
-`efa.css`. Warna navy #102B43 dan #153B58 merupakan turunan gelap biru EFA;
-cyan #91D4ED dipakai untuk teks tautan agar terbaca di latar gelap. Tombol
-utama tetap amber #F59E0B. Warna dashboard tidak ikut berubah.
+`frontend/assets/auth.css` memuat komposisi khusus `.auth-umkm`, setelah
+`efa.css`. Form berada di kiri dan panel foto editorial berada di kanan,
+dengan takikan melengkung dan kartu terang yang menumpuk pada bagian bawah.
+Di HP, form tampil dahulu, diikuti panel visual. Urutan DOM sama dengan
+urutan visual agar keyboard dan pembaca layar tidak berpindah secara janggal.
 
-Di HP, foto dekoratif dan alur tiga langkah disembunyikan agar form cepat
-dijangkau. Di desktop, keduanya mendampingi form. Animasi memakai transform
-dan opacity, dibatalkan saat pengguna memakai keyboard, serta mengikuti
-pengaturan reduced motion. Tidak ada animasi dekoratif yang berulang.
+Latar memakai biru/cyan EFA dengan aksen coral dan amber; panel memakai
+turunan gelap #204660, #344A57 dan #52636C. Input berbentuk pil dengan latar
+#10212C, teks terang dan focus ring cyan. Tombol utama tetap amber EFA.
+Warna dashboard tidak ikut berubah.
+
+`auth-scene.js` menyusun panel visual yang dipakai bersama oleh login dan
+daftar. Keduanya memakai foto HD Mikhail Nilov yang berbeda (lihat
+[sumber dan lisensi](../frontend/ASSETS.md)); bukan testimoni pengguna.
+Tidak ditambahkan tombol login sosial atau pemulihan sandi yang belum
+memiliki alur backend.
+
+Foto dan kartu memakai animasi masuk transform/opacity. Animasi dibatalkan
+saat pengguna memakai keyboard dan mengikuti reduced motion. Tidak ada
+animasi dekoratif berulang atau tambahan library animasi.
 
 Snapshot terbaru login/daftar: [auth-refresh](ui-guide/auth-refresh/).
