@@ -23,7 +23,7 @@ func TestSendEventToUser(t *testing.T) {
 	m := startTestManager(t, testConfig())
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"alice"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.Online("alice") })
 
 	sent, err := m.SendEventToUser("alice", Event{Name: "hello", Data: json.RawMessage(`{"x":1}`)})
@@ -42,9 +42,9 @@ func TestRoomBroadcastAndUserOperations(t *testing.T) {
 	a1, r1 := openStream(t, server, url.Values{"user": {"a"}, "room": {"r"}}, nil)
 	a2, r2 := openStream(t, server, url.Values{"user": {"a"}, "room": {"r"}}, nil)
 	b, rb := openStream(t, server, url.Values{"user": {"b"}}, nil)
-	defer a1.Body.Close()
-	defer a2.Body.Close()
-	defer b.Body.Close()
+	defer func() { _ = a1.Body.Close() }()
+	defer func() { _ = a2.Body.Close() }()
+	defer func() { _ = b.Body.Close() }()
 	waitUntil(t, time.Second, func() bool {
 		return m.Stats().ConnectedClients == 3 && m.hub.RoomClientCount("r") == 2
 	})
@@ -87,7 +87,7 @@ func TestCloseRoomSendsCloseEvent(t *testing.T) {
 	m := startTestManager(t, testConfig())
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"room-user"}, "room": {"closing"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.hub.RoomClientCount("closing") == 1 })
 
 	if closed := m.CloseRoom("closing", 4000, "room closed"); closed != 1 {
@@ -120,7 +120,7 @@ func TestReplayWithLastEventID(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"replay-user"}}, http.Header{"Last-Event-ID": {"5"}})
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	event := readSSEEvent(t, reader)
 	if event["id"] != "6" || event["event"] != "missed" {
 		t.Fatalf("replay event = %+v", event)
@@ -135,7 +135,7 @@ func TestReplayFailureSendsResync(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"replay-error"}}, http.Header{"Last-Event-ID": {"1"}})
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if event := readSSEEvent(t, reader); event["event"] != "resync" {
 		t.Fatalf("replay error event = %+v", event)
 	}
@@ -153,7 +153,7 @@ func TestReplayTruncationSendsResync(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"replay-limit"}}, http.Header{"Last-Event-ID": {"0"}})
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if event := readSSEEvent(t, reader); event["event"] != "first" {
 		t.Fatalf("first replay event = %+v", event)
 	}
@@ -171,7 +171,7 @@ func TestReplayOversizeSendsResync(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"replay-large"}}, http.Header{"Last-Event-ID": {"0"}})
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if event := readSSEEvent(t, reader); event["event"] != "resync" {
 		t.Fatalf("oversize replay event = %+v", event)
 	}
@@ -185,7 +185,7 @@ func TestReplayRequiresApplicationEventID(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, _ := openStream(t, server, url.Values{"user": {"replay-id"}}, http.Header{"Last-Event-ID": {"1"}})
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.Online("replay-id") })
 	if _, err := m.SendEventToUser("replay-id", Event{Name: "missing.id"}); !errors.Is(err, ErrMissingEventID) {
 		t.Fatalf("missing ID error = %v", err)
@@ -203,7 +203,7 @@ func TestLastEventIDLengthLimit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", resp.StatusCode)
 	}
@@ -221,7 +221,7 @@ func TestCORSPreflight(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusNoContent {
 		t.Fatalf("preflight status = %d", resp.StatusCode)
 	}
@@ -241,7 +241,7 @@ func TestPresenceRefreshOnHeartbeat(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, _ := openStream(t, server, url.Values{"user": {"presence-refresh"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, 2*time.Second, func() bool { return presence.refreshed.Load() > 0 })
 }
 
@@ -254,7 +254,7 @@ func TestTokenExpiryAndConnectionAge(t *testing.T) {
 		m := startTestManager(t, cfg)
 		server := serveTestManager(t, m)
 		resp, reader := openStream(t, server, nil, nil)
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		assertCloseCode(t, readSSEEvent(t, reader), CloseTokenExpired)
 	})
 
@@ -264,7 +264,7 @@ func TestTokenExpiryAndConnectionAge(t *testing.T) {
 		m := startTestManager(t, cfg)
 		server := serveTestManager(t, m)
 		resp, reader := openStream(t, server, url.Values{"user": {"age"}}, nil)
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		assertCloseCode(t, readSSEEvent(t, reader), CloseConnectionAge)
 	})
 }
@@ -306,7 +306,7 @@ func TestShutdownUsesRestartCode(t *testing.T) {
 	m := startTestManager(t, testConfig())
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"shutdown"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.Online("shutdown") })
 
 	errCh := make(chan error, 1)
@@ -357,7 +357,7 @@ func TestShutdownWithHTTPServerRegisterOnShutdown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.Online("server-shutdown") })
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -380,7 +380,7 @@ func TestCloseDrainsQueuedEvent(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"drain"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.Online("drain") })
 	var client *Client
 	select {
@@ -429,7 +429,7 @@ func TestMiddlewareOrder(t *testing.T) {
 
 	server := serveTestManager(t, m)
 	resp, _ := openStream(t, server, url.Values{"user": {"middleware"}}, nil)
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	waitUntil(t, time.Second, func() bool {
 		mu.Lock()
 		defer mu.Unlock()
@@ -460,7 +460,7 @@ func TestPerTypeLimitAndOnPublish(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"type-limit"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.Online("type-limit") })
 
 	if _, err := m.SendEventToUser("type-limit", Event{Name: "small", Data: json.RawMessage(`{"x":"123456"}`)}); !errors.Is(err, ErrEventTooLarge) {
@@ -489,9 +489,9 @@ func TestHandshakeSlotIsReleasedBeforeStreamLifetime(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	first, _ := openStream(t, server, url.Values{"user": {"one"}}, nil)
-	defer first.Body.Close()
+	defer func() { _ = first.Body.Close() }()
 	second, _ := openStream(t, server, url.Values{"user": {"two"}}, nil)
-	defer second.Body.Close()
+	defer func() { _ = second.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.Stats().ConnectedClients == 2 })
 }
 
@@ -504,7 +504,7 @@ func TestBusAndPresenceHooks(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"bus-user"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool {
 		return m.Online("bus-user") && presence.added.Load() == 1
 	})
@@ -529,7 +529,7 @@ func TestBusAndPresenceHooks(t *testing.T) {
 		t.Fatalf("presence online = %v, %v", online, err)
 	}
 
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	waitUntil(t, time.Second, func() bool { return presence.removed.Load() == 1 })
 }
 
@@ -545,7 +545,7 @@ func TestAuthenticationStatusAndOrigin(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusUnauthorized {
 			t.Fatalf("status = %d", resp.StatusCode)
 		}
@@ -562,7 +562,7 @@ func TestAuthenticationStatusAndOrigin(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusInternalServerError {
 			t.Fatalf("status = %d", resp.StatusCode)
 		}
@@ -578,7 +578,7 @@ func TestAuthenticationStatusAndOrigin(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusForbidden {
 			t.Fatalf("status = %d", resp.StatusCode)
 		}
@@ -597,7 +597,7 @@ func TestAuthenticationStatusAndOrigin(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusServiceUnavailable {
 			t.Fatalf("status = %d", resp.StatusCode)
 		}
@@ -618,7 +618,7 @@ func TestAuthenticationStatusAndOrigin(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusServiceUnavailable {
 			t.Fatalf("status = %d", resp.StatusCode)
 		}
@@ -644,7 +644,7 @@ func TestOnRejectReasonsAndRetryAfter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusForbidden {
 		t.Fatalf("origin status = %d", resp.StatusCode)
 	}
@@ -661,13 +661,13 @@ func TestOnRejectReasonsAndRetryAfter(t *testing.T) {
 	m2 := startTestManager(t, cfg2)
 	server2 := serveTestManager(t, m2)
 	first, _ := openStream(t, server2, url.Values{"user": {"one"}}, nil)
-	defer first.Body.Close()
+	defer func() { _ = first.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m2.Stats().ConnectedClients == 1 })
 	resp2, err := http.Get(server2.URL + "/?user=two")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp2.Body.Close()
+	defer func() { _ = resp2.Body.Close() }()
 	if resp2.StatusCode != http.StatusTooManyRequests || resp2.Header.Get("Retry-After") != "1" {
 		t.Fatalf("limit status/retry = %d/%q", resp2.StatusCode, resp2.Header.Get("Retry-After"))
 	}
@@ -690,7 +690,7 @@ func TestOnDisconnectGetsCloseInfoAndSkipsRejectedSetup(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, _ := openStream(t, server, url.Values{"user": {"close-info"}, "room": {"closing"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.hub.RoomClientCount("closing") == 1 })
 	m.CloseRoom("closing", 4000, "room closed")
 	select {
@@ -713,7 +713,7 @@ func TestOnDisconnectGetsCloseInfoAndSkipsRejectedSetup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp2.Body.Close()
+	defer func() { _ = resp2.Body.Close() }()
 	if resp2.StatusCode != http.StatusForbidden {
 		t.Fatalf("OnConnect rejection status = %d", resp2.StatusCode)
 	}
@@ -769,13 +769,13 @@ func TestConnectionLimits(t *testing.T) {
 		m := startTestManager(t, cfg)
 		server := serveTestManager(t, m)
 		first, _ := openStream(t, server, url.Values{"user": {"one"}}, nil)
-		defer first.Body.Close()
+		defer func() { _ = first.Body.Close() }()
 		waitUntil(t, time.Second, func() bool { return m.Stats().ConnectedClients == 1 })
 		resp, err := http.Get(server.URL + "/?user=two")
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusTooManyRequests {
 			t.Fatalf("status = %d, want 429", resp.StatusCode)
 		}
@@ -787,13 +787,13 @@ func TestConnectionLimits(t *testing.T) {
 		m := startTestManager(t, cfg)
 		server := serveTestManager(t, m)
 		first, _ := openStream(t, server, url.Values{"user": {"same"}}, nil)
-		defer first.Body.Close()
+		defer func() { _ = first.Body.Close() }()
 		waitUntil(t, time.Second, func() bool { return m.Stats().ConnectedClients == 1 })
 		resp, err := http.Get(server.URL + "/?user=same")
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusTooManyRequests {
 			t.Fatalf("status = %d, want 429", resp.StatusCode)
 		}
@@ -805,7 +805,7 @@ func TestConnectionLimits(t *testing.T) {
 		m := startTestManager(t, cfg)
 		server := serveTestManager(t, m)
 		resp, _ := openStream(t, server, url.Values{"user": {"rooms"}, "room": {"r1", "r2"}}, nil)
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		waitUntil(t, time.Second, func() bool { return m.Stats().ConnectedClients == 1 })
 		clients := m.hub.Clients()
 		if len(clients) != 1 || len(clients[0].Rooms()) != 1 {
@@ -872,11 +872,12 @@ func TestSlowClientDropHook(t *testing.T) {
 	if err := client.SendEvent("queued", nil); err != nil {
 		t.Fatal(err)
 	}
-	hub.Broadcast(Event{Name: "drop-1"})
+	// Antrean penuh memang disengaja; error Broadcast adalah bagian skenario drop.
+	_, _ = hub.Broadcast(Event{Name: "drop-1"})
 	if client.closing.Load() {
 		t.Fatal("client closed before threshold")
 	}
-	hub.Broadcast(Event{Name: "drop-2"})
+	_, _ = hub.Broadcast(Event{Name: "drop-2"})
 	select {
 	case <-client.Done():
 	case <-time.After(time.Second):
@@ -1155,7 +1156,7 @@ func openStream(t *testing.T, server *httptest.Server, query url.Values, headers
 	}
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		t.Fatalf("stream status = %d: %s", resp.StatusCode, body)
 	}
 	return resp, bufio.NewReader(resp.Body)

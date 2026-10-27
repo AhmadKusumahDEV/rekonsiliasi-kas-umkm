@@ -19,7 +19,7 @@ func TestBusControlJoinsAndLeavesRemoteClients(t *testing.T) {
 	server := serveTestManager(t, m2)
 
 	resp, reader := openStream(t, server, url.Values{"user": {"remote"}, "room": {"base"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m2.hub.RoomClientCount("base") == 1 })
 
 	if joined := m1.JoinUser("remote", "extra"); joined != 0 {
@@ -50,7 +50,7 @@ func TestBusControlDisconnectsRemoteUser(t *testing.T) {
 	server := serveTestManager(t, m2)
 
 	resp, reader := openStream(t, server, url.Values{"user": {"remote"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m2.Online("remote") })
 
 	if count := m1.DisconnectUserAsync("remote", CloseTokenExpired, "revoked"); count != 0 {
@@ -68,7 +68,7 @@ func TestBusControlClosesRemoteRoom(t *testing.T) {
 	server := serveTestManager(t, m2)
 
 	resp, reader := openStream(t, server, url.Values{"user": {"remote"}, "room": {"closing"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m2.hub.RoomClientCount("closing") == 1 })
 
 	if count := m1.CloseRoomAsync("closing", 4000, "room closed"); count != 0 {

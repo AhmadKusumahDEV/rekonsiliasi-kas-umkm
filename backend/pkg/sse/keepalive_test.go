@@ -19,7 +19,7 @@ func TestHeartbeatKeepsIdleStreamAlive(t *testing.T) {
 	m := startTestManager(t, cfg)
 	server := serveTestManager(t, m)
 	resp, reader := openStream(t, server, url.Values{"user": {"idle"}}, nil)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	waitUntil(t, time.Second, func() bool { return m.Online("idle") })
 
 	found := make(chan struct{})
@@ -95,7 +95,7 @@ func TestSlowClientDropReconnectsWithReplay(t *testing.T) {
 	server := httptest.NewServer(m)
 	defer server.Close()
 	resp, reader := openStream(t, server, url.Values{"user": {"recover"}}, http.Header{"Last-Event-ID": {"e1"}})
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	event := readSSEEvent(t, reader)
 	if event["event"] != "replayed" || event["id"] != "e2" {
 		t.Fatalf("replay event = %+v", event)
