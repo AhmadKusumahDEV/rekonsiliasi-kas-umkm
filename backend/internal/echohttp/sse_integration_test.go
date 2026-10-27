@@ -60,7 +60,7 @@ func TestSSEManagerPublishesWorkspaceState(t *testing.T) {
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
-	defer registerResponse.Body.Close()
+	defer func() { _ = registerResponse.Body.Close() }()
 	if registerResponse.StatusCode != http.StatusCreated {
 		t.Fatalf("register status = %d", registerResponse.StatusCode)
 	}
@@ -74,7 +74,7 @@ func TestSSEManagerPublishesWorkspaceState(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open SSE stream: %v", err)
 	}
-	defer streamResponse.Body.Close()
+	defer func() { _ = streamResponse.Body.Close() }()
 	if streamResponse.StatusCode != http.StatusOK {
 		t.Fatalf("SSE status = %d", streamResponse.StatusCode)
 	}
