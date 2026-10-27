@@ -41,8 +41,9 @@ func NewEcho(cfg config.Config, s *service.Service, logger *slog.Logger) *echo.E
 
 	v1 := e.Group(config.APIPrefix)
 	v1.GET("/config", configHandler(s))
-	v1.POST("/auth/register", register(s))
-	v1.POST("/auth/login", login(s))
+	authLimit := authRateLimiter()
+	v1.POST("/auth/register", register(s), authLimit)
+	v1.POST("/auth/login", login(s), authLimit)
 
 	protected := v1.Group("", sessionMiddleware(s))
 	protected.GET("/auth/me", me(s))

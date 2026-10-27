@@ -95,7 +95,7 @@ func setSessionCookie(c echo.Context, token string, expiresAt int64) {
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   c.Request().TLS != nil,
+		Secure:   c.IsTLS() || c.Scheme() == "https",
 		SameSite: http.SameSiteStrictMode,
 		Expires:  time.Unix(expiresAt, 0),
 		MaxAge:   int(config.SessionTTL.Seconds()),
@@ -108,7 +108,7 @@ func clearSessionCookie(c echo.Context) {
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   c.Request().TLS != nil,
+		Secure:   c.IsTLS() || c.Scheme() == "https",
 		SameSite: http.SameSiteStrictMode,
 		MaxAge:   -1,
 	})
