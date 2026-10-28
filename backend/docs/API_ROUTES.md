@@ -50,9 +50,10 @@ non-GET harus membawa header `X-CSRF-Token` dari response login/register atau
 6. `POST /api/v1/auth/logout` atau `PUT /api/v1/auth/password` akan
    membersihkan/menghapus session; frontend harus kembali ke login.
 
-Cookie session bernama `rku_session`. Saat ini atributnya `HttpOnly` dan
-`SameSite=Strict`; atribut `Secure` masih temuan yang perlu diperbaiki backend.
-Gunakan HTTPS dan origin yang sama untuk menghindari masalah cookie/cross-site.
+Cookie session bernama `rku_session`, dengan `HttpOnly`, `SameSite=Strict`,
+dan `Secure` saat HTTPS. Ketiga atribut telah diverifikasi dari login browser
+EFA ke API tim pada 28 Oktober 2026. Frontend pada subdomain HTTPS EFA memakai
+credentials include; konfigurasi CORS/SSE dibatasi pada origin yang terdaftar.
 
 ## Contoh request/response
 

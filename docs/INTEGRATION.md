@@ -4,6 +4,9 @@
 
 1. Browser mengambil index.html dan assets.
 2. app.js mengambil /api/v1/config dan /api/v1/auth/me.
+   Pada EFA live, `api-config.js` menambahkan origin `temukas.madgo.my.id`;
+   seluruh fetch mengirim `credentials: include`, SSE memakai withCredentials.
+   Lokal tetap memakai proxy dev.mjs. [Detail deployment](VERCEL_TEAM_API.md).
 3. Login/register menghasilkan cookie HttpOnly dan csrf.
 4. State/suggestions menggunakan identitas sesi; browser tidak menentukan hak akses workspace.
 5. Mutasi membawa X-CSRF-Token. Handler memvalidasi input lalu memanggil service.

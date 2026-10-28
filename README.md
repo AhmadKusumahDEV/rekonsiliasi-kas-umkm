@@ -5,6 +5,12 @@ mengikuti referensi terbaru; folder, data dan endpoint tetap kompatibel.
 
 Temu Kas membantu pemilik UMKM mencocokkan penjualan dengan uang masuk, termasuk pembayaran sebagian, pencairan gabungan, dan biaya layanan. Tampilan memakai prototipe Temu Kas milik Evan; backend memakai struktur tim: Go, Echo, PostgreSQL, pgx, sqlc, dan Viper.
 
+**Live:** https://efa.madgo.my.id/ menyajikan frontend statis dari folder
+`frontend/` di Vercel. Browser memanggil backend Go/Echo tim langsung di
+https://temukas.madgo.my.id/api/v1, dengan cookie `rku_session` dan SSE.
+Backend serta database prototipe Vercel tidak lagi dipakai. Lihat
+[hasil handoff dan cara deploy](docs/VERCEL_TEAM_API.md).
+
 ## Mulai lokal
 
 Prasyarat: Go sesuai backend/go.mod, PostgreSQL, dan Node.js 22+. Frontend adalah HTML/CSS/JavaScript biasa; tidak membutuhkan React, Vite, atau instalasi npm.
