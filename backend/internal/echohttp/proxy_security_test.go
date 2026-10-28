@@ -47,6 +47,39 @@ func TestCORSAllowsCSRFHeader(t *testing.T) {
 	}
 }
 
+func TestCORSAllowsConfiguredFrontendOrigins(t *testing.T) {
+	e := echo.New()
+	e.Use(corsMiddleware([]string{"https://temukas.example", "https://efa.example"}))
+	e.GET("/api/v1/config", func(c echo.Context) error { return c.NoContent(http.StatusOK) })
+
+	for _, origin := range []string{"https://temukas.example", "https://efa.example"} {
+		r := httptest.NewRequest(http.MethodOptions, "/api/v1/config", nil)
+		r.Header.Set(echo.HeaderOrigin, origin)
+		r.Header.Set(echo.HeaderAccessControlRequestMethod, http.MethodGet)
+		w := httptest.NewRecorder()
+		e.ServeHTTP(w, r)
+
+		if w.Code != http.StatusNoContent {
+			t.Fatalf("%s preflight status = %d", origin, w.Code)
+		}
+		if got := w.Header().Get(echo.HeaderAccessControlAllowOrigin); got != origin {
+			t.Fatalf("%s allow-origin = %q", origin, got)
+		}
+		if got := w.Header().Get(echo.HeaderAccessControlAllowCredentials); got != "true" {
+			t.Fatalf("%s allow-credentials = %q", origin, got)
+		}
+	}
+
+	r := httptest.NewRequest(http.MethodOptions, "/api/v1/config", nil)
+	r.Header.Set(echo.HeaderOrigin, "https://evil.example")
+	r.Header.Set(echo.HeaderAccessControlRequestMethod, http.MethodGet)
+	w := httptest.NewRecorder()
+	e.ServeHTTP(w, r)
+	if got := w.Header().Get(echo.HeaderAccessControlAllowOrigin); got != "" {
+		t.Fatalf("unlisted origin got allow-origin %q", got)
+	}
+}
+
 func TestAuthLimiterRestrictsRepeatedAttempts(t *testing.T) {
 	e := echo.New()
 	e.POST("/login", func(c echo.Context) error { return c.NoContent(204) }, authRateLimiter())
