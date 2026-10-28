@@ -113,6 +113,15 @@ Error JSON: {code,status,message,request_id}. 400 input; 401 sesi/kredensial; 40
 
 ## Rujukan operasional
 
+PWA memakai manifest dengan start URL `/app`, scope `/`, display standalone,
+ikon 192/512 px dan maskable. Kontrol pemasangan tersedia di landing,
+masuk/daftar dan Pengaturan. Browser tanpa prompt menerima petunjuk pemasangan.
+Service worker hanya menyimpan aset publik dan fallback offline, dibatasi
+60 entri. HTML aplikasi dan seluruh request API/SSE/ekspor/mutasi tidak
+disimpan oleh worker. ID cache berubah mengikuti hash build. Pembaruan
+menunggu tab/jendela lama ditutup, tanpa reload paksa saat form aktif.
+Lihat [struktur dan pengujian PWA](../pwa/README.md).
+
 Landing disimpan di `landing/`, terpisah dari UI transaksi di `frontend/`.
 Root `/` membuka landing; CTA masuk/daftar menuju `/app#login` dan
 `/app#register`. Hash aplikasi lama diarahkan ke `/app` dengan hash yang

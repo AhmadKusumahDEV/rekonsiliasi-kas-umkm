@@ -125,6 +125,12 @@ temukas/
 │   ├── assets/images/             foto hero 1600/4000 px
 │   └── README.md, SOURCES.md
 ├── tools/build-static.mjs          HTML/aset publik → dist, tanpa API
+├── pwa/                            manifest, worker, ikon, install dan offline
+│   ├── manifest.webmanifest
+│   ├── service-worker.js           source; build menyajikannya sebagai /sw.js
+│   ├── register.js, pwa.css
+│   ├── offline.html, offline.js
+│   └── icons/, README.md
 ├── frontend/
 │   ├── index.html
 │   ├── assets/

@@ -43,6 +43,14 @@ Penyempurnaan visual landing: `dpl_AUU1qzgPsmd1xkTMViJ37JjctLwN`.
 Foto berbingkai lengkung, ilustrasi pencocokan dan thumbnail artikel
 ditambahkan tanpa perubahan API atau UI transaksi.
 
+Deployment PWA: `dpl_3iha29DS95ULbBzZ6HunwaX9EST7`. Manifest dan aset
+PWA ada di `/pwa/`; source worker tetap di `pwa/service-worker.js`,
+sedangkan build menyajikannya pada `/sw.js` dengan scope root.
+Ini worker browser, bukan API/server tambahan. Pengujian live memastikan
+manifest installable di Chrome, offline/reconnect, cache publik,
+21 tampilan aplikasi, login, SSE dan ekspor tetap berjalan.
+Panduan pemasangan dan pembaruan: [PWA](../pwa/README.md).
+
 Deploy dari **root repository ini**, bukan folder prototipe dalam archives:
 
 ```powershell
