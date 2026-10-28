@@ -35,6 +35,9 @@ persentase keberhasilan atau penghematan waktu yang dibuat-buat.
 | hero-cafe-4k.jpg, hero-cafe-1600.jpg | Mizuno K / [Pexels 13735971](https://www.pexels.com/photo/woman-ordering-coffee-in-cafe-13735971/) | Kegiatan usaha di kafe; slide pertama |
 | hero-shop-4k.jpg, hero-shop-1600.jpg | Kampus Production / [Pexels 7857532](https://www.pexels.com/photo/woman-sitting-at-the-table-and-packing-orders-7857532/) | Menyiapkan pesanan; slide kedua |
 | /assets/efa-ledger-4k.jpg | Leeloo The First / [Pexels 6928994](https://www.pexels.com/photo/black-calculator-beside-white-printer-paper-6928994/) | Dokumen dan kalkulator; slide ketiga, aset bersama aplikasi |
+| bakery-2400.jpg | merve emre / [Pexels 14220308](https://www.pexels.com/photo/woman-working-in-bakery-14220308/) | Foto toko pada bagian tentang EFA |
+| owner-2000.jpg | Kampus Production / [Pexels 7289733](https://www.pexels.com/photo/woman-smiling-while-holding-the-package-7289733/) | Aktivitas pemilik toko pada cara kerja dan penutup; bukan testimoni pengguna |
+| /assets/efa-planning-4k.jpg | Leeloo The First / [Pexels 8962448](https://www.pexels.com/photo/calculator-and-papers-on-the-table-8962448/) | Catatan keuangan pada section analisis; aset bersama aplikasi |
 
 Foto pertama 4000×2667 px dan foto kedua 4000×2670 px. Versi 1600 px
 disediakan lewat srcset agar perangkat tidak selalu mengunduh file 4K.

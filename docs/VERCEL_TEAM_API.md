@@ -39,6 +39,10 @@ Deployment landing: `dpl_6WZ8pXVMXfjDdb6AZRyWvwPjtkeJ`, domain tetap
 https://efa.madgo.my.id/. Login, 21 tampilan aplikasi, handshake SSE dan
 ekspor CSV diperiksa ulang setelah `/app` diterbitkan; semuanya berhasil.
 
+Penyempurnaan visual landing: `dpl_AUU1qzgPsmd1xkTMViJ37JjctLwN`.
+Foto berbingkai lengkung, ilustrasi pencocokan dan thumbnail artikel
+ditambahkan tanpa perubahan API atau UI transaksi.
+
 Deploy dari **root repository ini**, bukan folder prototipe dalam archives:
 
 ```powershell

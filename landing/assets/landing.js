@@ -182,7 +182,7 @@ exampleTabs.forEach((button, n) => {
 
 if ('IntersectionObserver' in window && !reduced.matches) {
   const observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.remove('waiting'); observer.unobserve(entry.target); }
+    for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.remove('waiting'); entry.target.classList.add('is-in-view'); observer.unobserve(entry.target); }
   }, { threshold:.08 });
   document.querySelectorAll('[data-reveal]').forEach((element) => {
     if (element.getBoundingClientRect().top > innerHeight) { element.classList.add('waiting'); observer.observe(element); }

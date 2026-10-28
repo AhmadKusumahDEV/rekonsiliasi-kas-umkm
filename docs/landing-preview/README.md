@@ -1,6 +1,8 @@
 # Preview landing EFA
 
 Screenshot dari https://efa.madgo.my.id/ pada 28 Oktober 2026.
+Versi visual terbaru memakai bingkai foto lengkung, dua foto usaha baru,
+ilustrasi lembar pencocokan, thumbnail artikel serta elemen dekoratif EFA.
 Hero utama difoto pada slide pertama; screenshot seluruh halaman pada
 slide ketiga setelah semua section terlihat dan animasi selesai.
 

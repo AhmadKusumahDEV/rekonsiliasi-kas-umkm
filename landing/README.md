@@ -8,6 +8,7 @@ landing/
 ├── index.html                 isi, tautan, struktur halaman
 ├── assets/
 │   ├── landing.css            layout, warna, responsivitas, transisi
+│   ├── editorial.css          bingkai foto, shapes, komposisi visual dan motion
 │   ├── landing.js             carousel, menu HP, contoh pencocokan
 │   └── images/                foto hero ukuran 1600 dan 4000 px
 ├── README.md                  panduan ini
@@ -53,6 +54,8 @@ Jika port dipakai: `$env:PORT='3058'; node frontend/dev.mjs`.
   1600 px untuk layar biasa dan 4000 px untuk layar beresolusi tinggi.
   Foto ketiga memakai `frontend/assets/efa-ledger-4k.jpg`.
 - Palet ada di `:root` dalam `landing.css`. Logo dan font mengikuti EFA.
+  Komposisi foto melengkung, ilustrasi lembar catatan, thumbnail artikel dan
+  elemen dekoratif berada di `editorial.css`; file ini tidak mengubah UI `/app`.
 - Contoh pencocokan berada pada objek `examples`. Nilainya ilustrasi,
   terpisah sepenuhnya dari transaksi pengguna dan tidak memanggil API.
 - Artikel belum diterbitkan. Jangan menambahkan tautan atau tanggal seolah
