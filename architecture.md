@@ -6,7 +6,7 @@ Pembaruan logo/palet dijelaskan di [BRAND.md](docs/BRAND.md).
 
 Panduan ini menjelaskan cara kerja Temu Kas dari halaman yang kamu buka sampai data tersimpan di PostgreSQL. Mulai dari bagian 1–5 untuk memahami gambaran besar; bagian 8–10 menjadi referensi endpoint.
 
-Pembaruan deployment: 28 Oktober 2026, mengikuti handoff tim pada main `6de93ba`. Frontend EFA kini memanggil API Go/Echo tim secara langsung; tidak memakai backend prototipe Vercel. Isi konfigurasi privat dan credential database tidak dicantumkan.
+Pembaruan deployment: 28 Oktober 2026, mengikuti handoff tim pada main `6de93ba`. Root `/` menjadi landing produk; aplikasi ada di `/app`. Frontend EFA memanggil API Go/Echo tim secara langsung; tidak memakai backend prototipe Vercel. Isi konfigurasi privat dan credential database tidak dicantumkan.
 
 ## Daftar isi
 
@@ -32,7 +32,8 @@ Pembaruan deployment: 28 Oktober 2026, mengikuti handoff tim pada main `6de93ba`
 
 | Bagian | Versi yang dimaksud |
 | --- | --- |
-| Web demo https://efa.madgo.my.id/ | Frontend statis HTML/CSS/JavaScript di Vercel, memanggil https://temukas.madgo.my.id/api/v1 langsung dari browser |
+| Web https://efa.madgo.my.id/ | Landing pengenalan EFA, tanpa request API atau data transaksi |
+| Aplikasi https://efa.madgo.my.id/app | Frontend statis HTML/CSS/JavaScript di Vercel, memanggil https://temukas.madgo.my.id/api/v1 langsung dari browser |
 | Folder PBL/temukas | Source integrasi: frontend milik Evan + backend tim Go/Echo/sqlc + SSE, endpoint /api/v1/... |
 | https://temukas.madgo.my.id/ | Alamat server API yang dikelola tim; berbeda dari domain web demo efa |
 | PR integrasi | https://github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/pull/5 |
@@ -118,6 +119,12 @@ Folder arsip sengaja dipisahkan. Jangan mengedit file di arsip lalu berharap sou
 
 ```text
 temukas/
+├── landing/                       halaman pengenalan produk, terpisah dari app
+│   ├── index.html
+│   ├── assets/landing.css, landing.js
+│   ├── assets/images/             foto hero 1600/4000 px
+│   └── README.md, SOURCES.md
+├── tools/build-static.mjs          HTML/aset publik → dist, tanpa API
 ├── frontend/
 │   ├── index.html
 │   ├── assets/
@@ -199,7 +206,7 @@ Sebagian folder hanya berisi README sebagai tempat pengembangan berikutnya: cmd/
 | [brand.css](frontend/assets/brand.css) | Gaya Temu Kas/MAXY dan layout khusus produk |
 | [motion.js](frontend/assets/motion.js) | Mengaktifkan animasi ketika auth atau halaman ditampilkan |
 | [motion.css](frontend/assets/motion.css) | Transisi, keyframe, dan penyesuaian reduced motion |
-| [dev.mjs](frontend/dev.mjs) | Menyajikan HTML/aset lokal; meneruskan /api/v1 dan /health ke Go |
+| [dev.mjs](frontend/dev.mjs) | Menyajikan landing pada / dan aplikasi pada /app; meneruskan /api/v1 dan /health ke Go |
 | [start.mjs](frontend/start.mjs) | Mengecek port, build Go, menjalankan dua child server, menghentikannya bersama |
 | [package.json](frontend/package.json) | Shortcut perintah; tidak berisi framework atau dependency frontend |
 | [dev.test.mjs](frontend/tests/dev.test.mjs) | Tes penyajian aset, pembatasan path, dan forwarding cookie/CSRF |

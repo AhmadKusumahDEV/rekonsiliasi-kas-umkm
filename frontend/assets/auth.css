@@ -104,6 +104,27 @@ body[data-kind="umkm"] .auth-umkm .primary {
 }
 body[data-kind="umkm"] .auth-umkm .auth-switch { font-size: 14px; color: var(--auth-muted); }
 body[data-kind="umkm"] .auth-umkm .auth-switch a { color: #bceaf7; font-weight: 600; }
+body[data-kind="umkm"] .auth-umkm .auth-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  min-height: 44px;
+  margin-bottom: 12px;
+  color: #c5e7f5;
+  font-size: 14px;
+  text-decoration: none;
+  text-underline-offset: 5px;
+}
+body[data-kind="umkm"] .auth-umkm .auth-home:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+body[data-kind="umkm"] .auth-umkm .auth-home:focus-visible {
+  outline: 2px solid #9dd6f2;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
 body[data-kind="umkm"] .auth-umkm label > small { font-size: 12px; line-height: 1.5; color: var(--auth-muted); }
 body[data-kind="umkm"] .auth-umkm .error { color: #ffdfdf; background: #582d3a; border-color: #eb7a7a; }
 /* photo fills the editorial panel; the lighter note overlaps its bottom edge. */

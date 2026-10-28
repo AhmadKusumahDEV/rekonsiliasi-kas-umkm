@@ -113,4 +113,20 @@ Error JSON: {code,status,message,request_id}. 400 input; 401 sesi/kredensial; 40
 
 ## Rujukan operasional
 
+Landing disimpan di `landing/`, terpisah dari UI transaksi di `frontend/`.
+Root `/` membuka landing; CTA masuk/daftar menuju `/app#login` dan
+`/app#register`. Hash aplikasi lama diarahkan ke `/app` dengan hash yang
+sama. Login/logout mempertahankan pathname aplikasi.
+
+Carousel tiga slide memakai interval 6,5 detik, prev/next, pilihan slide,
+pause, keyboard dan swipe horizontal. Autoplay berhenti saat hover, fokus
+interaksi, hero di luar layar atau tab tersembunyi. Reduced motion memakai
+mode manual. Contoh biaya/pembayaran sebagian memakai data ilustrasi lokal;
+tidak menulis ke backend. Artikel masih coming soon dan belum punya tautan
+artikel. Referensi analisis menuju sumber BI dan OVO yang disebutkan.
+
+Build statis menyalin landing, app.html dan aset ke `dist`. Tidak ada
+endpoint, schema, secret, dokumentasi atau server dev yang dipublikasikan
+sebagai bagian landing. Detail edit dan pengujian: [panduan landing](../landing/README.md).
+
 [Demo](DEMO.md), [API](INTEGRATION.md), [hosting](HOSTING.md), [tes](VERIFICATION.md). SSE berasal dari main tim terbaru dan terhubung ke EventSource frontend. Tidak ada perubahan Dockerfile, schema, atau kontrak API versi tim.

@@ -2,8 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "",
-  "buildCommand": "",
-  "outputDirectory": "frontend",
+  "buildCommand": "node tools/build-static.mjs",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*)",
