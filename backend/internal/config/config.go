@@ -127,6 +127,10 @@ func Load() (Config, error) {
 	if origins := strings.TrimSpace(os.Getenv(EnvCORSAllowedOrigins)); origins != "" {
 		cfg.Server.AllowedOrigins = splitCSV(origins)
 	}
+	cfg.Server.AllowedOrigins = normalizeOrigins(cfg.Server.AllowedOrigins)
+	if len(cfg.Server.AllowedOrigins) == 0 {
+		cfg.Server.AllowedOrigins = []string{"http://localhost:3000", "http://localhost:5173"}
+	}
 
 	if err := cfg.validate(); err != nil {
 		return Config{}, err
@@ -230,5 +234,29 @@ func splitCSV(value string) []string {
 		}
 	}
 
+	return result
+}
+
+// normalizeOrigins keeps CORS and SSE using the same canonical values. A
+// trailing slash or duplicate entry would otherwise make Echo accept an origin
+// that the SSE handshake still rejects.
+func normalizeOrigins(origins []string) []string {
+	seen := make(map[string]struct{}, len(origins))
+	result := make([]string, 0, len(origins))
+	for _, origin := range origins {
+		origin = strings.TrimSpace(origin)
+		if origin == "" {
+			continue
+		}
+		if origin != "*" {
+			origin = strings.TrimRight(origin, "/")
+		}
+		key := strings.ToLower(origin)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		result = append(result, origin)
+	}
 	return result
 }

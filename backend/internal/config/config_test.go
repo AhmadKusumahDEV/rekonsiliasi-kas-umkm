@@ -37,3 +37,25 @@ func TestLoadFromExampleAndEnvironment(t *testing.T) {
 		t.Fatalf("allowed origins = %v, want 2 entries", cfg.Server.AllowedOrigins)
 	}
 }
+
+func TestAllowedOriginsAreNormalized(t *testing.T) {
+	// CORS and SSE compare origins separately, so spaces, trailing slashes and
+	// duplicates must be removed once during configuration loading.
+	t.Setenv(config.EnvAppConfigFile, filepath.Join("..", "..", "configs", "local.yaml.example"))
+	t.Setenv(config.EnvCORSAllowedOrigins, " https://temukas.madgo.my.id/ , https://efa.madgo.my.id/ ,https://EFA.madgo.my.id , ")
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	want := []string{"https://temukas.madgo.my.id", "https://efa.madgo.my.id"}
+	if len(cfg.Server.AllowedOrigins) != len(want) {
+		t.Fatalf("allowed origins = %v, want %v", cfg.Server.AllowedOrigins, want)
+	}
+	for i := range want {
+		if cfg.Server.AllowedOrigins[i] != want[i] {
+			t.Fatalf("allowed origins = %v, want %v", cfg.Server.AllowedOrigins, want)
+		}
+	}
+}
