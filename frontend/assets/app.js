@@ -447,7 +447,7 @@ async function init() {
       startEvents();
     } else auth(location.hash === "#register");
   } catch (err) {
-    root.innerHTML = `<main id="main" class="starting"><section class="panel"><h1>Aplikasi belum tersambung</h1><p>${e(err.message)}</p><a class="button primary" href="/">Muat ulang halaman</a></section></main>`;
+    root.innerHTML = `<main id="main" class="starting"><section class="panel"><h1>Aplikasi belum tersambung</h1><p>${e(err.message)}</p><a class="button primary" href="/app${location.hash === '#register' ? '#register' : '#login'}">Coba sambungkan lagi</a></section></main>`;
   }
 }
 const roles = { owner: "Pemilik usaha" };
@@ -789,7 +789,7 @@ document.addEventListener("submit", async (event) => {
       state.refreshing = false;
       state.me = me.user;
       state.csrf = me.csrf;
-      if (location.hash) history.replaceState(null, "", "/");
+      if (location.hash) history.replaceState(null, "", location.pathname);
       await refresh();
       document.title = state.config.brand;
       startEvents();
@@ -906,7 +906,7 @@ document.addEventListener("click", async (event) => {
       state.csrf = "";
       stopEvents();
       mobileMenu.close();
-      history.replaceState(null, "", "/");
+      history.replaceState(null, "", location.pathname);
       auth();
       return;
     }

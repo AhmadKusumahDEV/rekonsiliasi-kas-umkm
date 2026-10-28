@@ -1,7 +1,8 @@
 # EFA di Vercel, API di server tim
 
-Sejak 28 Oktober 2026, https://efa.madgo.my.id/ menyajikan `frontend/` dari
-repo ini. Browser memanggil https://temukas.madgo.my.id/api/v1 langsung.
+Sejak 28 Oktober 2026, https://efa.madgo.my.id/ menyajikan landing dari
+`landing/`, dan `/app` menyajikan aplikasi dari `frontend/`. Browser
+aplikasi memanggil https://temukas.madgo.my.id/api/v1 langsung.
 Vercel tidak menjalankan Go atau menyimpan transaksi EFA lagi. PostgreSQL
 tetap dikelola backend tim; tidak ada migration atau pemindahan data lama.
 
@@ -25,13 +26,18 @@ yang sama dan tidak diizinkan oleh CORS production.
 
 ## Konfigurasi hosting
 
-`vercel.json` memilih output `frontend`, tanpa build/install dan tanpa
-rewrite API. CSP mengizinkan `connect-src` hanya ke origin sendiri dan
-backend tim. `.vercelignore` hanya mengunggah aset frontend serta config
-deployment; backend, server dev, tes, dokumentasi, `.env`, dan konfigurasi
-privat tidak menjadi aset web.
+`vercel.json` menjalankan `node tools/build-static.mjs` dan memilih output
+`dist`, tanpa install atau rewrite API. `cleanUrls` membuat `/app` membuka
+`app.html`. Tautan hash aplikasi lama di root diarahkan ke `/app`.
+CSP mengizinkan `connect-src` hanya ke origin sendiri dan backend tim.
+Build hanya menyalin HTML dan aset frontend/landing; backend, server dev,
+tes, dokumentasi, `.env`, dan konfigurasi privat tidak menjadi aset web.
 
-Deployment final: `dpl_Akkq1WdUiHEjhek6n15i5ChseRKB`.
+Deployment handoff sebelum landing: `dpl_Akkq1WdUiHEjhek6n15i5ChseRKB`.
+Konfigurasi routing landing dijelaskan pada `landing/README.md`.
+Deployment landing: `dpl_6WZ8pXVMXfjDdb6AZRyWvwPjtkeJ`, domain tetap
+https://efa.madgo.my.id/. Login, 21 tampilan aplikasi, handshake SSE dan
+ekspor CSV diperiksa ulang setelah `/app` diterbitkan; semuanya berhasil.
 
 Deploy dari **root repository ini**, bukan folder prototipe dalam archives:
 

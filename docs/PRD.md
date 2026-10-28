@@ -36,7 +36,15 @@ Pengguna aktif adalah pemilik UMKM. Registrasi membuat akun owner dan ruang kerj
 
 ## Halaman
 
-Masuk/daftar, Ringkasan, Transaksi, Cocokkan kas, Impor CSV, Riwayat, Laporan, dan Pengaturan. Layout, logo, warna, foto, font, dan animasi tetap memakai tampilan prototipe Temu Kas milik Evan.
+Landing pengenalan produk pada `/`: apa itu EFA, cara kerja, daftar pengguna,
+analisis kebutuhan dengan sumber resmi, artikel coming soon, dan FAQ.
+Hero memakai tiga foto responsif dengan kontrol manual dan autoplay yang
+bisa dijeda. Landing tidak meminta akses atau data transaksi.
+
+Aplikasi pada `/app`: Masuk/daftar, Ringkasan, Transaksi, Cocokkan kas,
+Impor CSV, Riwayat, Laporan, dan Pengaturan. Identitas EFA, form dan fitur
+aplikasi tetap dipertahankan. Tautan hash aplikasi lama di root dialihkan.
+Sumber analisis dan batas klaim dicatat pada [SOURCES](../landing/SOURCES.md).
 
 ## Batas saat ini
 

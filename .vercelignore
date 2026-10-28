@@ -2,6 +2,12 @@
 !frontend
 !frontend/**
 !vercel.json
+!landing
+!landing/**
+!tools
+!tools/build-static.mjs
+landing/README.md
+landing/SOURCES.md
 frontend/tests
 frontend/dev.mjs
 frontend/start.mjs

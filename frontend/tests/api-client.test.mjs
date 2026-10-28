@@ -47,7 +47,9 @@ test("proxy HTML is not shown as a successful empty JSON response", async () => 
 
 test("Vercel publishes only the static frontend and permits direct team API connections", async () => {
   const config = JSON.parse(await readFile(new URL("../../vercel.json", import.meta.url), "utf8"));
-  assert.equal(config.outputDirectory, "frontend");
+  assert.equal(config.outputDirectory, "dist");
+  assert.equal(config.buildCommand, "node tools/build-static.mjs");
+  assert.equal(config.cleanUrls, true);
   assert.equal(config.framework, null);
   assert.equal(config.rewrites, undefined);
   assert.equal(config.functions, undefined);
