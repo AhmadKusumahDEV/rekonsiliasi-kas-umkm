@@ -1,7 +1,9 @@
-import { authScene } from "./auth-scene.js?v=efa5";
-import { dashboard, maxyBrand, shell } from "./design.js?v=efa5";
+import { apiURL } from "./api-config.js?v=team2";
+import { createAPIClient } from "./api-client.js?v=team2";
+import { authScene } from "./auth-scene.js?v=team2";
+import { dashboard, maxyBrand, shell } from "./design.js?v=team2";
 
-import { presentView, presentAuth } from "./motion.js?v=efa5";
+import { presentView, presentAuth } from "./motion.js?v=team2";
 
 const root = document.querySelector("#app");
 
@@ -79,45 +81,18 @@ const actions = (label) =>
 const formError =
   '<div class="error" data-form-error role="alert" tabindex="-1" hidden></div>';
 
-async function api(path, options = {}) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 32000);
-  const headers = new Headers(options.headers || {});
-  headers.set("X-CSRF-Token", state.csrf);
-  let body = options.body;
-  if (body && !(body instanceof FormData)) {
-    headers.set("Content-Type", "application/json");
-    body = JSON.stringify(body);
-  }
-  try {
-    const response = await fetch(path, {
-      ...options,
-      body,
-      headers,
-      credentials: "same-origin",
-      signal: controller.signal,
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      const err = new Error(
-        data.message ||
-          data.error ||
-          `Permintaan gagal (${response.status}). Coba lagi.`,
-      );
-      err.status = response.status;
-      throw err;
-    }
-    return data;
-  } catch (err) {
-    if (err.name === "AbortError")
-      throw new Error(
-        "Server belum merespons. Data mungkin tersimpan; muat ulang sebelum mengirim lagi.",
-      );
-    throw err;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+const api = createAPIClient({
+  getCSRF: () => state.csrf,
+  onUnauthorized() {
+    if (!state.me) return;
+    state.me = null;
+    state.csrf = "";
+    modal.close();
+    mobileMenu.close();
+    auth();
+    toast("Sesi berakhir. Masuk kembali untuk melanjutkan.");
+  },
+});
 
 function toast(message) {
   clearTimeout(state.toastTimer);
@@ -525,7 +500,7 @@ function reportsPage() {
     title(
       "Laporan",
       "Ringkasan memakai seluruh data usaha.",
-      '<a class="button primary" href="/api/v1/umkm/export" download>Unduh rekap CSV</a>',
+      '<a class="button primary" href="' + apiURL("/api/v1/umkm/export") + '">Unduh rekap CSV</a>',
     ) +
     metrics() +
     '<section class="panel"><h2>Keputusan pencocokan</h2><p>' +
@@ -565,7 +540,12 @@ function auth(register = false) {
   state.epoch = (state.epoch || 0) + 1;
   state.refreshing = false;
   state.data = null;
+  state.csrf = "";
   stopEvents();
+  // discard protected dialog fields, including passwords, when leaving a session.
+  modal.close();
+  modal.replaceChildren();
+  mobileMenu.close();
   document.title = (register ? "Daftar" : "Masuk") + " · Easy Financial Audit";
   root.innerHTML =
     '<main id="main" class="auth auth-umkm ' +
@@ -661,13 +641,14 @@ function startEvents() {
     }
   };
   if ("EventSource" in window) {
-    stream = new EventSource("/api/v1/umkm/events");
+    stream = new EventSource(apiURL("/api/v1/umkm/events"), { withCredentials: true });
     stream.addEventListener("state", (event) => {
       const version = Number(event.data);
       if (Number.isSafeInteger(version)) applyVersion(version).catch(() => {});
     });
     // A new stream has no replay guarantee: fetch current state on every open.
     stream.addEventListener("open", () => { void check(); });
+    stream.addEventListener("error", () => { void check(); });
     stream.addEventListener("resync", () => { void check(); });
     stream.addEventListener("server_close", () => { void check(); });
   }

@@ -1,0 +1,10 @@
+*
+!frontend
+!frontend/**
+!vercel.json
+frontend/tests
+frontend/dev.mjs
+frontend/start.mjs
+frontend/package.json
+frontend/ASSETS.md
+frontend/Caddyfile.example

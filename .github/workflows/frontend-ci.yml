@@ -2,9 +2,9 @@ name: Frontend CI
 on:
   push:
     branches: [main]
-    paths: ["frontend/**", ".github/workflows/frontend-ci.yml"]
+    paths: ["frontend/**", "vercel.json", ".vercelignore", ".github/workflows/frontend-ci.yml"]
   pull_request:
-    paths: ["frontend/**", ".github/workflows/frontend-ci.yml"]
+    paths: ["frontend/**", "vercel.json", ".vercelignore", ".github/workflows/frontend-ci.yml"]
 permissions:
   contents: read
 jobs:
@@ -22,4 +22,6 @@ jobs:
           node --check assets/app.js
           node --check assets/design.js
           node --check assets/motion.js
+          node --check assets/api-config.js
+          node --check assets/api-client.js
           node --test tests/*.test.mjs

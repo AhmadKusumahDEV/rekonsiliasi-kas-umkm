@@ -15,9 +15,10 @@
 - [FRD](FRD.md)
 - [Integrasi frontend/backend tim](INTEGRATION.md)
 - [Hosting dan rollback](HOSTING.md)
+- [Frontend Vercel ke backend tim: deployment dan hasil uji](VERCEL_TEAM_API.md)
 - [Hasil pengujian integrasi](VERIFICATION.md)
 - [Kontrak API tim](../backend/docs/API_ROUTES.md)
 
-Dokumen prototipe lama disimpan utuh pada reference. Web demo Vercel masih
-memakai backend prototipe /api, sedangkan source integrasi tim memakai
-/api/v1. Panduan arsitektur menjelaskan perbedaan itu.
+Dokumen prototipe lama disimpan utuh pada reference. Sejak handoff 28 Oktober,
+web EFA di Vercel memakai API tim `/api/v1` secara langsung. Snapshot PDF
+dan provenance UI sebelumnya tetap mencatat versi yang difoto pada saat itu.

@@ -6,7 +6,7 @@ Pembaruan logo/palet dijelaskan di [BRAND.md](docs/BRAND.md).
 
 Panduan ini menjelaskan cara kerja Temu Kas dari halaman yang kamu buka sampai data tersimpan di PostgreSQL. Mulai dari bagian 1–5 untuk memahami gambaran besar; bagian 8–10 menjadi referensi endpoint.
 
-Dasar penjelasan: source integrasi lokal pada commit `ae2c08b`, termasuk backend dan SSE tim. Dokumen dibuat 27 Oktober 2026. Isi konfigurasi privat dan credential database tidak dicantumkan.
+Pembaruan deployment: 28 Oktober 2026, mengikuti handoff tim pada main `6de93ba`. Frontend EFA kini memanggil API Go/Echo tim secara langsung; tidak memakai backend prototipe Vercel. Isi konfigurasi privat dan credential database tidak dicantumkan.
 
 ## Daftar isi
 
@@ -28,11 +28,11 @@ Dasar penjelasan: source integrasi lokal pada commit `ae2c08b`, termasuk backend
 
 ## 1. Versi aplikasi dan alamatnya
 
-**Ada dua versi. Keduanya belum otomatis menjadi satu deployment.**
+**EFA live sudah terhubung ke backend tim. Prototipe lama hanya arsip.**
 
 | Bagian | Versi yang dimaksud |
 | --- | --- |
-| Web demo https://efa.madgo.my.id/ | Prototipe yang sudah dideploy di Vercel; backend Go net/http, frontend HTML/CSS/JavaScript, endpoint /api/... |
+| Web demo https://efa.madgo.my.id/ | Frontend statis HTML/CSS/JavaScript di Vercel, memanggil https://temukas.madgo.my.id/api/v1 langsung dari browser |
 | Folder PBL/temukas | Source integrasi: frontend milik Evan + backend tim Go/Echo/sqlc + SSE, endpoint /api/v1/... |
 | https://temukas.madgo.my.id/ | Alamat server API yang dikelola tim; berbeda dari domain web demo efa |
 | PR integrasi | https://github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/pull/5 |
@@ -40,9 +40,9 @@ Dasar penjelasan: source integrasi lokal pada commit `ae2c08b`, termasuk backend
 
 Mengubah CNAME mengarahkan pengunjung ke deployment yang dipilih. Mengubah CNAME **tidak** menggabungkan kode, memindahkan database, atau memasang isi PR.
 
-Contohnya: keberhasilan login di efa tidak membuktikan bahwa akun yang sama sudah ada di database backend tim. Database dan sesi mengikuti deployment yang diakses.
+Login di EFA kini memakai cookie rku_session dan akun database tim. Akun/data dari prototipe lama tidak otomatis dipindahkan. Pengujian login demo, cookie, SSE dan ekspor pada domain asli dicatat dalam [hasil handoff](docs/VERCEL_TEAM_API.md).
 
-Bagian utama dokumen ini menjelaskan **source integrasi PBL/temukas**. Perbedaan prototipe Vercel ada di bagian 14.
+Bagian utama dokumen ini menjelaskan **source integrasi PBL/temukas**. Riwayat perbedaan prototipe Vercel ada di bagian 14.
 
 ## 2. Gambaran arsitektur
 
@@ -51,8 +51,8 @@ Browser menampilkan UI. Backend memeriksa aturan dan hak akses. PostgreSQL menyi
 ```mermaid
 flowchart LR
     U["Pemilik UMKM"] --> F["Browser: HTML, CSS, JavaScript"]
-    F --> P["Server statis dan reverse proxy"]
-    P --> H["Go/Echo: handler dan middleware"]
+    V["Vercel: frontend statis"] --> F
+    F --> H["temukas.madgo.my.id: Go/Echo"]
     H --> S["Service: aturan kas dan transaksi"]
     S --> Q["Query sqlc melalui pgx"]
     Q --> D[("PostgreSQL")]
@@ -781,7 +781,7 @@ OPTIONS pada path ini juga didaftarkan untuk kebutuhan browser/CORS. Package SSE
 
 ## 10. Contoh mencoba API dari browser
 
-Buka **UI integrasi lokal**, misalnya http://127.0.0.1:3000, lalu DevTools → Console. Jangan menjalankan contoh /api/v1 ini pada efa yang masih memakai API prototipe.
+Buka **UI integrasi lokal**, misalnya http://127.0.0.1:3000, lalu DevTools → Console. Di EFA live, impor apiURL agar request menuju origin backend tim.
 
 Contoh berikut membaca data saja sesudah login demo. Login membuat sesi baru pada akun demo. Tidak mengimpor atau mengubah catatan usaha.
 
@@ -792,10 +792,11 @@ Contoh berikut membaca data saja sesudah login demo. Login membuat sesi baru pad
     if (body !== undefined) headers["Content-Type"] = "application/json";
     if (csrf) headers["X-CSRF-Token"] = csrf;
 
-    const response = await fetch(path, {
+    const { apiURL } = await import("/assets/api-config.js?v=team2");
+    const response = await fetch(apiURL(path), {
       method,
       headers,
-      credentials: "same-origin",
+      credentials: "include",
       body: body === undefined ? undefined : JSON.stringify(body)
     });
 
@@ -1002,17 +1003,17 @@ Pada prototipe, sebagian data kas berada di JSONB state workspace. Pada integras
 
 Bentuk error prototipe memakai error, sedangkan integrasi memakai message beserta code/status/request_id. Cookie prototipe UMKM pbl_umkm; cookie integrasi rku_session. Jangan menukar nama cookie atau menyatakan sesi keduanya otomatis sama.
 
-Di prototipe Vercel, config mengiklankan realtime = poll. Jangan menyebut koneksi SSE tim sudah aktif pada efa hanya karena source integrasi mempunyai SSE.
+Riwayat: deployment prototipe dahulu mengiklankan realtime = poll. Setelah handoff, EFA menggunakan SSE tim dengan withCredentials dan REST snapshot saat reconnect; polling tetap menjadi fallback.
 
-Contoh pemeriksaan publik tanpa login pada deployment efa:
+Contoh pemeriksaan publik tanpa login pada deployment EFA saat ini:
 
 ```javascript
-fetch("/api/config")
+fetch("https://temukas.madgo.my.id/api/v1/config", { credentials: "include" })
   .then(response => response.json())
-  .then(data => console.log({brand: data.brand, realtime: data.realtime}));
+  .then(data => console.log({brand: data.brand, kind: data.kind}));
 ```
 
-Jalankan pada Console domain efa, bukan pada UI integrasi lokal. API publik ini tidak mengembalikan credential.
+Jalankan pada Console domain EFA. API publik ini tidak mengembalikan credential; tidak ada lagi request /api/config di origin Vercel.
 
 ## 15. Istilah dan cara menjelaskan saat demo
 
@@ -1041,7 +1042,7 @@ Kalimat singkat untuk presentasi:
 
 Jika ditanya demo online:
 
-> “Demo efa masih prototipe Vercel. Source integrasi tim menggunakan backend Echo dan tabel normalisasi; saya membedakan keduanya agar tidak mengklaim deployment yang belum dipasang.”
+> “EFA menyajikan frontend di Vercel. Browser terhubung langsung ke backend Go/Echo dan PostgreSQL tim, termasuk sesi, transaksi kas dan SSE. Backend prototipe Vercel tidak lagi dipakai.”
 
 ## Dokumen lanjutan
 

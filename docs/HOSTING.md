@@ -1,5 +1,10 @@
 # Hosting pada domain tim
 
+**Deployment EFA saat ini:** frontend statis di Vercel dan request browser
+langsung ke backend tim, sesuai [handoff](VERCEL_TEAM_API.md). Tidak ada
+rewrite API Vercel. Panduan same-origin di bawah tetap menjadi alternatif
+untuk menyajikan frontend dan backend pada server tim yang sama.
+
 Backend Go tetap berjalan seperti sebelumnya. Sajikan frontend statis pada domain yang sama, dan proxy /api/v1/* serta /health/* ke API. Node hanya diperlukan untuk development lokal.
 
 PR ini **belum mengubah server temukas.madgo.my.id**. Pemilik server memasang perubahan setelah review.

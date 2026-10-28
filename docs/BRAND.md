@@ -55,12 +55,13 @@ perbarui versi agar cache browser memvalidasi file baru.
 ## Live dan source tim
 
 - Source integrasi: frontend/assets pada repository aktif.
-- Source deployment Vercel yang sedang tayang:
-  ../archives/three-go-prototypes/internal/platform/web.
-- Keduanya memakai aset dan efa.css yang sama untuk UMKM.
+- Source deployment Vercel yang sedang tayang: `frontend/` pada repo ini.
+- Source prototipe di `../archives/three-go-prototypes` hanya arsip/rollback.
 - Domain demo: https://efa.madgo.my.id/.
 
-Perubahan ini tidak memigrasikan backend demo Vercel menjadi backend tim.
+Handoff 28 Oktober menyambungkan frontend EFA langsung ke backend tim.
+Perubahan branding sendiri tidak memindahkan akun/data lama; yang aktif
+sekarang adalah akun dan database milik backend tim.
 
 ## Halaman masuk dan daftar
 
