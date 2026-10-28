@@ -4,10 +4,13 @@
 !vercel.json
 !landing
 !landing/**
+!pwa
+!pwa/**
 !tools
 !tools/build-static.mjs
 landing/README.md
 landing/SOURCES.md
+pwa/README.md
 frontend/tests
 frontend/dev.mjs
 frontend/start.mjs

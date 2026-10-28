@@ -330,7 +330,7 @@ function settings() {
       "Pengaturan akun",
       "Informasi akun dan batas penggunaan ruang kerja.",
     ) +
-    `<section class="panel"><h2>${e(state.me.name)}</h2><div class="details"><dl><dt>Email</dt><dd>${e(state.me.email)}</dd><dt>Peran</dt><dd>${e(roles[state.me.role])}</dd><dt>Ruang kerja</dt><dd>${e(state.data.workspace.name)}</dd><dt>Penyimpanan</dt><dd>PostgreSQL, terpisah per aplikasi dan ruang kerja</dd></dl></div><div class="inline-actions">${button("Ganti kata sandi", "password", "", "primary")}${button("Keluar akun", "logout")}</div><p>Penggantian kata sandi mengakhiri seluruh sesi akun. Data awal adalah contoh sintetis. Jangan unggah data pelanggan nyata sebelum ada izin.</p></section>`
+    `<section class="panel"><h2>${e(state.me.name)}</h2><div class="details"><dl><dt>Email</dt><dd>${e(state.me.email)}</dd><dt>Peran</dt><dd>${e(roles[state.me.role])}</dd><dt>Ruang kerja</dt><dd>${e(state.data.workspace.name)}</dd><dt>Penyimpanan</dt><dd>PostgreSQL, terpisah per aplikasi dan ruang kerja</dd></dl></div><div class="inline-actions">${button("Ganti kata sandi", "password", "", "primary")}${button("Keluar akun", "logout")}<button class="pwa-install" type="button" data-pwa-install>Pasang EFA ↗</button></div><p>Penggantian kata sandi mengakhiri seluruh sesi akun. Data awal adalah contoh sintetis. Jangan unggah data pelanggan nyata sebelum ada izin.</p></section>`
   );
 }
 
@@ -606,7 +606,7 @@ function auth(register = false) {
     (register ? "#login" : "#register") +
     '">' +
     (register ? "Masuk" : "Daftar") +
-    "</a></p></div></section>" + authScene(register) + "</main>";
+    '</a></p><button class="pwa-install" type="button" data-pwa-install>Pasang EFA <span aria-hidden="true">↗</span></button></div></section>' + authScene(register) + "</main>";
   presentAuth(root, register);
 }
 function startEvents() {

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><title>EFA — Easy Financial Audit</title><rect width="512" height="512" fill="#102b43"/><g transform="translate(87.03999999999999 87.03999999999999) scale(0.66)">
+
+<path d="M149 351 65 449" fill="none" stroke="#5AA2E0" stroke-width="58" stroke-linecap="round"/>
+<circle cx="251" cy="248" r="139" fill="none" stroke="#5AA2E0" stroke-width="29"/>
+<path d="M168 278h33v66h-20l-13-13z" fill="#54B0D9"/>
+<rect x="215" y="250" width="34" height="94" rx="2" fill="#54B0D9"/>
+<rect x="263" y="247" width="34" height="97" rx="2" fill="#5AA2E0"/>
+<rect x="311" y="199" width="34" height="145" rx="2" fill="#5AA2E0"/>
+<path d="m173 254 54-50 33 27 61-66" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linejoin="round"/>
+<path d="m173 254 54-50 33 27 61-66" fill="none" stroke="#5AA2E0" stroke-width="16" stroke-linejoin="round"/>
+<path d="m305 157 45-24-4 51-15-13-16 18-14-14 16-17z" fill="#5AA2E0" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round"/>
+<rect x="307" y="75" width="39" height="39" rx="4" fill="#54B0D9"/>
+<rect x="357" y="49" width="23" height="23" rx="3" fill="#54B0D9"/>
+<rect x="356" y="105" width="39" height="39" rx="4" fill="#5AA2E0"/>
+<rect x="406" y="62" width="39" height="39" rx="4" fill="#5AA2E0"/>
+<rect x="383" y="153" width="26" height="26" rx="3" fill="#5AA2E0"/>
+</g></svg>

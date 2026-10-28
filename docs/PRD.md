@@ -48,6 +48,11 @@ Sumber analisis dan batas klaim dicatat pada [SOURCES](../landing/SOURCES.md).
 
 ## Batas saat ini
 
+PWA: EFA dapat dipasang lewat browser yang mendukung. Saat koneksi putus,
+halaman offline memberi tombol coba lagi. Login dan transaksi tetap
+memerlukan internet; tidak ada penyimpanan respons transaksi di cache
+atau antrean perubahan offline. Source dan panduan ada di [pwa/](../pwa/README.md).
+
 - Input CSV manual; belum terhubung langsung ke bank, QRIS, atau marketplace.
 - Bukan saldo bank langsung, akuntansi lengkap, atau perhitungan laba.
 - Tidak memakai AI untuk memutuskan pasangan.

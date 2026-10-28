@@ -35,6 +35,9 @@ test("static server isolates files and proxies session/CSRF requests", async () 
     assert.match(await (await fetch(base + "/app")).text(), /assets\/app\.js/);
     assert.equal((await fetch(base + "/landing/assets/landing.css")).status, 200);
     assert.equal((await fetch(base + "/landing/assets/landing.js")).status, 200);
+    assert.match((await fetch(base + "/sw.js")).headers.get("content-type"), /javascript/);
+    assert.match((await fetch(base + "/pwa/manifest.webmanifest")).headers.get("content-type"), /manifest\+json/);
+    assert.equal((await fetch(base + "/pwa/offline")).status, 200);
     assert.match(home.headers.get("content-security-policy"), /connect-src 'self'/);
     assert.equal((await fetch(base + "/assets/efa-ledger-4k.jpg")).status, 200);
     assert.equal((await fetch(base + "/assets/motion.js")).status, 200);
@@ -42,7 +45,7 @@ test("static server isolates files and proxies session/CSRF requests", async () 
     assert.equal(favicon.headers.get("content-type"), "image/svg+xml");
     assert.match(await favicon.text(), /Easy Financial Audit/);
     assert.equal((await fetch(base + "/assets/style.css", {method:"HEAD"})).headers.get("content-type"), "text/css; charset=utf-8");
-    for (const path of ["/.env", "/backend/configs/local.yaml", "/../.git/config", "/assets/../.env", "/landing/README.md", "/landing/assets/../../.env"]) {
+    for (const path of ["/.env", "/backend/configs/local.yaml", "/../.git/config", "/assets/../.env", "/landing/README.md", "/landing/assets/../../.env", "/pwa/README.md", "/pwa/service-worker.js", "/pwa/../.env"]) {
       assert.equal((await fetch(base + path)).status, 404);
     }
     assert.equal((await fetch(base, {method:"POST"})).status, 405);

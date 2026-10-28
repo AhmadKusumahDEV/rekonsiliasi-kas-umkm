@@ -12,6 +12,10 @@ https://temukas.madgo.my.id/api/v1, dengan cookie `rku_session` dan SSE.
 Backend serta database prototipe Vercel tidak lagi dipakai. Lihat
 [hasil handoff dan cara deploy](docs/VERCEL_TEAM_API.md).
 
+EFA juga mendukung pemasangan sebagai PWA. Pilih **Pasang EFA** pada
+footer landing, halaman masuk/daftar, atau Pengaturan. Lihat
+[cara memasang, batas offline, dan struktur PWA](pwa/README.md).
+
 ## Mulai lokal
 
 Prasyarat: Go sesuai backend/go.mod, PostgreSQL, dan Node.js 22+. Frontend adalah HTML/CSS/JavaScript biasa; tidak membutuhkan React, Vite, atau instalasi npm.
@@ -32,6 +36,7 @@ dipakai tidak diambil paksa. PORT mengatur UI, SERVER_PORT mengatur API.
 | Folder | Isi |
 | --- | --- |
 | landing | Halaman pengenalan, carousel, cara kerja, referensi dan artikel coming soon |
+| pwa | Manifest, worker, ikon launcher, pemasangan dan halaman offline |
 | tools/build-static.mjs | Menggabungkan aset publik ke dist untuk Vercel; tidak membundel API |
 | frontend/assets | UI, foto, font, animasi, dan contoh CSV Temu Kas |
 | frontend/dev.mjs | Server statis dan proxy lokal tanpa dependency |
@@ -57,6 +62,7 @@ Folder placeholder backend tetap dipertahankan sesuai konvensi tim. Tidak ada UI
 - [Hosting](docs/HOSTING.md), [hasil tes](docs/VERIFICATION.md)
 - [Atribusi aset](frontend/ASSETS.md)
 - [Landing page: edit, run dan build](landing/README.md), [sumber foto dan analisis](landing/SOURCES.md)
+- [PWA: pemasangan, cache dan pengujian](pwa/README.md)
 - [Backend](backend/README.md), [kontribusi](CONTRIBUTING.md)
 - [PRD awal](docs/reference/PRD-prototype.md), [FRD awal](docs/reference/FRD-prototype.md): dokumen lengkap sebelumnya, termasuk dua ide di luar Temu Kas.
 

@@ -1,0 +1,24 @@
+{
+  "id": "/app",
+  "name": "EFA — Easy Financial Audit",
+  "short_name": "EFA",
+  "description": "Cocokkan penjualan dengan uang masuk dan telusuri selisih kas usahamu.",
+  "lang": "id",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#102b43",
+  "theme_color": "#102b43",
+  "categories": ["finance", "business", "productivity"],
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/pwa/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Ringkasan usaha", "short_name": "Ringkasan", "url": "/app#overview" },
+    { "name": "Cocokkan kas", "short_name": "Cocokkan", "url": "/app#reconcile" },
+    { "name": "Impor catatan CSV", "short_name": "Impor CSV", "url": "/app#imports" }
+  ]
+}
