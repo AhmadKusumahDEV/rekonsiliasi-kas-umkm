@@ -550,7 +550,7 @@ function auth(register = false) {
   root.innerHTML =
     '<main id="main" class="auth auth-umkm ' +
     (register ? "is-register" : "") +
-    '"><section class="auth-form">' + maxyBrand("Easy Financial Audit", "#login") + '<div class="auth-inner"><div class="auth-heading"><span class="auth-product">Easy Financial Audit</span><small>' +
+    '"><section class="auth-form">' + maxyBrand("Easy Financial Audit", "#login") + '<div class="auth-inner"><a class="auth-home" href="/"><span aria-hidden="true">←</span> Kembali ke beranda</a><div class="auth-heading"><span class="auth-product">Easy Financial Audit</span><small>' +
     (register ? "Mulai catatan usahamu" : "Selamat datang kembali") +
     "</small><h2>" +
     (register ? "Mulai catatan usahamu." : "Selamat datang kembali.") +
