@@ -148,6 +148,35 @@ make gen.pg.migration name=create_users
 make pg.migrate.up DATABASE_URL=postgres://...
 ```
 
+## Observability
+
+Backend mengirim traces, metrics, dan logs ke Collector pusat melalui OTLP.
+Nama service yang dipakai adalah `rekonsiliasi-kas-api` dengan namespace
+`efaudit`. Route HTTP memakai template Echo, sehingga ID tidak menjadi label
+metrics. Query PostgreSQL juga membuat span tanpa merekam nilai parameter.
+
+Salin `otel.env.example` menjadi `otel.env`, lalu sesuaikan environment dan
+versi. File `otel.env` diabaikan Git. Untuk aplikasi native di VPS yang sama
+dengan Collector, endpoint default adalah `http://127.0.0.1:4317` dengan
+protokol `grpc`. Jika backend berada di VPS lain, pakai
+`https://otlp.madgo.my.id` dengan `http/protobuf` dan Basic auth dari file
+secret. Jangan menaruh credential di repository.
+
+Systemd dapat memuat file itu langsung:
+
+    EnvironmentFile=/path/ke/backend/otel.env
+
+Untuk menjalankan dari shell:
+
+    set -a
+    . ./otel.env
+    set +a
+    ./dist/linux-amd64/rekonsiliasi-kas-umkm-api
+
+Jangan menjalankan Grafana, Prometheus, Loki, Tempo, Collector, atau
+Alertmanager di Compose aplikasi. Data dikirim ke stack pusat; detail kontrak
+ada di [docs/AGENT-INTEGRATION-OBSERVABIILITY.md](docs/AGENT-INTEGRATION-OBSERVABIILITY.md).
+
 ## Build untuk VPS
 
 Build Linux dari mesin lokal (Windows/Linux) dengan:

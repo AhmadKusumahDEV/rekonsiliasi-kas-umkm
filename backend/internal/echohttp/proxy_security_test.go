@@ -14,6 +14,9 @@ func TestSessionCookieThroughHTTPSProxy(t *testing.T) {
 	for _, secure := range []bool{false, true} {
 		e := echo.New()
 		r := httptest.NewRequest(http.MethodGet, "http://temukas.example/", nil)
+		// Echo trusts forwarded scheme headers only from a loopback/private
+		// proxy address. Keep the test aligned with the real reverse-proxy path.
+		r.RemoteAddr = "127.0.0.1:1234"
 		if secure {
 			r.Header.Set("X-Forwarded-Proto", "https")
 		}

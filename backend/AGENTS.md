@@ -4,6 +4,19 @@
 menjadi target struktur, tetapi aturan project ini berbeda pada dependency dan
 arti folder `pkg`:
 
+## Identitas telemetry
+
+- `service.name`: `rekonsiliasi-kas-api`
+- `service.namespace`: `efaudit`
+- `deployment.environment.name`: `dev`, `staging`, atau `prod`
+- Package: `pkg/observability` (disalin dari template pusat)
+- Endpoint same-host native: `http://127.0.0.1:4317` dengan `grpc`
+- Endpoint remote: `https://otlp.madgo.my.id` dengan `http/protobuf`
+
+Jangan menambahkan Grafana, Prometheus, Loki, Tempo, Collector, atau
+Alertmanager ke Compose aplikasi. Konfigurasi ada di `otel.env.example`;
+`otel.env` berisi nilai deployment dan diabaikan Git.
+
 - Dependency memakai Go module biasa. **Jangan** memakai `vendor`, `-mod=vendor`,
   atau `go mod vendor`.
 - `pkg/` berisi package milik project yang boleh diimpor lintas project, termasuk

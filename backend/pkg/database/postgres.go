@@ -11,6 +11,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // DBTX is the interface generated sqlc code expects. Both *DB and pgx.Tx
@@ -23,8 +26,9 @@ type DBTX interface {
 }
 
 type DB struct {
-	pool *pgxpool.Pool
-	cfg  Config
+	pool   *pgxpool.Pool
+	cfg    Config
+	tracer trace.Tracer
 }
 
 var _ DBTX = (*DB)(nil)
@@ -45,13 +49,14 @@ func New(ctx context.Context, cfg Config) (*DB, error) {
 	poolConfig.MaxConnLifetime = cfg.MaxConnLifetime
 	poolConfig.MaxConnIdleTime = cfg.MaxConnIdleTime
 	poolConfig.HealthCheckPeriod = cfg.HealthCheckPeriod
+	poolConfig.ConnConfig.Tracer = newQueryTracer()
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
 		return nil, fmt.Errorf("open postgres pool: %w", err)
 	}
 
-	db := &DB{pool: pool, cfg: cfg}
+	db := &DB{pool: pool, cfg: cfg, tracer: otel.Tracer(instrumentationName)}
 	pingContext, cancel := context.WithTimeout(ctx, cfg.ConnectTimeout)
 	defer cancel()
 
@@ -109,5 +114,24 @@ func (d *DB) QueryRow(ctx context.Context, query string, args ...any) pgx.Row {
 }
 
 func (d *DB) BeginTx(ctx context.Context, options pgx.TxOptions) (pgx.Tx, error) {
-	return d.pool.BeginTx(ctx, options)
+	if d.tracer == nil {
+		return d.pool.BeginTx(ctx, options)
+	}
+
+	ctx, span := d.tracer.Start(ctx, "db.begin",
+		trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithAttributes(
+			attribute.String("db.system.name", "postgresql"),
+			attribute.String("db.operation.name", "BEGIN"),
+		),
+	)
+	defer span.End()
+
+	tx, err := d.pool.BeginTx(ctx, options)
+	if err != nil {
+		recordDatabaseError(span, err)
+		return nil, err
+	}
+
+	return tx, nil
 }
