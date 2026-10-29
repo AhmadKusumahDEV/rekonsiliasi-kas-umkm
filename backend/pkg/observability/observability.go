@@ -262,8 +262,8 @@ func Setup(ctx context.Context, cfg Config) (*Stack, error) {
 			exporter, err = otlpmetricgrpc.New(ctx, metricOptions(cfg)...)
 		}
 		if err != nil {
-			shutdownProviders(ctx, nil, nil, traceProvider)
-			return nil, fmt.Errorf("membuat metric exporter: %w", err)
+			shutdownErr := shutdownProviders(ctx, nil, nil, traceProvider)
+			return nil, errors.Join(fmt.Errorf("membuat metric exporter: %w", err), shutdownErr)
 		}
 		meterProvider = sdkmetric.NewMeterProvider(
 			sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(cfg.MetricInterval))),
@@ -286,8 +286,8 @@ func Setup(ctx context.Context, cfg Config) (*Stack, error) {
 			exporter, err = otlploggrpc.New(ctx, logOptions(cfg)...)
 		}
 		if err != nil {
-			shutdownProviders(ctx, nil, meterProvider, traceProvider)
-			return nil, fmt.Errorf("membuat log exporter: %w", err)
+			shutdownErr := shutdownProviders(ctx, nil, meterProvider, traceProvider)
+			return nil, errors.Join(fmt.Errorf("membuat log exporter: %w", err), shutdownErr)
 		}
 		logProvider = sdklog.NewLoggerProvider(
 			sdklog.WithProcessor(sdklog.NewBatchProcessor(exporter)),
@@ -316,8 +316,8 @@ func Setup(ctx context.Context, cfg Config) (*Stack, error) {
 		metric.WithExplicitBucketBoundaries(0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 10),
 	)
 	if err != nil {
-		shutdownProviders(ctx, logProvider, meterProvider, traceProvider)
-		return nil, fmt.Errorf("membuat histogram HTTP: %w", err)
+		shutdownErr := shutdownProviders(ctx, logProvider, meterProvider, traceProvider)
+		return nil, errors.Join(fmt.Errorf("membuat histogram HTTP: %w", err), shutdownErr)
 	}
 
 	heartbeat, err := meter.Float64Gauge(
@@ -326,8 +326,8 @@ func Setup(ctx context.Context, cfg Config) (*Stack, error) {
 		metric.WithDescription("Unix timestamp heartbeat terakhir aplikasi"),
 	)
 	if err != nil {
-		shutdownProviders(ctx, logProvider, meterProvider, traceProvider)
-		return nil, fmt.Errorf("membuat gauge heartbeat: %w", err)
+		shutdownErr := shutdownProviders(ctx, logProvider, meterProvider, traceProvider)
+		return nil, errors.Join(fmt.Errorf("membuat gauge heartbeat: %w", err), shutdownErr)
 	}
 
 	heartbeatCtx, stopHeartbeat := context.WithCancel(context.Background())
