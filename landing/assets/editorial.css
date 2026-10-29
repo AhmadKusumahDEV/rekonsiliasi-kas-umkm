@@ -1,55 +1,4 @@
 /* photographic compositions and shapes; shared controls stay in landing.css. */
-.hero {
-  min-height: max(850px, 100svh);
-  background: #102b43;
-}
-.hero-images {
-  inset: 160px 4% 145px auto;
-  width: 43%;
-  max-width: 650px;
-  overflow: hidden;
-  border-radius: 300px 300px 70px 70px;
-  z-index: -1;
-  transform: rotate(3deg);
-}
-.hero-image {
-  object-position: 64% center;
-  transform: scale(1.08) rotate(-3deg);
-}
-.hero-image.is-active {
-  transform: scale(1.04) rotate(-3deg);
-}
-.hero-shade {
-  background: linear-gradient(90deg, #102b43 35%, rgb(16 43 67 / .72) 53%, transparent 70%);
-}
-.hero-inner { position: relative; z-index: 1; }
-.hero-copy { max-width: 62%; }
-.hero h1 { font-size: 68px; max-width: 18ch; }
-.hero h1 span { position: relative; display: inline-block; }
-.hero h1 span::after {
-  content: '';
-  position: absolute;
-  bottom: -14px;
-  left: 2px;
-  width: 170px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--amber);
-  transform: rotate(-4deg);
-}
-.hero-description { margin-top: 40px; }
-.hero-orbit {
-  position: absolute;
-  width: 49%;
-  height: 68%;
-  top: 15%;
-  right: 1%;
-  border: 1px solid rgb(157 214 242 / .45);
-  border-radius: 50%;
-  transform: rotate(16deg);
-  z-index: -2;
-  pointer-events: none;
-}
 .shape-spark {
   display: block;
   width: 110px;
@@ -57,32 +6,6 @@
   background: var(--amber);
   clip-path: polygon(50% 0%, 59% 28%, 80% 9%, 76% 37%, 100% 40%, 79% 55%, 96% 78%, 66% 74%, 60% 100%, 46% 78%, 21% 96%, 25% 66%, 0% 59%, 25% 45%, 7% 20%, 37% 25%);
 }
-.hero-spark {
-  position: absolute;
-  top: 145px;
-  right: 4%;
-  z-index: 2;
-  transform: rotate(12deg);
-  pointer-events: none;
-}
-.hero-note {
-  position: absolute;
-  z-index: 2;
-  right: 6%;
-  bottom: 162px;
-  padding: 20px 26px;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  border-radius: 18px 18px 18px 4px;
-  background: #f6fbff;
-  color: var(--navy);
-  font-size: 13px;
-  transform: rotate(-4deg);
-  pointer-events: none;
-}
-.note-check { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #d6edf7; font-size: 23px; }
-.note-arrow { font-size: 30px; margin-left: 12px; color: #347cab; }
 .capability-strip { background: #dceef7; color: var(--navy); border: 0; }
 .capability-strip i { color: #347cab; font-size: 32px; }
 .capability-strip>.wrap { padding-block: 24px; }
@@ -151,13 +74,8 @@
 .closing-ring { position: absolute; inset: -15px -20px 15px; border: 1px solid #6faccd; border-radius: 50%; transform: rotate(-12deg); }
 .closing-inner { z-index: 2; }
 .closing h2 { max-width: 19ch; font-size: 48px; }
-.hero-spark { animation: spark-turn 14s ease-in-out infinite alternate; animation-play-state: paused; }
-.hero-note { animation: note-float 6s ease-in-out infinite alternate; animation-play-state: paused; }
-.hero[data-playing='true'] .hero-spark,.hero[data-playing='true'] .hero-note { animation-play-state: running; }
 .workflow-visual.is-in-view .receipt-sheet { animation: receipt-settle 850ms var(--ease) both; }
 .workflow-visual.is-in-view .trail-match { animation: match-arrive 500ms 350ms var(--ease) both; }
-@keyframes spark-turn { to { transform: rotate(48deg); } }
-@keyframes note-float { to { transform: translateY(-10px) rotate(-2deg); } }
 @keyframes receipt-settle { from { opacity: 0; transform: translate(25px, 15px) rotate(15deg); } to { opacity: 1; transform: rotate(7deg); } }
 @keyframes match-arrive { from { opacity: 0; transform: translate(-50%, 12px) rotate(-2deg); } to { opacity: 1; transform: translate(-50%, 0) rotate(-2deg); } }
 @media (hover:hover) and (pointer:fine) {
@@ -165,13 +83,7 @@
   .example { transition: transform 250ms var(--ease); }
   .example:hover { transform: rotate(0); }
 }
-@media (min-width:1600px) { .hero h1 { font-size: 78px; } }
 @media (max-width:1150px) {
-  .hero h1 { font-size: 58px; }
-  .hero-copy { max-width: 66%; }
-  .hero-note { right: 4%; padding: 17px; }
-  .hero-images { width: 44%; right: 3%; }
-  .hero-spark { width: 80px; }
   .about-grid { gap: 50px; }
   .about h2 { font-size: 34px; }
   .example { padding: 28px; }
@@ -186,16 +98,6 @@
   .closing h2 { font-size: 42px; }
 }
 @media (max-width:800px) {
-  .hero { min-height: 0; padding-top: 100px; }
-  .hero-copy { max-width: 100%; }
-  .hero-inner { padding-block: 50px 45px; order: 1; }
-  .hero h1 { font-size: 60px; max-width: 18ch; }
-  .hero-images { position: relative; inset: auto; width: calc(100% - 80px); height: 410px; max-width: 600px; margin: 0 auto 20px; order: 2; z-index: 0; border-radius: 180px 180px 40px 40px; transform: rotate(2deg); }
-  .hero-shade { display: none; }
-  .hero-orbit { inset: auto -15% 115px auto; width: 100%; height: 410px; }
-  .hero-note { bottom: 128px; right: 5%; z-index: 2; }
-  .hero-spark { top: auto; bottom: 420px; right: 5%; width: 90px; }
-  .hero-bottom { order: 3; padding-block: 16px 32px; }
   .about-grid { grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
   .about h2 { font-size: 31px; }
   .section-copy { font-size: 15px; }
@@ -255,17 +157,6 @@
   .article-grid h3 { font-size: 27px; }
 }
 @media (max-width:520px) {
-  .hero { padding-top: 84px; }
-  .hero-inner { padding-block: 36px 30px; }
-  .hero h1 { font-size: 40px; }
-  .hero .eyebrow { margin-bottom: 20px; }
-  .hero-description { min-height: 0; margin-top: 30px; }
-  .hero-images { width: calc(100% - 48px); height: 340px; border-radius: 160px 160px 30px 30px; }
-  .hero-note { padding: 14px 17px; bottom: 120px; font-size: 12px; }
-  .note-check { width: 32px; height: 32px; }
-  .note-arrow { font-size: 25px; }
-  .hero-spark { bottom: 375px; width: 75px; }
-  .hero-orbit { height: 320px; bottom: 135px; }
   .capability-strip>.wrap { gap: 6px 12px; }
   .capability-strip i { font-size: 23px; }
   .steps li { padding: 24px 20px; }
@@ -275,10 +166,6 @@
   .closing-spark { width: 80px; right: 30px; }
 }
 @media (max-width:360px) {
-  .hero h1 { font-size: 36px; }
-  .hero-images { height: 300px; }
-  .hero-note { font-size: 11px; gap: 12px; right: 20px; }
-  .note-arrow { display: none; }
   .about h2 { font-size: 30px; }
   .paper-sheet { width: 170px; }
   .trail-match { font-size: 11px; }
