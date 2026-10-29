@@ -2,6 +2,10 @@
 .gitignore
 .env
 .env.*
+otel.env
+otel.*.env
+secrets
+*.htpasswd
 configs/local.yaml
 bin
 dist

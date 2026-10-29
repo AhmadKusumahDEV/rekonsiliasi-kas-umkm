@@ -13,14 +13,24 @@ import (
 
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/config"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/service"
+	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/pkg/observability"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/pkg/sse"
+	echootel "github.com/labstack/echo-otel/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 // NewEcho builds the HTTP engine. It is exported so handler and route tests can
 // exercise the real middleware and error mapping without opening a socket.
 func NewEcho(cfg config.Config, s *service.Service, logger *slog.Logger, sseManagers ...*sse.Manager) *echo.Echo {
+	return NewEchoWithObservability(cfg, s, nil, logger, sseManagers...)
+}
+
+// NewEchoWithObservability builds the HTTP engine and connects Echo to the
+// OpenTelemetry providers created by observability.Setup. NewEcho remains as a
+// small compatibility wrapper for tests that only need the plain engine.
+func NewEchoWithObservability(cfg config.Config, s *service.Service, stack *observability.Stack, logger *slog.Logger, sseManagers ...*sse.Manager) *echo.Echo {
 	if logger == nil {
 		logger = slog.Default()
 	}
@@ -31,12 +41,29 @@ func NewEcho(cfg config.Config, s *service.Service, logger *slog.Logger, sseMana
 	e.HTTPErrorHandler = handleEchoError(logger)
 	e.Validator = NewCustomValidator()
 
+	// Order matters. The access logger wraps Recover so panics are logged with
+	// the final status, and Recover wraps echo-otel so a re-panicked request is
+	// still converted into a response before the access logger records it.
+	e.Use(requestLogger(logger, stack))
 	e.Use(middleware.Recover())
+	e.Use(echootel.NewMiddlewareWithConfig(echootel.Config{
+		ServerName: cfg.App.Name,
+		// The application has a custom error handler, so let it commit the
+		// mapped status inside the otel middleware before metrics are recorded.
+		OnNextError: func(c echo.Context, err error) {
+			c.Error(err)
+		},
+		SpanEndAttributes: func(c echo.Context, _ *echootel.Values, attrs []attribute.KeyValue) []attribute.KeyValue {
+			if id := requestID(c); id != "" {
+				attrs = append(attrs, attribute.String("app.request_id", id))
+			}
+			return attrs
+		},
+	}))
 	e.Use(securityHeaders)
 	e.Use(corsMiddleware(cfg.Server.AllowedOrigins))
 	e.Use(middleware.BodyLimit("5M"))
 	e.Use(middleware.RequestID())
-	e.Use(requestLogger(logger))
 
 	e.GET("/health/live", liveness(s))
 	e.GET("/health/ready", readiness(s))
@@ -69,12 +96,16 @@ func NewEcho(cfg config.Config, s *service.Service, logger *slog.Logger, sseMana
 	return e
 }
 
-func RunEchoHTTPService(ctx context.Context, cfg config.Config, s *service.Service, logger *slog.Logger, sseManager *sse.Manager) error {
+func RunEchoHTTPService(ctx context.Context, cfg config.Config, s *service.Service, stack *observability.Stack, sseManager *sse.Manager) error {
+	var logger *slog.Logger
+	if stack != nil {
+		logger = stack.Logger
+	}
 	if logger == nil {
 		logger = slog.Default()
 	}
 
-	e := NewEcho(cfg, s, logger, sseManager)
+	e := NewEchoWithObservability(cfg, s, stack, logger, sseManager)
 	e.Server.ReadTimeout = cfg.Server.ReadTimeout
 	// SSE streams are long-lived. A global WriteTimeout would terminate them.
 	// The SSE manager enforces its own per-write deadline.
@@ -84,7 +115,7 @@ func RunEchoHTTPService(ctx context.Context, cfg config.Config, s *service.Servi
 
 	serverErrors := make(chan error, 1)
 	go func() {
-		logger.Info("http server listening",
+		logger.InfoContext(ctx, "http server listening",
 			"address", cfg.Server.Address(),
 			"service", cfg.App.Name,
 			"version", service.Version,
@@ -97,10 +128,10 @@ func RunEchoHTTPService(ctx context.Context, cfg config.Config, s *service.Servi
 		shutdownContext, cancel := context.WithTimeout(context.Background(), cfg.Server.ShutdownTimeout)
 		defer cancel()
 
-		logger.Info("stopping http server")
+		logger.InfoContext(shutdownContext, "stopping http server")
 		if sseManager != nil {
 			if err := sseManager.Shutdown(shutdownContext); err != nil {
-				logger.Warn("sse shutdown failed", "error", err)
+				logger.WarnContext(shutdownContext, "sse shutdown failed", "error", err)
 			}
 		}
 		if err := e.Shutdown(shutdownContext); err != nil {

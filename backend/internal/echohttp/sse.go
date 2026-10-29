@@ -54,11 +54,11 @@ func NewSSEManager(cfg config.Config, svc *service.Service, logger *slog.Logger)
 		MaxConnectionsPerUser: 5,
 		MaxConnectionAge:      12 * time.Hour,
 		Logger:                logger,
-		OnReject: func(_ context.Context, r *http.Request, reason sse.RejectReason, err error) {
-			logger.Warn("sse rejected", "reason", reason, "path", r.URL.Path, "error", err)
+		OnReject: func(ctx context.Context, r *http.Request, reason sse.RejectReason, err error) {
+			logger.WarnContext(ctx, "sse rejected", "reason", reason, "path", r.URL.Path, "error", err)
 		},
-		OnDrop: func(_ context.Context, client *sse.Client, reason sse.DropReason) {
-			logger.Warn("sse client dropped", "user_id", client.UserID(), "reason", reason)
+		OnDrop: func(ctx context.Context, client *sse.Client, reason sse.DropReason) {
+			logger.WarnContext(ctx, "sse client dropped", "user_id", client.UserID(), "reason", reason)
 		},
 	})
 }
@@ -87,7 +87,7 @@ func (n *SSENotifier) PublishState(ctx context.Context, workspaceID string, vers
 		return fmt.Errorf("build sse state event: %w", err)
 	}
 	if err := n.manager.PublishEventToRoom(ctx, workspaceID, event); err != nil {
-		n.logger.Warn("sse state publish failed", "workspace_id", workspaceID, "version", version, "error", err)
+		n.logger.WarnContext(ctx, "sse state publish failed", "workspace_id", workspaceID, "version", version, "error", err)
 		return err
 	}
 	return nil

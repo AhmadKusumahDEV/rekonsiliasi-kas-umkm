@@ -13,6 +13,9 @@ import (
 	pkgErr "github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/pkg/errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const statusClientClosedRequest = 499
@@ -31,21 +34,33 @@ func handleEchoError(logger *slog.Logger) echo.HTTPErrorHandler {
 		}
 
 		statusCode, message := mapHTTPError(err)
+		ctx := c.Request().Context()
+		span := trace.SpanFromContext(ctx)
+		span.SetAttributes(
+			attribute.String("http.request.method", c.Request().Method),
+			attribute.String("http.route", c.Path()),
+			attribute.Int("http.response.status_code", statusCode),
+		)
+		if statusCode >= http.StatusInternalServerError {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, http.StatusText(statusCode))
+		}
+
 		if logger != nil {
 			attributes := []any{
 				"error", err,
-				"method", c.Request().Method,
-				"path", c.Request().URL.Path,
+				"http.method", c.Request().Method,
+				"http.route", c.Path(),
 				"request_id", requestID(c),
-				"status", statusCode,
+				"http.status", statusCode,
 			}
 			if started, ok := c.Get(contextKeyRequestStartedAt).(time.Time); ok {
 				attributes = append(attributes, "latency_ms", time.Since(started).Milliseconds())
 			}
 			if statusCode >= http.StatusInternalServerError {
-				logger.Error("request failed", attributes...)
+				logger.ErrorContext(ctx, "request failed", attributes...)
 			} else {
-				logger.Warn("request failed", attributes...)
+				logger.WarnContext(ctx, "request failed", attributes...)
 			}
 		}
 
