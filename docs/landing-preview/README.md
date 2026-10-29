@@ -22,7 +22,11 @@ dan tombol tidak dipotong oleh tinggi yang dikunci.
 Ketiga slide memakai cutout transparan dengan `object-fit: contain`, tanpa
 bingkai foto atau garis kecil di samping eyebrow. Slide 2 dan 3 menggunakan
 ilustrasi baru yang berbeda. Sumber dan prompt tersimpan di `landing/SOURCES.md`.
-Deployment carousel terbaru: `dpl_HGEzW2mfe1CvXepBkdcfaazbuY8N`.
+Deployment carousel terbaru: `dpl_6r4kQV7bYg4CQzomU62ssK7DeHfz`.
+Font terbaru memakai stack Helvetica/Arial pada landing dan aplikasi.
+Kontrol panah berupa chevron sederhana. `carousel-layout.json` menyimpan
+pengukuran tinggi dan posisi ketiga slide pada desktop, tablet, HP serta
+resize kembali ke desktop; judul, CTA dan kontrol tetap sejajar.
 
 Pemeriksaan browser: tiga slide, autoplay, pause, panah/Home/End,
 reduced motion, menu HP dan Escape, tiga contoh nominal, FAQ, CTA

@@ -48,7 +48,7 @@ const images = [...document.querySelectorAll('[data-slide-image]')];
 const tabs = [...document.querySelectorAll('[data-slide]')];
 const slides = [
   { title: ['Penjualan tercatat.', 'Uang masuk jelas.'], text: 'Jualan bisa lewat banyak cara. EFA bantu kamu mencocokkan uang yang masuk, satu transaksi demi satu transaksi.' },
-  { title: ['Pesanan berjalan.', 'Pembayaran terpantau.'], text: 'Tunai, transfer, atau marketplace. Satukan catatannya dan periksa pembayaran yang masih punya sisa.' },
+  { title: ['Pesanan berjalan.', 'Uang terpantau.'], text: 'Tunai, transfer, atau marketplace. Satukan catatannya dan periksa pembayaran yang masih punya sisa.' },
   { title: ['Beda angka?', 'Telusuri sebabnya.'], text: 'Pembayaran sebagian dan biaya layanan tidak perlu ditebak. Cocokkan dengan catatan, lalu simpan keputusanmu.' },
 ];
 let index = 0;
@@ -59,6 +59,38 @@ let hovered = false;
 let visible = true;
 let copyAnimation;
 const delay = 6500;
+
+function writeTitle(element, lines) {
+  const accent = document.createElement('span');
+  accent.textContent = lines[1];
+  element.replaceChildren(document.createTextNode(lines[0]), document.createElement('br'), accent);
+}
+
+// reserve the longest text at the current width, so slides never move the CTA.
+function measureHeroCopy() {
+  for (const [node, heading] of [[title, true], [description, false]]) {
+    const probe = node.cloneNode(false);
+    probe.removeAttribute('id');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText = `position:absolute;visibility:hidden;pointer-events:none;inset:0 auto auto 0;width:${node.getBoundingClientRect().width}px;min-height:0;height:auto;margin:0`;
+    copy.append(probe);
+    let height = 0;
+    for (const slide of slides) {
+      if (heading) writeTitle(probe, slide.title);
+      else probe.textContent = slide.text;
+      height = Math.max(height, probe.getBoundingClientRect().height);
+    }
+    probe.remove();
+    node.style.minHeight = `${Math.ceil(height)}px`;
+  }
+}
+let measureFrame;
+addEventListener('resize', () => {
+  cancelAnimationFrame(measureFrame);
+  measureFrame = requestAnimationFrame(measureHeroCopy);
+});
+measureHeroCopy();
+document.fonts.ready.then(measureHeroCopy);
 
 function stopTimer() {
   clearTimeout(timer);
@@ -93,10 +125,7 @@ async function showSlide(next, manual = true) {
   if (token !== transition) return;
   if (ready) images.forEach((image, n) => image.classList.toggle('is-active', n === next));
   index = next;
-  title.replaceChildren(document.createTextNode(slides[index].title[0]), document.createElement('br'));
-  const accent = document.createElement('span');
-  accent.textContent = slides[index].title[1];
-  title.append(accent);
+  writeTitle(title, slides[index].title);
   description.textContent = slides[index].text;
   tabs.forEach((button, n) => button.setAttribute('aria-pressed', String(n === index)));
   copyAnimation?.cancel();

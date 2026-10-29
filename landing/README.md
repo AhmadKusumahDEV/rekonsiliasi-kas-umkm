@@ -59,6 +59,7 @@ Jika port dipakai: `$env:PORT='3058'; node frontend/dev.mjs`.
   Ketiga ilustrasi memakai alpha transparan dan aturan layout yang sama,
   tanpa bingkai foto. Foto stok tetap tersedia untuk section pendukung.
 - Palet ada di `:root` dalam `landing.css`. Logo dan font mengikuti EFA.
+  Stack font sistem dipakai bersama dari `frontend/assets/typography.css`.
   Hero penuh dan breakpoint-nya berada di `hero.css`; ilustrasi lembar
   catatan, thumbnail artikel dan section lain berada di `editorial.css`.
   Keduanya tidak mengubah UI `/app`.
@@ -73,6 +74,12 @@ hover, interaksi keyboard, tab tersembunyi, atau hero meninggalkan layar.
 Pengaturan reduced motion memakai mode manual. Scroll reveal hanya
 diaktifkan jika JavaScript dan IntersectionObserver tersedia; tanpa JS,
 isi dan tautan daftar tetap terlihat.
+
+Tinggi judul dan deskripsi diukur terhadap ketiga variasi teks pada lebar
+layar saat ini. Dengan begitu CTA, gambar dan bagian bawah hero tidak
+bergeser ketika slide diganti. Pengukuran diulang saat resize; tanpa
+JavaScript, slide pertama tetap memakai layout HTML biasa. Tombol panah
+memakai chevron sederhana dengan area sentuh 48 px.
 
 ## Build dan pemeriksaan
 

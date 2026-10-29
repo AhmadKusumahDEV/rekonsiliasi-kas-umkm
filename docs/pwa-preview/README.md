@@ -1,6 +1,6 @@
 # Pemeriksaan PWA EFA
 
-Diambil dari https://efa.madgo.my.id/ pada 28 Oktober 2026.
+Diambil dari https://efa.madgo.my.id/ pada 29 Oktober 2026.
 
 Viewport desktop 1440×1000 dan HP 375×812. Screenshot memperlihatkan
 petunjuk pemasangan dan halaman offline setelah worker berhasil aktif.

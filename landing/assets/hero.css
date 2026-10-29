@@ -71,13 +71,17 @@
 .hero-image.is-active { transform: none; }
 .hero-inner { position: relative; padding-block: 170px 120px; }
 .hero-copy { width: 100%; max-width: none; }
-.hero h1 { max-width: 17ch; font-size: 64px; line-height: 1.14; letter-spacing: -.055em; }
+.hero h1 { max-width: 17ch; font-size: 64px; line-height: 1.1; letter-spacing: -.025em; }
 .hero h1 span { color: #c2e7f8; }
 .hero-description { max-width: 38ch; margin: 28px 0 34px; min-height: 84px; font-size: 16px; }
 .hero .eyebrow { color: #c2e7f8; }
 .hero-actions { gap: 24px; }
 .hero-bottom { z-index: 1; padding-bottom: 30px; }
-.hero .carousel-controls { background: #12374e; padding: 7px 12px; border-radius: 40px; }
+.hero .carousel-controls { background: transparent; padding: 0; gap: 8px; }
+.hero .carousel-arrow { display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 4px; background: #16394f; color: #fff; transition: background-color 180ms ease; }
+.hero .carousel-arrow:hover { background: #245f83; }
+.carousel-arrow svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.hero .pause-button { background: #16394f; border-radius: 4px; color: #fff; min-height: 48px; }
 .hero[data-playing='true'] .disc-two { animation: hero-disc-drift 12s ease-in-out infinite alternate; }
 @keyframes hero-disc-drift { to { transform: translate(-6px,10px); } }
 @media (min-width:1600px) {

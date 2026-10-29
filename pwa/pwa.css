@@ -31,13 +31,13 @@
   background: #f7fbfe;
   color: #102b43;
   color-scheme: light;
-  font: 15px/1.65 system-ui,sans-serif;
+  font: 15px/1.65 var(--efa-font, Arial, sans-serif);
 }
 .pwa-dialog::backdrop { background: rgb(6 25 41 / .65); }
 .pwa-dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-.pwa-dialog h2 { font: 600 25px/1.2 system-ui,sans-serif; margin: 0; color: #102b43; }
+.pwa-dialog h2 { font: 600 25px/1.2 var(--efa-font, Arial, sans-serif); margin: 0; color: #102b43; }
 .pwa-dialog p { margin: 18px 0; }
-.pwa-dialog-head button,.pwa-update button { flex-shrink: 0; width: 44px; height: 44px; background: transparent; color: inherit; border: 0; border-radius: 50%; font: 25px/1 system-ui,sans-serif; cursor: pointer; }
+.pwa-dialog-head button,.pwa-update button { flex-shrink: 0; width: 44px; height: 44px; background: transparent; color: inherit; border: 0; border-radius: 50%; font: 25px/1 var(--efa-font, Arial, sans-serif); cursor: pointer; }
 .pwa-dialog ol { padding-left: 20px; margin: 24px 0; }
 .pwa-dialog li { margin: 18px 0; padding-left: 5px; }
 .pwa-dialog li strong,.pwa-dialog li span { display: block; }
@@ -55,18 +55,18 @@
   border-radius: 14px;
   background: #fff0d5;
   color: #624413;
-  font: 14px/1.6 system-ui,sans-serif;
+  font: 14px/1.6 var(--efa-font, Arial, sans-serif);
   box-shadow: 0 5px 24px rgb(9 32 49 / .13);
 }
 .pwa-update { bottom: auto; top: max(16px, env(safe-area-inset-top)); display: flex; align-items: center; gap: 10px; background: #dceef7; color: #102b43; }
 .pwa-update p { margin: 0; }
-.pwa-offline { margin: 0; min-height: 100svh; display: grid; place-items: center; background: #102b43; color: #f5faff; font: 16px/1.7 system-ui,sans-serif; }
+.pwa-offline { margin: 0; min-height: 100svh; display: grid; place-items: center; background: #102b43; color: #f5faff; font: 16px/1.7 var(--efa-font, Arial, sans-serif); }
 .pwa-offline main { width: min(560px, calc(100% - 48px)); padding: 48px 0; }
 .pwa-offline img { display: block; border-radius: 20px; margin-bottom: 24px; }
 .pwa-offline .pwa-eyebrow { color: #9dd6f2; font-size: 13px; }
 .pwa-offline h1 { font-size: 40px; line-height: 1.2; letter-spacing: -.04em; margin: 20px 0; }
 .pwa-offline p { color: #c9deec; }
-.pwa-offline button { display: inline-flex; align-items: center; gap: 24px; padding: 15px 24px; min-height: 52px; margin-top: 16px; border-radius: 30px; border: 0; color: #102b43; background: #f59e0b; font: 600 15px system-ui,sans-serif; cursor: pointer; }
+.pwa-offline button { display: inline-flex; align-items: center; gap: 24px; padding: 15px 24px; min-height: 52px; margin-top: 16px; border-radius: 30px; border: 0; color: #102b43; background: #f59e0b; font: 600 15px var(--efa-font, Arial, sans-serif); cursor: pointer; }
 .pwa-offline .pwa-offline-note { font-size: 13px; margin-top: 30px; max-width: 56ch; }
 @media (max-width:520px) {
   .pwa-dialog { padding: 22px; font-size: 16px; }

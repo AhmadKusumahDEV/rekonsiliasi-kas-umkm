@@ -1,0 +1,4 @@
+/* shared system type: landing, account forms and workspace use one family. */
+:root {
+  --efa-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}

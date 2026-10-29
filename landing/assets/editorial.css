@@ -21,7 +21,7 @@
 }
 .about-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 65%; border-radius: inherit; }
 .about-photo::after { content: ''; position: absolute; inset: 40% 0 0; border-radius: inherit; background: linear-gradient(transparent, rgb(0 0 0 / .65)); z-index: 0; }
-.photo-caption { position: absolute; bottom: 25px; left: 28px; color: #fff; font-family: EfaDisplay,sans-serif; font-size: 22px; line-height: 1.4; z-index: 1; }
+.photo-caption { position: absolute; bottom: 25px; left: 28px; color: #fff; font-family: var(--efa-font); font-size: 22px; line-height: 1.4; z-index: 1; }
 .photo-flower { position: absolute; right: -25px; top: -35px; width: 85px; background: var(--coral); transform: rotate(15deg); }
 .example { position: relative; isolation: isolate; border-radius: 28px; background: #f3f7f9; padding: 36px; transform: rotate(2deg); }
 .example::before { content: ''; position: absolute; inset: 12px -14px -14px 12px; background: #dceef7; border-radius: inherit; z-index: -1; transform: rotate(-5deg); }
@@ -37,7 +37,7 @@
 .trail-label { position: absolute; top: 34px; left: 32px; right: 32px; text-align: center; color: #35627b; font-size: 12px; }
 .paper-sheet { position: absolute; width: 220px; padding: 25px; border-radius: 13px; background: #fcfcfa; color: var(--navy); display: grid; gap: 10px; box-shadow: 0 14px 30px rgb(22 65 89 / .08); }
 .paper-sheet small { font-size: 11px; color: var(--muted); }
-.paper-sheet strong { font-family: EfaDisplay,sans-serif; font-size: 22px; line-height: 1.3; letter-spacing: -.04em; }
+.paper-sheet strong { font-family: var(--efa-font); font-size: 22px; line-height: 1.3; letter-spacing: -.04em; }
 .paper-sheet>span:not(.paper-icon) { font-size: 13px; }
 .paper-sheet i { height: 3px; background: #e5edf1; width: 100%; border-radius: 3px; margin-top: 6px; }
 .paper-sheet i:last-child { width: 65%; margin: 0; }
@@ -57,7 +57,7 @@
 .context-visual { display: grid; grid-template-columns: 1.05fr 1fr; gap: 0; margin-bottom: 60px; border-radius: 25px 130px 25px 25px; overflow: hidden; background: #22516c; }
 .context-visual img { width: 100%; height: 320px; object-fit: cover; }
 .context-visual>div { position: relative; padding: 40px; display: flex; align-items: end; }
-.context-visual p { font-family: EfaDisplay,sans-serif; font-size: 30px; line-height: 1.4; letter-spacing: -.045em; position: relative; z-index: 1; }
+.context-visual p { font-family: var(--efa-font); font-size: 30px; line-height: 1.4; letter-spacing: -.045em; position: relative; z-index: 1; }
 .context-visual strong { color: #a5dcf5; font-weight: 600; }
 .context-loop { position: absolute; right: 34px; top: 12px; font-size: 150px; color: #387493; line-height: 1; transform: rotate(8deg); }
 .article-grid { gap: 32px; }
