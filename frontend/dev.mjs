@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const root = dirname(fileURLToPath(import.meta.url));
+const landing = join(root, '..', 'landing');
+const pwa = join(root, '..', 'pwa');
 const upstream = new URL(process.env.API_UPSTREAM || "http://127.0.0.1:8080");
 const port = Number(process.env.PORT || 3000);
 if (upstream.protocol !== "http:")
@@ -21,6 +23,7 @@ const types = {
   ".ttf": "font/ttf",
   ".csv": "text/csv; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
 };
 const server = http.createServer(async (req, res) => {
   const pathname = new URL(req.url, "http://localhost").pathname;
@@ -67,9 +70,19 @@ const server = http.createServer(async (req, res) => {
   }
   const relative =
     pathname === "/" || pathname === "/index.html"
-      ? "index.html"
+      ? { directory: landing, file: "index.html" }
+      : ["/app", "/app/", "/app.html"].includes(pathname)
+        ? { directory: root, file: "index.html" }
+      : pathname === "/sw.js"
+        ? { directory: pwa, file: "service-worker.js" }
+      : ["/pwa/offline", "/pwa/offline.html"].includes(pathname)
+        ? { directory: pwa, file: "offline.html" }
+      : /^\/pwa\/(?:manifest\.webmanifest|register\.js|pwa\.css|offline\.js|icons\/[a-zA-Z0-9_-]+\.(?:png|svg))$/.test(pathname)
+        ? { directory: pwa, file: pathname.slice("/pwa/".length) }
       : /^\/assets\/[a-zA-Z0-9_.-]+$/.test(pathname) && !pathname.includes("..")
-        ? pathname.slice(1)
+        ? { directory: root, file: pathname.slice(1) }
+        : /^\/landing\/assets\/(?:images\/)?[a-zA-Z0-9_.-]+$/.test(pathname) && !pathname.includes("..")
+          ? { directory: landing, file: pathname.slice("/landing/".length) }
         : "";
   if (!relative) {
     res.writeHead(404);
@@ -77,8 +90,8 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   try {
-    const body = await readFile(join(root, relative));
-    const extension = relative.slice(relative.lastIndexOf("."));
+    const body = await readFile(join(relative.directory, relative.file));
+    const extension = relative.file.slice(relative.file.lastIndexOf("."));
     res.writeHead(200, {
       "Content-Type": types[extension] || "application/octet-stream",
       "Cache-Control": "no-cache",

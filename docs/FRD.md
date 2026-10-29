@@ -12,7 +12,7 @@ frontend/assets/app.js mengelola form, navigasi hash dan API; design.js menyusun
 | --- | --- |
 | AUTH-01 | Daftar membuat akun owner dan ruang kerja baru |
 | AUTH-02 | Login memakai email/password, bukan pilihan peran |
-| AUTH-03 | Password 12–72 karakter, hash bcrypt; token sesi disimpan sebagai hash |
+| AUTH-03 | Password minimal 12 Unicode code point dan maksimal 72 byte UTF-8 sesuai bcrypt; token sesi disimpan sebagai hash |
 | AUTH-04 | Cookie rku_session: HttpOnly, SameSite=Strict, Secure melalui TLS/proxy HTTPS terpercaya |
 | AUTH-05 | Mutasi terautentikasi memerlukan X-CSRF-Token dari auth/me |
 | AUTH-06 | Logout menghapus sesi; ganti password memerlukan password lama dan mengakhiri seluruh sesi |
@@ -36,9 +36,9 @@ id,tanggal,referensi,nama,nominal,kanal,catatan
 | IMP-03 | Header dinormalisasi setelah trim; field maksimal 400 karakter tanpa NUL |
 | IMP-04 | Source ID wajib, maksimal 80 karakter, unik dalam file; nama dan kanal wajib |
 | IMP-05 | Tanggal YYYY-MM-DD valid; Rupiah integer positif sampai 1.000.000.000.000 |
-| IMP-06 | Preview berisi rows, total, checksum; tidak menyimpan |
+| IMP-06 | Preview membaca workspace dan berisi rows baru, count, total baru, skipped, checksum; tidak menyimpan |
 | IMP-07 | Commit validasi ulang dan all-or-nothing dalam transaksi |
-| IMP-08 | Checksum file aktif identik menghasilkan duplicate tanpa data ganda |
+| IMP-08 | Checksum file aktif identik atau seluruh baris identik menghasilkan duplicate tanpa batch/audit/version/SSE baru |
 | IMP-09 | Source ID dan isi identik dilewati; isi berbeda atau ID dibatalkan menghasilkan konflik |
 | IMP-10 | File yang batch-nya dibatalkan tidak dipulihkan dengan impor ulang |
 | IMP-11 | Ganti file/jenis menghapus preview lama; kontrol dikunci saat commit |
@@ -111,6 +111,40 @@ Error JSON: {code,status,message,request_id}. 400 input; 401 sesi/kredensial; 40
 - Sesi kedaluwarsa kembali ke login; unknown hash menampilkan tautan kembali.
 - Navigasi mobile, skip link, dialog native, dan reduced motion dipertahankan.
 
+Pembaruan audit 29 Oktober: state tetap ditampilkan jika pemuatan usulan gagal;
+event versi saat refresh ditampung. Alokasi dengan ID eksplisit yang hilang
+ditolak, tanpa berpindah diam-diam ke transaksi lain. CSRF 403 disinkronkan
+tanpa mengulang POST otomatis. Ekspor memakai fetch/blob agar 401 tetap
+ditangani di aplikasi. Password UTF-8 dan CSV non-UTF-8 diperiksa di UI;
+otoritas validasi akhir tetap server. Isian belum tersimpan tidak dipulihkan
+lintas sesi, tabel memakai pagination klien, audit masih 120 terbaru.
+Status bukti dan batasan lengkap: [hasil audit](audit/README.md).
+
 ## Rujukan operasional
+
+PWA memakai manifest dengan start URL `/app`, scope `/`, display standalone,
+ikon 192/512 px dan maskable. Kontrol pemasangan tersedia di landing,
+masuk/daftar dan Pengaturan. Browser tanpa prompt menerima petunjuk pemasangan.
+Service worker hanya menyimpan aset publik dan fallback offline, dibatasi
+60 entri. HTML aplikasi dan seluruh request API/SSE/ekspor/mutasi tidak
+disimpan oleh worker. ID cache berubah mengikuti hash build. Pembaruan
+menunggu tab/jendela lama ditutup, tanpa reload paksa saat form aktif.
+Lihat [struktur dan pengujian PWA](../pwa/README.md).
+
+Landing disimpan di `landing/`, terpisah dari UI transaksi di `frontend/`.
+Root `/` membuka landing; CTA masuk/daftar menuju `/app#login` dan
+`/app#register`. Hash aplikasi lama diarahkan ke `/app` dengan hash yang
+sama. Login/logout mempertahankan pathname aplikasi.
+
+Carousel tiga slide memakai interval 6,5 detik, prev/next, pilihan slide,
+pause, keyboard dan swipe horizontal. Autoplay berhenti saat hover, fokus
+interaksi, hero di luar layar atau tab tersembunyi. Reduced motion memakai
+mode manual. Contoh biaya/pembayaran sebagian memakai data ilustrasi lokal;
+tidak menulis ke backend. Artikel masih coming soon dan belum punya tautan
+artikel. Referensi analisis menuju sumber BI dan OVO yang disebutkan.
+
+Build statis menyalin landing, app.html dan aset ke `dist`. Tidak ada
+endpoint, schema, secret, dokumentasi atau server dev yang dipublikasikan
+sebagai bagian landing. Detail edit dan pengujian: [panduan landing](../landing/README.md).
 
 [Demo](DEMO.md), [API](INTEGRATION.md), [hosting](HOSTING.md), [tes](VERIFICATION.md). SSE berasal dari main tim terbaru dan terhubung ke EventSource frontend. Tidak ada perubahan Dockerfile, schema, atau kontrak API versi tim.

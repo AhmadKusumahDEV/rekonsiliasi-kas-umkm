@@ -30,6 +30,13 @@
 
 Cookie tim: rku_session. Error tim memakai field message. Frontend tidak membaca database dan tidak membawa credential server.
 
+Preview impor kini membaca transaksi workspace untuk melewati baris identik.
+Respons menambahkan `skipped`; `rows`, `count`, dan `total` hanya menghitung
+baris baru. Commit tetap memvalidasi ulang dalam transaksi. Impor tanpa
+baris baru tidak menulis audit/batch/version atau mengirim event baru.
+Frontend memfilter preview juga untuk kompatibilitas selama server tim
+belum menjalankan versi baru. Lihat [hasil audit](audit/README.md).
+
 ## Yang dipertahankan
 
 Dari Evan: tampilan, foto, branding, animasi, form, navigasi dan interaksi kas. Dari tim: Echo/service/sqlc, konfigurasi, normalized PostgreSQL, migration, CI, dan API /api/v1.

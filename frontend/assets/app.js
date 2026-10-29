@@ -1,5 +1,6 @@
 import { apiURL } from "./api-config.js?v=team2";
 import { createAPIClient } from "./api-client.js?v=team2";
+import { validatePassword, deduplicatePreview, selectAllocation } from "./validation.js?v=audit1";
 import { authScene } from "./auth-scene.js?v=team2";
 import { dashboard, maxyBrand, shell } from "./design.js?v=team2";
 
@@ -83,33 +84,53 @@ const formError =
 
 const api = createAPIClient({
   getCSRF: () => state.csrf,
-  onUnauthorized() {
-    if (!state.me) return;
-    state.me = null;
-    state.csrf = "";
-    modal.close();
-    mobileMenu.close();
-    auth();
-    toast("Sesi berakhir. Masuk kembali untuk melanjutkan.");
+  onUnauthorized() { expireSession(); },
+  async onForbidden(path) {
+    if (!state.me || path === "/api/v1/auth/me") return;
+    const me = await api("/api/v1/auth/me");
+    if (me.user.id !== state.me?.id || me.user.workspace_id !== state.me?.workspace_id) {
+      expireSession();
+      return "Akun di browser berubah. Masuk kembali sebelum melanjutkan.";
+    }
+    state.csrf = me.csrf;
+    return "Sesi diperbarui. Periksa isian, lalu kirim lagi.";
   },
 });
 
-function toast(message) {
+function expireSession() {
+  if (!state.me) return;
+  const dirty = modal.open && modal.dataset.dirty === "true";
+  state.me = null;
+  state.csrf = "";
+  auth();
+  toast(dirty ? "Sesi berakhir. Masuk kembali; isian yang belum disimpan perlu diisi ulang." : "Sesi berakhir. Masuk kembali untuk melanjutkan.");
+}
+function toast(message, persistent = false) {
   clearTimeout(state.toastTimer);
-  toastElement.textContent = message;
+  const text = document.createElement("span");
+  text.textContent = message;
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "toast-dismiss";
+  close.setAttribute("aria-label", "Tutup pesan");
+  close.textContent = "×";
+  close.addEventListener("click", () => { clearTimeout(state.toastTimer); toastElement.dataset.open = "false"; });
+  toastElement.replaceChildren(text, close);
+  toastElement.setAttribute("role", persistent ? "alert" : "status");
   toastElement.dataset.open = "true";
-  state.toastTimer = setTimeout(() => {
+  if (!persistent) state.toastTimer = setTimeout(() => {
     toastElement.dataset.open = "false";
   }, 4500);
 }
 
 function showError(form, err) {
+  if (!form.isConnected) return toast(err.message, true);
   const output = form.querySelector("[data-form-error]");
   if (output) {
     output.hidden = false;
     output.textContent = err.message;
     output.focus();
-  } else toast(err.message);
+  } else toast(err.message, true);
 }
 
 function stopEvents() {
@@ -198,7 +219,7 @@ function listResults() {
     (state.page - 1) * state.pageSize,
     state.page * state.pageSize,
   );
-  return `${pageRows.length ? `<div class="table-scroll"><table><thead><tr>${list.columns.map((c) => `<th scope="col">${e(c)}</th>`).join("")}</tr></thead><tbody>${pageRows.map((row) => `<tr>${row.cells.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : empty("Tidak ada data yang cocok", state.query || state.status ? "Ubah pencarian atau filter untuk melihat data lainnya." : "Mulai dengan menambahkan data melalui tombol di halaman ini.")}<div class="countline"><p>${filtered.length} dari ${list.rows.length} data · halaman ${state.page} / ${max}</p><div><button type="button" class="small" data-action="prev" ${state.page <= 1 ? "disabled" : ""}>Sebelumnya</button><button type="button" class="small" data-action="next" ${state.page >= max ? "disabled" : ""}>Berikutnya</button></div></div>`;
+  return `${pageRows.length ? `<div class="table-scroll" role="region" aria-label="Tabel data, geser untuk melihat kolom lain" tabindex="0"><table><thead><tr>${list.columns.map((c) => `<th scope="col">${e(c)}</th>`).join("")}</tr></thead><tbody>${pageRows.map((row) => `<tr>${row.cells.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : empty("Tidak ada data yang cocok", state.query || state.status ? "Ubah pencarian atau filter untuk melihat data lainnya." : "Mulai dengan menambahkan data melalui tombol di halaman ini.")}<div class="countline"><p>${filtered.length} dari ${list.rows.length} data · halaman ${state.page} / ${max}</p><div><button type="button" class="small" data-action="prev" ${state.page <= 1 ? "disabled" : ""}>Sebelumnya</button><button type="button" class="small" data-action="next" ${state.page >= max ? "disabled" : ""}>Berikutnya</button></div></div>`;
 }
 
 function entriesPage() {
@@ -246,7 +267,7 @@ function allocationHistory() {
     const x = entries.find((x) => x.id === id);
     return x ? x.reference || x.source_id : "Transaksi";
   };
-  return `<section class="allocation-history"><div class="section-title"><h2>Keputusan pencocokan</h2></div>${allocations.length ? `<div class="table-scroll"><table><thead><tr><th>Penjualan / penerimaan</th><th>Dialokasikan</th><th>Biaya</th><th>Catatan</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${allocations.map((x) => `<tr><td>${e(ref(x.sale_id))}<span class="sub">${e(ref(x.receipt_id))}</span></td><td>${e(money(x.amount))}</td><td>${e(money(x.fee))}</td><td>${e(x.reason || "Tanpa catatan")}</td><td>${x.reversed ? "Dibatalkan" : "Aktif"}</td><td>${x.reversed ? "" : button("Batalkan pasangan", "undo", x.id, "small danger")}</td></tr>`).join("")}</tbody></table></div>` : empty("Belum ada keputusan", "Pasangan yang kamu simpan akan muncul di sini dan dapat dibatalkan.")}</section>`;
+  return `<section class="allocation-history"><div class="section-title"><h2>Keputusan pencocokan</h2></div>${allocations.length ? `<div class="table-scroll" role="region" aria-label="Tabel data, geser untuk melihat kolom lain" tabindex="0"><table><thead><tr><th>Penjualan / penerimaan</th><th>Dialokasikan</th><th>Biaya</th><th>Catatan</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${allocations.map((x) => `<tr><td>${e(ref(x.sale_id))}<span class="sub">${e(ref(x.receipt_id))}</span></td><td>${e(money(x.amount))}</td><td>${e(money(x.fee))}</td><td>${e(x.reason || "Tanpa catatan")}</td><td>${x.reversed ? "Dibatalkan" : "Aktif"}</td><td>${x.reversed ? "" : button("Batalkan pasangan", "undo", x.id, "small danger")}</td></tr>`).join("")}</tbody></table></div>` : empty("Belum ada keputusan", "Pasangan yang kamu simpan akan muncul di sini dan dapat dibatalkan.")}</section>`;
 }
 
 function matches() {
@@ -257,7 +278,11 @@ function matches() {
       "Pasangan unik dari referensi, kanal, nominal, dan rentang tanggal.",
       button("Alokasi manual", "allocate", "", "primary"),
     ) +
-    (suggestions.length
+    (state.data.suggestionsLoading
+      ? '<p class="muted" role="status">Memuat usulan pencocokan…</p>'
+      : state.data.suggestionsError
+      ? '<p class="warning" role="status">Usulan belum bisa dimuat. Gunakan tombol muat ulang untuk mencoba lagi.</p>'
+      : suggestions.length
       ? `<div class="matches">${suggestions.map((x) => `<article class="match"><div><small>Penjualan ${e(x.sale.reference)}</small><strong>${e(money(x.sale.amount))}</strong><p>${e(x.sale.name)}</p></div><div><small>Penerimaan ${e(x.receipt.channel)}</small><strong>${e(money(x.receipt.amount))}</strong><p>${e(x.receipt.name)}</p></div>${button("Periksa pasangan", "match", x.sale.id, "secondary")}</article>`).join("")}</div>`
       : empty(
           "Tidak ada pasangan unik yang tersisa",
@@ -330,42 +355,82 @@ function settings() {
       "Pengaturan akun",
       "Informasi akun dan batas penggunaan ruang kerja.",
     ) +
-    `<section class="panel"><h2>${e(state.me.name)}</h2><div class="details"><dl><dt>Email</dt><dd>${e(state.me.email)}</dd><dt>Peran</dt><dd>${e(roles[state.me.role])}</dd><dt>Ruang kerja</dt><dd>${e(state.data.workspace.name)}</dd><dt>Penyimpanan</dt><dd>PostgreSQL, terpisah per aplikasi dan ruang kerja</dd></dl></div><div class="inline-actions">${button("Ganti kata sandi", "password", "", "primary")}${button("Keluar akun", "logout")}</div><p>Penggantian kata sandi mengakhiri seluruh sesi akun. Data awal adalah contoh sintetis. Jangan unggah data pelanggan nyata sebelum ada izin.</p></section>`
+    `<section class="panel"><h2>${e(state.me.name)}</h2><div class="details"><dl><dt>Email</dt><dd>${e(state.me.email)}</dd><dt>Peran</dt><dd>${e(roles[state.me.role])}</dd><dt>Ruang kerja</dt><dd>${e(state.data.workspace.name)}</dd><dt>Penyimpanan</dt><dd>PostgreSQL, terpisah per aplikasi dan ruang kerja</dd></dl></div><div class="inline-actions">${button("Ganti kata sandi", "password", "", "primary")}${button("Keluar akun", "logout")}<button class="pwa-install" type="button" data-pwa-install>Pasang EFA ↗</button></div><p>Penggantian kata sandi mengakhiri seluruh sesi akun. Data awal adalah contoh sintetis. Jangan unggah data pelanggan nyata sebelum ada izin.</p></section>`
   );
 }
 
-async function refresh() {
-  if (state.refreshing) return;
-  state.refreshing = true;
+function showRefreshNotice() {
+  const button = document.querySelector('[data-action="refresh"]');
+  if (button) button.hidden = false;
+}
+function canReplacePage() {
+  return !modal.open && !document.activeElement?.matches("input,textarea,select");
+}
+async function refresh(force = false) {
+  if (state.refreshTask) {
+    try { await state.refreshTask; } catch (error) { if (!force) throw error; }
+    if (force && state.me) return refresh();
+    return;
+  }
   const epoch = state.epoch || 0;
-  try {
+  state.refreshing = true;
+  const task = (async () => {
     const data = await api("/api/v1/umkm/state");
     if (epoch !== (state.epoch || 0) || !state.me) return;
-    data.suggestions = await api("/api/v1/umkm/suggestions");
-    if (epoch !== (state.epoch || 0) || !state.me) return;
+    data.suggestions = [];
+    data.suggestionsLoading = true;
     state.data = data;
     rebuildBalances();
     if (!document.querySelector(".shell")) renderShell();
-    else if (!modal.open) renderPage();
-    const btn = document.querySelector('[data-action="refresh"]');
-    if (btn) btn.hidden = true;
-  } catch (err) {
-    if (epoch !== (state.epoch || 0)) return;
-    if (err.status === 401) {
-      stopEvents();
-      state.me = null;
-      auth(false);
-    } else toast(err.message);
-    throw err;
+    else if (canReplacePage()) renderPage();
+    else showRefreshNotice();
+    try {
+      const candidates = await api("/api/v1/umkm/suggestions");
+      if (epoch !== (state.epoch || 0) || state.data !== data) return;
+      data.suggestionsLoading = false;
+      const entries = new Map(data.state.entries.map(entry => [entry.id, entry]));
+      data.suggestions = candidates.filter(match => [match.sale,match.receipt].every(proposed => {
+        const entry = entries.get(proposed.id);
+        return entry && !entry.canceled && balance(entry) === entry.amount &&
+          ["kind","amount","reference","channel","date"].every(field => entry[field] === proposed[field]);
+      }));
+      if (canReplacePage()) renderPage();
+      else showRefreshNotice();
+      const button = document.querySelector('[data-action="refresh"]');
+      if (button && canReplacePage() && !state.pendingVersion) button.hidden = true;
+    } catch (error) {
+      if (epoch !== (state.epoch || 0) || !state.me) return;
+      if (error.status === 401) throw error;
+      data.suggestionsError = true;
+      data.suggestionsLoading = false;
+      if (canReplacePage()) renderPage();
+      showRefreshNotice();
+      toast("Catatan sudah dimuat. Usulan belum tersedia; muat ulang untuk mencoba lagi.");
+    }
+  })();
+  state.refreshTask = task;
+  try { await task; }
+  catch (error) {
+    if (epoch === (state.epoch || 0) && state.me) toast(error.message, true);
+    throw error;
   } finally {
-    if (epoch === (state.epoch || 0)) state.refreshing = false;
+    if (state.refreshTask === task) {
+      state.refreshTask = null;
+      state.refreshing = false;
+      const pending = state.pendingVersion || 0;
+      state.pendingVersion = 0;
+      if (state.me && pending > (state.data?.workspace.version || 0)) {
+        if (canReplacePage()) queueMicrotask(() => { void refresh().catch(() => {}); });
+        else showRefreshNotice();
+      }
+    }
   }
 }
-
 function openModal(heading, content) {
-  modal.innerHTML = `<div class="dialog-head"><h2 id="modal-title">${e(heading)}</h2>${button("Tutup", "close", "", "small plain")}</div><div class="dialog-body">${content}</div>`;
+  modal.innerHTML = `<div class="dialog-head"><h2 id="modal-title" tabindex="-1">${e(heading)}</h2>${button("Tutup", "close", "", "small plain")}</div><div class="dialog-body">${content}</div>`;
   modal.dataset.dirty = "false";
   modal.showModal();
+  (modal.querySelector('input:not([type="hidden"]),select,textarea') || modal.querySelector("#modal-title")).focus({ preventScroll: true });
 }
 
 function closeModal() {
@@ -390,7 +455,7 @@ function importModal() {
         ["sale", "Penjualan"],
         ["receipt", "Penerimaan"],
       ],
-    )}${field("File CSV", "file", "file", "", 'accept=".csv,text/csv" required')}<div class="inline-actions"><a href="/assets/contoh-penjualan.csv" download class="button small">Contoh penjualan</a><a href="/assets/contoh-penerimaan.csv" download class="button small">Contoh penerimaan</a></div><button type="submit" class="primary">Periksa CSV</button></form><div id="import-preview"></div>`,
+    )}${field("File CSV", "file", "file", "", 'accept=".csv,text/csv" required')}<small>Maksimal 1 MB dan 500 baris. Simpan file sebagai CSV UTF-8.</small><div class="inline-actions"><a href="/assets/contoh-penjualan.csv" download class="button small">Contoh penjualan</a><a href="/assets/contoh-penerimaan.csv" download class="button small">Contoh penerimaan</a></div><button type="submit" class="primary">Periksa CSV</button></form><div id="import-preview" role="region" aria-label="Hasil pratinjau impor" aria-live="polite" tabindex="-1"></div>`,
   );
 }
 
@@ -404,10 +469,7 @@ function allocateModal(saleID = "", receiptID = "") {
     );
     return;
   }
-  saleID ||= sales[0].id;
-  receiptID ||= receipts[0].id;
-  const sale = sales.find((x) => x.id === saleID) || sales[0],
-    receipt = receipts.find((x) => x.id === receiptID) || receipts[0];
+  const { sale, receipt } = selectAllocation(entries, balance, saleID, receiptID);
   openModal(
     "Periksa dan simpan pasangan",
     `<p>Nominal adalah uang penerimaan yang dialokasikan. Biaya mengurangi sisa tagihan, tetapi tidak menambah uang diterima.</p><form data-form="allocate">${formError}<input type="hidden" name="key" value="${key()}">${select(
@@ -428,6 +490,31 @@ function allocateModal(saleID = "", receiptID = "") {
       receipt.id,
     )}<div class="form-grid">${field("Nominal dialokasikan (Rp)", "amount", "number", Math.min(balance(sale), balance(receipt)), 'required min="1" max="1000000000000" step="1"')}${field("Biaya layanan (Rp)", "fee", "number", 0, 'required min="0" max="1000000000000" step="1"')}</div>${area("Catatan / alasan biaya", "reason", "", 'maxlength="400"')}${actions("Simpan pasangan")}</form>`,
   );
+  updateAllocationLimits();
+}
+
+function updateAllocationLimits() {
+  const form = modal.querySelector('form[data-form="allocate"]');
+  if (!form || !state.data) return;
+  const entries = state.data.state.entries || [];
+  const sale = entries.find(x => x.id === form.elements.sale_id.value);
+  const receipt = entries.find(x => x.id === form.elements.receipt_id.value);
+  const amount = form.elements.amount, fee = form.elements.fee;
+  const saleLeft = sale && !sale.canceled ? balance(sale) : 0;
+  const receiptLeft = receipt && !receipt.canceled ? balance(receipt) : 0;
+  amount.max = String(Math.max(0, Math.min(saleLeft - Number(fee.value || 0), receiptLeft)));
+  fee.max = String(Math.max(0, saleLeft - Number(amount.value || 0)));
+  let hint = form.querySelector("#allocation-limit");
+  if (!hint) {
+    hint = document.createElement("p");
+    hint.id = "allocation-limit";
+    hint.className = "muted";
+    hint.setAttribute("aria-live", "polite");
+    form.querySelector(".form-grid").after(hint);
+    amount.setAttribute("aria-describedby", hint.id);
+    fee.setAttribute("aria-describedby", hint.id);
+  }
+  hint.textContent = "Sisa tagihan " + money(saleLeft) + " · penerimaan " + money(receiptLeft) + ".";
 }
 
 async function init() {
@@ -443,11 +530,12 @@ async function init() {
       if (err.status !== 401) throw err;
     }
     if (state.me) {
-      await refresh();
       startEvents();
+      try { await refresh(); }
+      catch { showWorkspaceError(); }
     } else auth(location.hash === "#register");
   } catch (err) {
-    root.innerHTML = `<main id="main" class="starting"><section class="panel"><h1>Aplikasi belum tersambung</h1><p>${e(err.message)}</p><a class="button primary" href="/">Muat ulang halaman</a></section></main>`;
+    root.innerHTML = `<main id="main" class="starting"><section class="panel"><h1>Aplikasi belum tersambung</h1><p>${e(err.message)}</p><a class="button primary" href="/app${location.hash === '#register' ? '#register' : '#login'}">Coba sambungkan lagi</a></section></main>`;
   }
 }
 const roles = { owner: "Pemilik usaha" };
@@ -500,7 +588,7 @@ function reportsPage() {
     title(
       "Laporan",
       "Ringkasan memakai seluruh data usaha.",
-      '<a class="button primary" href="' + apiURL("/api/v1/umkm/export") + '">Unduh rekap CSV</a>',
+      '<a class="button primary" data-action="export" href="' + apiURL("/api/v1/umkm/export") + '">Unduh rekap CSV</a>',
     ) +
     metrics() +
     '<section class="panel"><h2>Keputusan pencocokan</h2><p>' +
@@ -510,8 +598,46 @@ function reportsPage() {
     ".</p><p>Ekspor memuat transaksi aktif dan dibatalkan beserta sisa alokasinya. Angka ini bukan perhitungan laba.</p></section>"
   );
 }
+function showWorkspaceError() {
+  if (!state.me) return;
+  root.innerHTML = '<main id="main" class="starting"><section class="panel"><h1>Sudah masuk, catatan belum terhubung</h1><p>Sesi akun tetap aktif. Coba muat catatan kembali.</p>' + button("Muat catatan", "refresh", "", "primary") + '</section></main>';
+}
+async function downloadExport(target) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 32000);
+  target.disabled = true;
+  target.setAttribute("aria-disabled", "true");
+  target.setAttribute("aria-busy", "true");
+  try {
+    const response = await fetch(apiURL("/api/v1/umkm/export"), { credentials: "include", signal: controller.signal });
+    if (!response.ok) {
+      if (response.status === 401) expireSession();
+      const error = await response.json().catch(() => null);
+      throw new Error(error?.message || "Rekap belum dapat diunduh. Coba lagi.");
+    }
+    if (!(response.headers.get("content-type") || "").includes("text/csv")) throw new Error("Respons rekap tidak sesuai. Coba lagi.");
+    const url = URL.createObjectURL(await response.blob());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "umkm-rekap.csv";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (error) {
+    toast(error.name === "AbortError" ? "Unduhan belum merespons. Coba lagi." : error instanceof TypeError ? "Koneksi terputus. Sambungkan kembali sebelum mengunduh." : error.message, true);
+  } finally {
+    clearTimeout(timer);
+    target.disabled = false;
+    target.removeAttribute("aria-disabled");
+    target.removeAttribute("aria-busy");
+  }
+}
 function renderPage() {
   state.list = null;
+  if (["#login", "#register"].includes(location.hash)) {
+    history.replaceState(null, "", location.pathname + location.search + "#overview");
+  }
   const route = location.hash.slice(1) || "overview",
     main = document.querySelector("#main");
   if (!main) return;
@@ -537,8 +663,13 @@ function renderPage() {
     .forEach((nav) => (nav.innerHTML = navHTML()));
 }
 function auth(register = false) {
+  const route = location.hash.slice(1);
+  if (routes().some(([id]) => id === route)) state.returnRoute = route;
   state.epoch = (state.epoch || 0) + 1;
   state.refreshing = false;
+  state.refreshTask = null;
+  state.pendingVersion = 0;
+  state.preview = null;
   state.data = null;
   state.csrf = "";
   stopEvents();
@@ -550,7 +681,7 @@ function auth(register = false) {
   root.innerHTML =
     '<main id="main" class="auth auth-umkm ' +
     (register ? "is-register" : "") +
-    '"><section class="auth-form">' + maxyBrand("Easy Financial Audit", "#login") + '<div class="auth-inner"><div class="auth-heading"><span class="auth-product">Easy Financial Audit</span><small>' +
+    '"><section class="auth-form">' + maxyBrand("Easy Financial Audit", "#login") + '<div class="auth-inner"><a class="auth-home" href="/"><span aria-hidden="true">←</span> Kembali ke beranda</a><div class="auth-heading"><span class="auth-product">Easy Financial Audit</span><small>' +
     (register ? "Mulai catatan usahamu" : "Selamat datang kembali") +
     "</small><h2>" +
     (register ? "Mulai catatan usahamu." : "Selamat datang kembali.") +
@@ -581,10 +712,10 @@ function auth(register = false) {
     '<label for="auth-password">Kata sandi<div class="password-field"><input id="auth-password" name="password" type="password" required minlength="12" maxlength="72" autocomplete="' +
     (register ? "new-password" : "current-password") +
     '">' +
-    button("Lihat", "toggle-password", "", "small plain") +
+    '<button type="button" class="small plain" data-action="toggle-password" aria-label="Tampilkan kata sandi" aria-pressed="false" aria-controls="auth-password">Lihat</button>' +
     "</div>" +
     (register
-      ? "<small>12–72 karakter. Jangan gunakan kata sandi dari akun lain.</small>"
+      ? "<small>Minimal 12 karakter, maksimal 72 byte UTF-8. Emoji dan huruf non-Latin memakai lebih dari satu byte.</small>"
       : "") +
     "</label>" +
     (register
@@ -606,7 +737,7 @@ function auth(register = false) {
     (register ? "#login" : "#register") +
     '">' +
     (register ? "Masuk" : "Daftar") +
-    "</a></p></div></section>" + authScene(register) + "</main>";
+    '</a></p><button class="pwa-install" type="button" data-pwa-install>Pasang EFA <span aria-hidden="true">↗</span></button></div></section>' + authScene(register) + "</main>";
   presentAuth(root, register);
 }
 function startEvents() {
@@ -619,6 +750,11 @@ function startEvents() {
   const current = () => !closed && epoch === state.epoch && state.me;
   const applyVersion = async (version) => {
     if (!current() || version === state.data?.workspace.version) return;
+    if (state.refreshing) {
+      state.pendingVersion = Math.max(state.pendingVersion || 0, version);
+      showRefreshNotice();
+      return;
+    }
     if (modal.open || document.activeElement?.matches("input,textarea,select")) {
       const button = document.querySelector('[data-action="refresh"]');
       if (button) button.hidden = false;
@@ -705,6 +841,7 @@ function startEvents() {
 
 document.addEventListener("input", (event) => {
   if (modal.contains(event.target)) modal.dataset.dirty = "true";
+  if (event.target.closest('form[data-form="allocate"]')) updateAllocationLimits();
   if (event.target.id === "list-search") {
     state.query = event.target.value;
     state.page = 1;
@@ -723,6 +860,11 @@ modal.addEventListener("cancel", (event) => {
     !confirm("Tutup formulir dan abaikan isian yang belum disimpan?")
   )
     event.preventDefault();
+});
+modal.addEventListener("click", (event) => {
+  if (event.target !== modal) return;
+  const box = modal.getBoundingClientRect();
+  if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) closeModal();
 });
 
 window.addEventListener("hashchange", () => {
@@ -771,9 +913,10 @@ document.addEventListener("submit", async (event) => {
   form.dataset.busy = "true";
   form.setAttribute("aria-busy", "true");
   controls.forEach(([node]) => (node.disabled = true));
-  if (button) button.textContent = "Menyimpan…";
+  if (button) button.textContent = ({login:"Memproses…",register:"Mendaftarkan…","preview-import":"Memeriksa…",allocate:"Menyimpan…",password:"Mengganti…"})[action] || "Memproses…";
   try {
     if (action === "login" || action === "register") {
+      if (action === "register") validatePassword(get("password"));
       const payload = { email: get("email"), password: get("password") };
       if (action === "register")
         Object.assign(payload, {
@@ -789,28 +932,35 @@ document.addEventListener("submit", async (event) => {
       state.refreshing = false;
       state.me = me.user;
       state.csrf = me.csrf;
-      if (location.hash) history.replaceState(null, "", "/");
-      await refresh();
-      document.title = state.config.brand;
+      const destination = action === "login" && routes().some(([id]) => id === state.returnRoute) ? state.returnRoute : "overview";
+      state.returnRoute = "";
+      history.replaceState(null, "", location.pathname + location.search + "#" + destination);
       startEvents();
+      try { await refresh(true); }
+      catch { showWorkspaceError(); }
+      document.title = state.config.brand;
       return;
     }
     if (action === "preview-import") {
       const file = fd.get("file");
       if (!(file instanceof File) || !file.size || file.size > 1048576)
         throw new Error("Pilih CSV berisi data, maksimal 1 MB.");
-      const payload = { kind: get("kind"), csv: await file.text() };
-      const preview = await api("/api/v1/umkm/imports/preview", {
+      let csv;
+      try { csv = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer()); }
+      catch { throw new Error("File bukan CSV UTF-8 yang valid. Simpan ulang sebagai CSV UTF-8 lalu coba lagi."); }
+      const payload = { kind: get("kind"), csv };
+      const rawPreview = await api("/api/v1/umkm/imports/preview", {
         method: "POST",
         body: payload,
       });
+      const preview = deduplicatePreview(rawPreview, state.data.state.entries || [], payload.kind);
       state.preview = payload;
       document.querySelector("#import-preview").innerHTML =
         '<div class="success">' +
         preview.count +
-        " baris valid / total " +
+        " baris baru / total " +
         e(money(preview.total)) +
-        '. Belum disimpan.</div><div class="table-scroll"><table><thead><tr><th>ID</th><th>Nama</th><th>Nominal</th></tr></thead><tbody>' +
+        ". " + preview.skipped + ' baris identik dilewati. Belum disimpan.</div><div class="table-scroll" role="region" aria-label="Tabel data, geser untuk melihat kolom lain" tabindex="0"><table><thead><tr><th>ID</th><th>Nama</th><th>Nominal</th></tr></thead><tbody>' +
         preview.rows
           .slice(0, 5)
           .map(
@@ -825,10 +975,16 @@ document.addEventListener("submit", async (event) => {
           )
           .join("") +
         "</tbody></table></div>" +
-        buttonHTML("Simpan impor ini", "commit-import", "", "primary");
+        (preview.count ? buttonHTML("Simpan impor ini", "commit-import", "", "primary") : '<p>Semua baris sudah tercatat. Tidak ada data baru untuk disimpan.</p>');
+      document.querySelector("#import-preview").focus({ preventScroll: true });
       return;
     }
-    if (action === "allocate")
+    if (action === "allocate") {
+      updateAllocationLimits();
+      const selected = selectAllocation(state.data.state.entries, balance, get("sale_id"), get("receipt_id"));
+      if (Number(get("amount")) + Number(get("fee")) > balance(selected.sale) || Number(get("amount")) > balance(selected.receipt)) {
+        throw new Error("Nominal melebihi sisa terbaru. Periksa kembali pasangan dan biayanya.");
+      }
       await api("/api/v1/umkm/allocations", {
         method: "POST",
         body: {
@@ -840,7 +996,9 @@ document.addEventListener("submit", async (event) => {
           key: get("key"),
         },
       });
+    }
     else if (action === "password") {
+      validatePassword(get("password"));
       await api("/api/v1/auth/password", {
         method: "PUT",
         body: { current: get("current"), password: get("password") },
@@ -855,7 +1013,7 @@ document.addEventListener("submit", async (event) => {
     } else throw new Error("Formulir tidak dikenal. Muat ulang halaman.");
     modal.dataset.dirty = "false";
     modal.close();
-    await refresh();
+    await refresh(true);
     toast("Pasangan tersimpan");
   } catch (error) {
     showError(form, error);
@@ -873,16 +1031,20 @@ document.addEventListener("click", async (event) => {
     return;
   }
   const target = event.target.closest("[data-action]");
+  if (target?.tagName === "A") event.preventDefault();
   if (!target || target.disabled) return;
   const action = target.dataset.action,
     id = target.dataset.id;
   let busyForm, controls;
   try {
+    if (action === "export") return await downloadExport(target);
     if (action === "close") return closeModal();
     if (action === "toggle-password") {
       const field = document.querySelector("#auth-password");
       field.type = field.type === "password" ? "text" : "password";
       target.textContent = field.type === "password" ? "Lihat" : "Sembunyikan";
+      target.setAttribute("aria-pressed", String(field.type === "text"));
+      target.setAttribute("aria-label", field.type === "password" ? "Tampilkan kata sandi" : "Sembunyikan kata sandi");
       return;
     }
     if (action === "mobile-menu") {
@@ -899,14 +1061,14 @@ document.addEventListener("click", async (event) => {
       return;
     }
     if (action === "close-menu") return mobileMenu.close();
-    if (action === "refresh") return await refresh();
+    if (action === "refresh") return await refresh(true);
     if (action === "logout") {
       await api("/api/v1/auth/logout", { method: "POST", body: {} });
       state.me = null;
       state.csrf = "";
       stopEvents();
       mobileMenu.close();
-      history.replaceState(null, "", "/");
+      history.replaceState(null, "", location.pathname);
       auth();
       return;
     }
@@ -961,7 +1123,7 @@ document.addEventListener("click", async (event) => {
       state.preview = null;
       modal.dataset.dirty = "false";
       modal.close();
-      await refresh();
+      await refresh(true);
       toast(
         result.duplicate
           ? "File sudah pernah diimpor. Tidak ada data ganda"
@@ -982,7 +1144,7 @@ document.addEventListener("click", async (event) => {
         method: "POST",
         body: {},
       });
-      await refresh();
+      await refresh(true);
       toast("Pasangan dibatalkan");
     }
     if (action === "cancel-import") {
@@ -996,12 +1158,12 @@ document.addEventListener("click", async (event) => {
         method: "POST",
         body: {},
       });
-      await refresh();
+      await refresh(true);
       toast("Impor dibatalkan");
     }
   } catch (error) {
     if (busyForm?.isConnected) showError(busyForm, error);
-    else toast(error.message);
+    else toast(error.message, true);
   } finally {
     if (busyForm) {
       busyForm.dataset.busy = "false";
@@ -1012,6 +1174,7 @@ document.addEventListener("click", async (event) => {
   }
 });
 document.addEventListener("change", (event) => {
+  if (event.target.closest('form[data-form="allocate"]')) updateAllocationLimits();
   if (event.target.closest('[data-form="preview-import"]')) {
     state.preview = null;
     document.querySelector("#import-preview").replaceChildren();

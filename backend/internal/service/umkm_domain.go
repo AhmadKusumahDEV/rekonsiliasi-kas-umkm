@@ -111,6 +111,23 @@ func sameEntry(a, b models.Entry) bool {
 		a.Channel == b.Channel && a.Note == b.Note && !a.Canceled
 }
 
+func filterImportRows(entries []models.Entry, existing map[string]models.Entry) ([]models.Entry, int, error) {
+	newRows := make([]models.Entry, 0, len(entries))
+	skipped := 0
+	for _, entry := range entries {
+		old, found := existing[entry.SourceID]
+		if !found {
+			newRows = append(newRows, entry)
+			continue
+		}
+		if !sameEntry(old, entry) || old.Canceled {
+			return nil, 0, pkgErr.New(pkgErr.ErrConflict, "ID sumber "+entry.SourceID+" sudah ada dengan data berbeda atau telah dibatalkan. Impor tidak disimpan.")
+		}
+		skipped++
+	}
+	return newRows, skipped, nil
+}
+
 func remaining(entry models.Entry, allocations []models.Allocation) int64 {
 	if entry.Canceled {
 		return 0

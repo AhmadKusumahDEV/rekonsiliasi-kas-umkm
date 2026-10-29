@@ -40,8 +40,17 @@ detail baru melalui pembesaran.
 | favicon.png | Simbol raster 512, untuk kompatibilitas |
 
 Semua aset ada di frontend/assets. Referensi palet dan logo berasal dari
-lampiran pengguna. Font dan foto usaha yang sudah ada dipertahankan beserta
+lampiran pengguna. Foto usaha dan aset font terdahulu dipertahankan beserta
 atribusi/lisensinya.
+
+## Tipografi
+
+UI memakai stack sistem `Helvetica Neue, Helvetica, Arial, sans-serif`,
+didefinisikan di `frontend/assets/typography.css`. Landing, login/daftar,
+dashboard dan kontrol menggunakan satu keluarga huruf yang netral.
+Tidak ada unduhan font eksternal atau preload Poppins/Inter. Di Windows
+umumnya Arial yang tersedia; di perangkat lain browser memilih huruf
+pertama yang terpasang. Jarak judul dilonggarkan dari gaya display sebelumnya.
 
 ## Tempat mengedit
 

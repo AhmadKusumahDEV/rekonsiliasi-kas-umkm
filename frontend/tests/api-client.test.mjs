@@ -45,9 +45,30 @@ test("proxy HTML is not shown as a successful empty JSON response", async () => 
   assert.throws(() => apiURL("https://other.test/api/v1/config"), /Alamat API tidak valid/);
 });
 
+test("403 recovers session metadata without replaying a financial write", async () => {
+  let requests = 0;
+  let recovered = 0;
+  const api = createAPIClient({
+    getCSRF: () => "old-csrf",
+    fetchImpl: async () => { requests++; return Response.json({ message: "CSRF mismatch" }, { status: 403 }); },
+    onForbidden: async () => { recovered++; return "Sesi diperbarui. Periksa isian, lalu kirim lagi."; },
+  });
+  await assert.rejects(api("/api/v1/umkm/allocations", { method: "POST", body: { amount: 100 } }),
+    error => error.status === 403 && error.message.includes("Sesi diperbarui"));
+  assert.equal(requests, 1);
+  assert.equal(recovered, 1);
+});
+
+test("network failures give recovery guidance instead of raw browser text", async () => {
+  const api = createAPIClient({ getCSRF: () => "", fetchImpl: async () => { throw new TypeError("Failed to fetch"); } });
+  await assert.rejects(api("/api/v1/umkm/state"), /Periksa data terbaru sebelum mengirim ulang/);
+});
+
 test("Vercel publishes only the static frontend and permits direct team API connections", async () => {
   const config = JSON.parse(await readFile(new URL("../../vercel.json", import.meta.url), "utf8"));
-  assert.equal(config.outputDirectory, "frontend");
+  assert.equal(config.outputDirectory, "dist");
+  assert.equal(config.buildCommand, "node tools/build-static.mjs");
+  assert.equal(config.cleanUrls, true);
   assert.equal(config.framework, null);
   assert.equal(config.rewrites, undefined);
   assert.equal(config.functions, undefined);

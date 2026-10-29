@@ -1,0 +1,20 @@
+[
+  {
+    "name": "desktop",
+    "manifest": true,
+    "installabilityErrors": [],
+    "offlineFallback": true,
+    "reconnected": true,
+    "noPrivateCache": true,
+    "errors": []
+  },
+  {
+    "name": "mobile",
+    "manifest": true,
+    "installabilityErrors": [],
+    "offlineFallback": true,
+    "reconnected": true,
+    "noPrivateCache": true,
+    "errors": []
+  }
+]

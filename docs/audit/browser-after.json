@@ -1,0 +1,54 @@
+[
+  {
+    "name": "active session auth route",
+    "pass": true
+  },
+  {
+    "name": "dialog initial focus",
+    "pass": true
+  },
+  {
+    "name": "dialog outside click",
+    "pass": true
+  },
+  {
+    "name": "preview duplicate total",
+    "pass": true
+  },
+  {
+    "name": "preview action label",
+    "pass": true
+  },
+  {
+    "name": "missing allocation target",
+    "pass": true
+  },
+  {
+    "name": "fresh state after save while another refresh runs",
+    "pass": true
+  },
+  {
+    "name": "expired export stays in app",
+    "pass": true
+  },
+  {
+    "name": "short mobile menu keeps close control reachable",
+    "pass": true
+  },
+  {
+    "name": "suggestion failure preserves newly fetched entries",
+    "pass": true
+  },
+  {
+    "name": "stale suggestion cannot become an allocation",
+    "pass": true
+  },
+  {
+    "name": "invalid UTF-8 CSV rejected before preview API",
+    "pass": true
+  },
+  {
+    "name": "authenticated data failure offers recovery instead of login",
+    "pass": true
+  }
+]

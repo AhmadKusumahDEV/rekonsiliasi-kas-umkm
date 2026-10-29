@@ -56,7 +56,7 @@ body[data-kind="umkm"] .auth-umkm .auth-inner { width: 360px; max-width: 100%; m
 body[data-kind="umkm"] .auth-umkm .auth-heading { gap: 12px; margin-bottom: 12px; }
 body[data-kind="umkm"] .auth-umkm .auth-heading :is(.auth-product, small) { display: none; }
 body[data-kind="umkm"] .auth-umkm .auth-heading h2 {
-  font-family: InterVariable, sans-serif;
+  font-family: var(--efa-font);
   font-size: 36px;
   line-height: 1.14;
   font-weight: 600;
@@ -104,6 +104,27 @@ body[data-kind="umkm"] .auth-umkm .primary {
 }
 body[data-kind="umkm"] .auth-umkm .auth-switch { font-size: 14px; color: var(--auth-muted); }
 body[data-kind="umkm"] .auth-umkm .auth-switch a { color: #bceaf7; font-weight: 600; }
+body[data-kind="umkm"] .auth-umkm .auth-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  min-height: 44px;
+  margin-bottom: 12px;
+  color: #c5e7f5;
+  font-size: 14px;
+  text-decoration: none;
+  text-underline-offset: 5px;
+}
+body[data-kind="umkm"] .auth-umkm .auth-home:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+body[data-kind="umkm"] .auth-umkm .auth-home:focus-visible {
+  outline: 2px solid #9dd6f2;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
 body[data-kind="umkm"] .auth-umkm label > small { font-size: 12px; line-height: 1.5; color: var(--auth-muted); }
 body[data-kind="umkm"] .auth-umkm .error { color: #ffdfdf; background: #582d3a; border-color: #eb7a7a; }
 /* photo fills the editorial panel; the lighter note overlaps its bottom edge. */
@@ -136,12 +157,12 @@ body[data-kind="umkm"] .auth-umkm .auth-story .auth-photo {
 }
 .auth-editorial-copy { padding: 50px 40px; }
 .auth-kicker { font-size: 12px; color: #a9d9eb; }
-.auth-editorial-copy h1 { font-family: InterVariable, sans-serif; font-size: 46px; font-weight: 600; line-height: 1.12; letter-spacing: -.055em; color: #f8fcff; margin: 22px 0 24px; text-wrap: balance; }
+.auth-editorial-copy h1 { font-family: var(--efa-font); font-size: 46px; font-weight: 600; line-height: 1.12; letter-spacing: -.025em; color: #f8fcff; margin: 22px 0 24px; text-wrap: balance; }
 .auth-editorial-copy p { max-width: 33ch; font-size: 15px; line-height: 1.7; color: #cadbe6; text-wrap: pretty; }
 .auth-spark { position: absolute; width: 230px; height: 230px; right: -18px; bottom: 126px; color: #8cd1ed; opacity: .7; pointer-events: none; }
 .auth-note { position: absolute; z-index: 1; bottom: 0; left: 24px; right: 40px; padding: 28px 32px 32px; border-radius: 26px 26px 72px 26px; background: linear-gradient(120deg, #fff 12%, #e4f6fc 70%, #cee8f8); color: #182e41; }
 .auth-note > span { font-size: 11px; color: #356881; }
-.auth-note h2 { font-family: InterVariable,sans-serif; font-size: 26px; font-weight: 600; line-height: 1.15; letter-spacing: -.045em; margin: 14px 0; color: #182e41; max-width: calc(100% - 40px); }
+.auth-note h2 { font-family: var(--efa-font); font-size: 26px; font-weight: 600; line-height: 1.15; letter-spacing: -.045em; margin: 14px 0; color: #182e41; max-width: calc(100% - 40px); }
 .auth-note p { font-size: 13px; line-height: 1.65; max-width: 31ch; padding-right: 12px; }
 body[data-kind="umkm"] .auth-umkm .auth-story .auth-note img { position: absolute; right: 24px; top: 28px; width: 36px; height: 36px; min-height: 0; max-height: none; background: none; border-radius: 0; outline: 0; }
 @media (hover: hover) and (pointer: fine) {

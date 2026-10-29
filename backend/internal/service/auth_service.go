@@ -10,6 +10,7 @@ import (
 	"net/mail"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/config"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/models"
@@ -103,7 +104,7 @@ func (s *Service) Register(ctx context.Context, req models.RegisterRequest) (mod
 		return models.AuthResult{}, pkgErr.New(pkgErr.ErrInvalidRequest, "Aplikasi Temu Kas hanya menerima akun pemilik.")
 	}
 	if !validName(name) || !validEmail(email) || !passwordOK(req.Password) || !validName(workspace) || strings.ContainsRune(workspace, 0) {
-		return models.AuthResult{}, pkgErr.New(pkgErr.ErrInvalidRequest, "Periksa nama, email, nama usaha, dan kata sandi 12-72 karakter.")
+		return models.AuthResult{}, pkgErr.New(pkgErr.ErrInvalidRequest, "Periksa nama, email, nama usaha. Kata sandi minimal 12 karakter dan maksimal 72 byte UTF-8.")
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), 12)
@@ -180,7 +181,7 @@ func (s *Service) ChangePassword(ctx context.Context, user models.User, req mode
 		return pkgErr.New(pkgErr.ErrServiceUnavailable, "Database belum tersedia.")
 	}
 	if !passwordOK(req.Password) {
-		return pkgErr.New(pkgErr.ErrInvalidRequest, "Kata sandi baru harus 12-72 karakter.")
+		return pkgErr.New(pkgErr.ErrInvalidRequest, "Kata sandi baru minimal 12 karakter dan maksimal 72 byte UTF-8.")
 	}
 
 	queries := sqlc.New(s.db.Pool())
@@ -259,7 +260,7 @@ func validEmail(value string) bool {
 }
 
 func passwordOK(value string) bool {
-	return len(value) >= 12 && len(value) <= 72
+	return utf8.ValidString(value) && utf8.RuneCountInString(value) >= 12 && len(value) <= 72
 }
 
 func validName(value string) bool {

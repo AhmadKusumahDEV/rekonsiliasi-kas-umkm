@@ -44,6 +44,10 @@ func suggestions(s *service.Service) echo.HandlerFunc {
 
 func previewImport(s *service.Service) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		session, ok := currentSession(c)
+		if !ok {
+			return echo.ErrUnauthorized
+		}
 		var req models.ImportRequest
 		if err := c.Bind(&req); err != nil {
 			return err
@@ -51,7 +55,7 @@ func previewImport(s *service.Service) echo.HandlerFunc {
 		if err := c.Validate(&req); err != nil {
 			return err
 		}
-		response, err := s.PreviewImport(req.Kind, req.CSV)
+		response, err := s.PreviewImportForWorkspace(c.Request().Context(), session.User, req.Kind, req.CSV)
 		if err != nil {
 			return err
 		}

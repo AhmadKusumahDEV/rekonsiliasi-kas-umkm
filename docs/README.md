@@ -6,6 +6,9 @@
 - [Folder screenshot dan cara membangun panduan](ui-guide/README.md)
 - [Indeks semua screenshot](ui-guide/SCREENSHOT-INDEX.md)
 - [Palet, logo HD dan favicon](BRAND.md)
+- [Landing page: struktur, edit dan build](../landing/README.md)
+- [Sumber analisis kondisi dan foto landing](../landing/SOURCES.md)
+- [PWA: memasang dan menguji](../pwa/README.md)
 - [Akun dan skenario demo](DEMO.md)
 
 ## Produk dan pengembangan

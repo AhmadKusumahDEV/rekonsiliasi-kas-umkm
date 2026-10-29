@@ -1,6 +1,9 @@
 package service
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestAuthValidationHelpers(t *testing.T) {
 	if !validEmail("owner@example.test") {
@@ -22,5 +25,20 @@ func TestAuthValidationHelpers(t *testing.T) {
 	firstID, secondID := newID(), newID()
 	if len(firstID) != 32 || firstID == secondID {
 		t.Fatal("ID generation is wrong")
+	}
+}
+
+func TestPasswordUnicodeBoundary(t *testing.T) {
+	if !passwordOK(strings.Repeat("漢", 24)) {
+		t.Fatal("72-byte password rejected")
+	}
+	if passwordOK(strings.Repeat("漢", 25)) {
+		t.Fatal("bcrypt byte limit exceeded")
+	}
+	if passwordOK(strings.Repeat("😀", 6)) {
+		t.Fatal("six code points must not pass a twelve-character minimum")
+	}
+	if !passwordOK(strings.Repeat("😀", 12)) {
+		t.Fatal("valid Unicode password rejected")
 	}
 }

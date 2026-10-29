@@ -1,0 +1,638 @@
+{
+  "base": "https://efa.madgo.my.id",
+  "results": [
+    {
+      "width": 1440,
+      "height": 900,
+      "stable": true,
+      "positions": [
+        {
+          "hero": {
+            "y": 0,
+            "height": 900
+          },
+          "title": {
+            "y": 290,
+            "height": 141
+          },
+          "description": {
+            "y": 459,
+            "height": 82
+          },
+          "actions": {
+            "y": 575,
+            "height": 54
+          },
+          "controls": {
+            "y": 817.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 900
+          },
+          "title": {
+            "y": 290,
+            "height": 141
+          },
+          "description": {
+            "y": 459,
+            "height": 82
+          },
+          "actions": {
+            "y": 575,
+            "height": 54
+          },
+          "controls": {
+            "y": 817.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 900
+          },
+          "title": {
+            "y": 290,
+            "height": 141
+          },
+          "description": {
+            "y": 459,
+            "height": 82
+          },
+          "actions": {
+            "y": 575,
+            "height": 54
+          },
+          "controls": {
+            "y": 817.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "stable": true,
+      "positions": [
+        {
+          "hero": {
+            "y": 0,
+            "height": 780
+          },
+          "title": {
+            "y": 230,
+            "height": 141
+          },
+          "description": {
+            "y": 399,
+            "height": 82
+          },
+          "actions": {
+            "y": 515,
+            "height": 54
+          },
+          "controls": {
+            "y": 697.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 780
+          },
+          "title": {
+            "y": 230,
+            "height": 141
+          },
+          "description": {
+            "y": 399,
+            "height": 82
+          },
+          "actions": {
+            "y": 515,
+            "height": 54
+          },
+          "controls": {
+            "y": 697.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 780
+          },
+          "title": {
+            "y": 230,
+            "height": 141
+          },
+          "description": {
+            "y": 399,
+            "height": 82
+          },
+          "actions": {
+            "y": 515,
+            "height": 54
+          },
+          "controls": {
+            "y": 697.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        }
+      ]
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "stable": true,
+      "positions": [
+        {
+          "hero": {
+            "y": 0,
+            "height": 1080
+          },
+          "title": {
+            "y": 361.5,
+            "height": 168
+          },
+          "description": {
+            "y": 557.5,
+            "height": 92
+          },
+          "actions": {
+            "y": 683.5,
+            "height": 54
+          },
+          "controls": {
+            "y": 997.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 1080
+          },
+          "title": {
+            "y": 361.5,
+            "height": 168
+          },
+          "description": {
+            "y": 557.5,
+            "height": 92
+          },
+          "actions": {
+            "y": 683.5,
+            "height": 54
+          },
+          "controls": {
+            "y": 997.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 1080
+          },
+          "title": {
+            "y": 361.5,
+            "height": 168
+          },
+          "description": {
+            "y": 557.5,
+            "height": 92
+          },
+          "actions": {
+            "y": 683.5,
+            "height": 54
+          },
+          "controls": {
+            "y": 997.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "stable": true,
+      "positions": [
+        {
+          "hero": {
+            "y": 0,
+            "height": 1065.9375
+          },
+          "title": {
+            "y": 187.796875,
+            "height": 119
+          },
+          "description": {
+            "y": 334.796875,
+            "height": 82
+          },
+          "actions": {
+            "y": 450.796875,
+            "height": 54
+          },
+          "controls": {
+            "y": 968.796875,
+            "height": 97.140625
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 1065.9375
+          },
+          "title": {
+            "y": 187.796875,
+            "height": 119
+          },
+          "description": {
+            "y": 334.796875,
+            "height": 82
+          },
+          "actions": {
+            "y": 450.796875,
+            "height": 54
+          },
+          "controls": {
+            "y": 968.796875,
+            "height": 97.140625
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 1065.9375
+          },
+          "title": {
+            "y": 187.796875,
+            "height": 119
+          },
+          "description": {
+            "y": 334.796875,
+            "height": 82
+          },
+          "actions": {
+            "y": 450.796875,
+            "height": 54
+          },
+          "controls": {
+            "y": 968.796875,
+            "height": 97.140625
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        }
+      ]
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "stable": true,
+      "positions": [
+        {
+          "hero": {
+            "y": 0,
+            "height": 948.9375
+          },
+          "title": {
+            "y": 167.5,
+            "height": 132
+          },
+          "description": {
+            "y": 323.5,
+            "height": 82
+          },
+          "actions": {
+            "y": 429.5,
+            "height": 105.4375
+          },
+          "controls": {
+            "y": 860.9375,
+            "height": 88
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 948.9375
+          },
+          "title": {
+            "y": 167.5,
+            "height": 132
+          },
+          "description": {
+            "y": 323.5,
+            "height": 82
+          },
+          "actions": {
+            "y": 429.5,
+            "height": 105.4375
+          },
+          "controls": {
+            "y": 860.9375,
+            "height": 88
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 948.9375
+          },
+          "title": {
+            "y": 167.5,
+            "height": 132
+          },
+          "description": {
+            "y": 323.5,
+            "height": 82
+          },
+          "actions": {
+            "y": 429.5,
+            "height": 105.4375
+          },
+          "controls": {
+            "y": 860.9375,
+            "height": 88
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "stable": true,
+      "positions": [
+        {
+          "hero": {
+            "y": 0,
+            "height": 967.9375
+          },
+          "title": {
+            "y": 167.5,
+            "height": 159
+          },
+          "description": {
+            "y": 350.5,
+            "height": 109
+          },
+          "actions": {
+            "y": 483.5,
+            "height": 105.4375
+          },
+          "controls": {
+            "y": 879.9375,
+            "height": 88
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 967.9375
+          },
+          "title": {
+            "y": 167.5,
+            "height": 159
+          },
+          "description": {
+            "y": 350.5,
+            "height": 109
+          },
+          "actions": {
+            "y": 483.5,
+            "height": 105.4375
+          },
+          "controls": {
+            "y": 879.9375,
+            "height": 88
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 967.9375
+          },
+          "title": {
+            "y": 167.5,
+            "height": 159
+          },
+          "description": {
+            "y": 350.5,
+            "height": 109
+          },
+          "actions": {
+            "y": 483.5,
+            "height": 105.4375
+          },
+          "controls": {
+            "y": 879.9375,
+            "height": 88
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        }
+      ]
+    },
+    {
+      "width": 375,
+      "height": 320,
+      "stable": true,
+      "positions": [
+        {
+          "hero": {
+            "y": 0,
+            "height": 948.9375
+          },
+          "title": {
+            "y": 167.5,
+            "height": 132
+          },
+          "description": {
+            "y": 323.5,
+            "height": 82
+          },
+          "actions": {
+            "y": 429.5,
+            "height": 105.4375
+          },
+          "controls": {
+            "y": 860.9375,
+            "height": 88
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 948.9375
+          },
+          "title": {
+            "y": 167.5,
+            "height": 132
+          },
+          "description": {
+            "y": 323.5,
+            "height": 82
+          },
+          "actions": {
+            "y": 429.5,
+            "height": 105.4375
+          },
+          "controls": {
+            "y": 860.9375,
+            "height": 88
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 948.9375
+          },
+          "title": {
+            "y": 167.5,
+            "height": 132
+          },
+          "description": {
+            "y": 323.5,
+            "height": 82
+          },
+          "actions": {
+            "y": 429.5,
+            "height": 105.4375
+          },
+          "controls": {
+            "y": 860.9375,
+            "height": 88
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "stable": true,
+      "positions": [
+        {
+          "hero": {
+            "y": 0,
+            "height": 900
+          },
+          "title": {
+            "y": 290,
+            "height": 141
+          },
+          "description": {
+            "y": 459,
+            "height": 82
+          },
+          "actions": {
+            "y": 575,
+            "height": 54
+          },
+          "controls": {
+            "y": 817.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 900
+          },
+          "title": {
+            "y": 290,
+            "height": 141
+          },
+          "description": {
+            "y": 459,
+            "height": 82
+          },
+          "actions": {
+            "y": 575,
+            "height": 54
+          },
+          "controls": {
+            "y": 817.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        },
+        {
+          "hero": {
+            "y": 0,
+            "height": 900
+          },
+          "title": {
+            "y": 290,
+            "height": 141
+          },
+          "description": {
+            "y": 459,
+            "height": 82
+          },
+          "actions": {
+            "y": 575,
+            "height": 54
+          },
+          "controls": {
+            "y": 817.203125,
+            "height": 82.796875
+          },
+          "font": "\"Helvetica Neue\", Helvetica, Arial, sans-serif",
+          "overflow": false
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

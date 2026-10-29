@@ -1,0 +1,42 @@
+[
+  {
+    "name": "active session auth route",
+    "pass": false,
+    "error": "The input was expected to not match the regular expression /tidak tersedia/. Input:"
+  },
+  {
+    "name": "dialog initial focus",
+    "pass": false,
+    "error": "Expected \"actual\" to be strictly unequal to:"
+  },
+  {
+    "name": "dialog outside click",
+    "pass": false,
+    "error": "locator.waitFor: Timeout 8000ms exceeded."
+  },
+  {
+    "name": "preview duplicate total",
+    "pass": false,
+    "error": "The input did not match the regular expression /50.000/. Input:"
+  },
+  {
+    "name": "preview action label",
+    "pass": false,
+    "error": "The input did not match the regular expression /Memeriksa/. Input:"
+  },
+  {
+    "name": "missing allocation target",
+    "pass": false,
+    "error": "Expected values to be strictly equal:"
+  },
+  {
+    "name": "fresh state after save while another refresh runs",
+    "pass": false,
+    "error": "locator.waitFor: Timeout 8000ms exceeded."
+  },
+  {
+    "name": "expired export stays in app",
+    "pass": false,
+    "error": "locator.waitFor: Timeout 8000ms exceeded."
+  }
+]
