@@ -1,10 +1,11 @@
 # Preview landing EFA
 
-Screenshot dari https://efa.madgo.my.id/ pada 28 Oktober 2026.
-Versi visual terbaru memakai bingkai foto lengkung, dua foto usaha baru,
-ilustrasi lembar pencocokan, thumbnail artikel serta elemen dekoratif EFA.
-Hero utama difoto pada slide pertama; screenshot seluruh halaman pada
-slide ketiga setelah semua section terlihat dan animasi selesai.
+Screenshot dari https://efa.madgo.my.id/ pada 29 Oktober 2026.
+Hero terbaru memakai komposisi penuh, bentuk biru berlapis, copy di kiri,
+dan ilustrasi tiga orang transparan di kanan. Ilustrasi orang dibuat baru;
+bukan testimoni pengguna. Section bawah mempertahankan gaya EFA sebelumnya.
+Hero utama dan screenshot seluruh halaman memakai slide pertama,
+setelah semua section terlihat dan animasi selesai.
 
 | Awalan file | Viewport |
 | --- | --- |

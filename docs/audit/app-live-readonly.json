@@ -1,0 +1,146 @@
+{
+  "login": "passed",
+  "cookie": {
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Strict"
+  },
+  "views": [
+    {
+      "width": 375,
+      "route": "overview",
+      "overflow": false,
+      "heading": "Catatan kas Roti Sore (Demo)"
+    },
+    {
+      "width": 375,
+      "route": "entries",
+      "overflow": false,
+      "heading": "Transaksi"
+    },
+    {
+      "width": 375,
+      "route": "reconcile",
+      "overflow": false,
+      "heading": "Cocokkan kas"
+    },
+    {
+      "width": 375,
+      "route": "imports",
+      "overflow": false,
+      "heading": "Impor CSV"
+    },
+    {
+      "width": 375,
+      "route": "history",
+      "overflow": false,
+      "heading": "Riwayat aktivitas"
+    },
+    {
+      "width": 375,
+      "route": "reports",
+      "overflow": false,
+      "heading": "Laporan"
+    },
+    {
+      "width": 375,
+      "route": "settings",
+      "overflow": false,
+      "heading": "Pengaturan akun"
+    },
+    {
+      "width": 768,
+      "route": "overview",
+      "overflow": false,
+      "heading": "Catatan kas Roti Sore (Demo)"
+    },
+    {
+      "width": 768,
+      "route": "entries",
+      "overflow": false,
+      "heading": "Transaksi"
+    },
+    {
+      "width": 768,
+      "route": "reconcile",
+      "overflow": false,
+      "heading": "Cocokkan kas"
+    },
+    {
+      "width": 768,
+      "route": "imports",
+      "overflow": false,
+      "heading": "Impor CSV"
+    },
+    {
+      "width": 768,
+      "route": "history",
+      "overflow": false,
+      "heading": "Riwayat aktivitas"
+    },
+    {
+      "width": 768,
+      "route": "reports",
+      "overflow": false,
+      "heading": "Laporan"
+    },
+    {
+      "width": 768,
+      "route": "settings",
+      "overflow": false,
+      "heading": "Pengaturan akun"
+    },
+    {
+      "width": 1440,
+      "route": "overview",
+      "overflow": false,
+      "heading": "Catatan kas Roti Sore (Demo)"
+    },
+    {
+      "width": 1440,
+      "route": "entries",
+      "overflow": false,
+      "heading": "Transaksi"
+    },
+    {
+      "width": 1440,
+      "route": "reconcile",
+      "overflow": false,
+      "heading": "Cocokkan kas"
+    },
+    {
+      "width": 1440,
+      "route": "imports",
+      "overflow": false,
+      "heading": "Impor CSV"
+    },
+    {
+      "width": 1440,
+      "route": "history",
+      "overflow": false,
+      "heading": "Riwayat aktivitas"
+    },
+    {
+      "width": 1440,
+      "route": "reports",
+      "overflow": false,
+      "heading": "Laporan"
+    },
+    {
+      "width": 1440,
+      "route": "settings",
+      "overflow": false,
+      "heading": "Pengaturan akun"
+    }
+  ],
+  "sse": {
+    "opened": true
+  },
+  "export": {
+    "href": "https://temukas.madgo.my.id/api/v1/umkm/export",
+    "filename": "umkm-rekap.csv",
+    "failure": null
+  },
+  "legacy": [],
+  "errors": []
+}

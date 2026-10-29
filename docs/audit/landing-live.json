@@ -1,0 +1,45 @@
+{
+  "results": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "overflow": false,
+      "carousel": 3,
+      "menu": "desktop",
+      "appLinks": "passed"
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "overflow": false,
+      "carousel": 3,
+      "menu": "passed",
+      "appLinks": "passed"
+    },
+    {
+      "name": "mobile",
+      "width": 375,
+      "height": 812,
+      "overflow": false,
+      "carousel": 3,
+      "menu": "passed",
+      "appLinks": "passed"
+    },
+    {
+      "name": "small",
+      "width": 320,
+      "height": 568,
+      "overflow": false,
+      "carousel": 3,
+      "menu": "passed",
+      "appLinks": "passed"
+    }
+  ],
+  "autoplay": true,
+  "keyboard": true,
+  "reducedMotion": true,
+  "noJS": true,
+  "issues": []
+}
