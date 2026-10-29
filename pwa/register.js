@@ -1,7 +1,6 @@
 const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 let installPrompt;
 let help;
-let updateNotice;
 
 function syncInstallControls() {
   document.documentElement.classList.toggle('pwa-installed', standalone());
@@ -57,26 +56,11 @@ document.body.append(networkNotice);
 addEventListener('offline', () => { networkNotice.hidden = false; });
 addEventListener('online', () => { networkNotice.hidden = true; });
 
-function showUpdate() {
-  if (updateNotice) return;
-  updateNotice = document.createElement('aside');
-  updateNotice.className = 'pwa-update';
-  updateNotice.setAttribute('role', 'status');
-  updateNotice.innerHTML = '<p><strong>Pembaruan EFA siap.</strong> Simpan pekerjaanmu, lalu tutup semua tab dan jendela EFA sebelum membuka kembali.</p><button type="button" aria-label="Tutup pemberitahuan pembaruan">×</button>';
-  updateNotice.querySelector('button').addEventListener('click', () => updateNotice.remove());
-  document.body.append(updateNotice);
-}
 async function register() {
   if (!('serviceWorker' in navigator) || !isSecureContext) return;
   try {
     const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' });
-    if (registration.waiting && navigator.serviceWorker.controller) showUpdate();
-    registration.addEventListener('updatefound', () => {
-      const worker = registration.installing;
-      worker?.addEventListener('statechange', () => {
-        if (worker.state === 'installed' && navigator.serviceWorker.controller) showUpdate();
-      });
-    });
+    // updates activate through the browser lifecycle without banners or forced reloads.
     addEventListener('online', () => { void registration.update().catch(() => {}); });
   } catch (error) {
     console.warn('PWA belum aktif; website tetap bisa digunakan.', error.name);

@@ -9,6 +9,7 @@ setelah semua section terlihat dan animasi selesai.
 
 | Awalan file | Viewport |
 | --- | --- |
+| home-hero-hd | 1920×1080 px, hero home tanpa banner pembaruan |
 | desktop | 1440×1000 px |
 | tablet | 768×1024 px |
 | mobile | 375×812 px |
@@ -22,7 +23,7 @@ dan tombol tidak dipotong oleh tinggi yang dikunci.
 Ketiga slide memakai cutout transparan dengan `object-fit: contain`, tanpa
 bingkai foto atau garis kecil di samping eyebrow. Slide 2 dan 3 menggunakan
 ilustrasi baru yang berbeda. Sumber dan prompt tersimpan di `landing/SOURCES.md`.
-Deployment carousel terbaru: `dpl_6r4kQV7bYg4CQzomU62ssK7DeHfz`.
+Deployment terbaru: `dpl_EdtfWfhWbus4dfQ7snS3ZY6hbEWi`.
 Font terbaru memakai stack Helvetica/Arial pada landing dan aplikasi.
 Kontrol panah berupa chevron sederhana. `carousel-layout.json` menyimpan
 pengukuran tinggi dan posisi ketiga slide pada desktop, tablet, HP serta

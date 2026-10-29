@@ -40,7 +40,7 @@ iPhone memakai menu Bagikan; tidak menampilkan prompt Chromium.
 pwa/
 ├── manifest.webmanifest       nama, start URL, scope, ikon, shortcuts
 ├── service-worker.js          source worker: cache publik dan offline fallback
-├── register.js                registrasi, install, status koneksi/pembaruan
+├── register.js                registrasi, install dan status koneksi
 ├── pwa.css                    gaya kontrol PWA dan halaman offline
 ├── offline.html               halaman ketika navigasi gagal terhubung
 ├── offline.js                 tombol coba lagi dan pesan koneksi kembali
@@ -77,8 +77,7 @@ memakai halaman offline publik. Tidak ada credential di manifest.
 
 Build membuat ID cache dari isi semua aset publik dan source worker.
 Perubahan aset menghasilkan worker baru. Worker baru menunggu tab versi
-lama selesai; notifikasi meminta pengguna menyimpan pekerjaan, menutup
-semua tab/jendela EFA, lalu membuka kembali. Tidak ada paksa reload atau
+lama selesai, tanpa banner pembaruan yang menutupi halaman. Tidak ada paksa reload atau
 `skipWaiting()`. Cache EFA versi lama dibersihkan saat worker baru aktif;
 cache produk lain tidak dihapus.
 
