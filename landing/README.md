@@ -54,9 +54,10 @@ Jika port dipakai: `$env:PORT='3058'; node frontend/dev.mjs`.
 - Hero pertama memakai `efa-team-hero.png`, ilustrasi tiga orang fiktif
   dengan alpha transparan, bukan testimoni pelanggan. Bentuk dekoratif
   dibuat dengan CSS agar tajam di berbagai ukuran. Sumber/prompt ada di SOURCES.
-- Foto slide kedua ada di `assets/images/`. Pertahankan versi
-  1600 px untuk layar biasa dan 4000 px untuk layar beresolusi tinggi.
-  Foto ketiga memakai `frontend/assets/efa-ledger-4k.jpg`.
+- Slide kedua memakai `efa-payments-hero.png` (pemilik usaha memeriksa
+  pembayaran), slide ketiga `efa-records-hero.png` (pemeriksaan catatan).
+  Ketiga ilustrasi memakai alpha transparan dan aturan layout yang sama,
+  tanpa bingkai foto. Foto stok tetap tersedia untuk section pendukung.
 - Palet ada di `:root` dalam `landing.css`. Logo dan font mengikuti EFA.
   Hero penuh dan breakpoint-nya berada di `hero.css`; ilustrasi lembar
   catatan, thumbnail artikel dan section lain berada di `editorial.css`.

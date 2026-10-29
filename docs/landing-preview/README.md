@@ -2,7 +2,7 @@
 
 Screenshot dari https://efa.madgo.my.id/ pada 29 Oktober 2026.
 Hero terbaru memakai komposisi penuh, bentuk biru berlapis, copy di kiri,
-dan ilustrasi tiga orang transparan di kanan. Ilustrasi orang dibuat baru;
+dan ilustrasi orang transparan di kanan pada ketiga slide. Ilustrasi dibuat baru;
 bukan testimoni pengguna. Section bawah mempertahankan gaya EFA sebelumnya.
 Hero utama dan screenshot seluruh halaman memakai slide pertama,
 setelah semua section terlihat dan animasi selesai.
@@ -18,6 +18,11 @@ setelah semua section terlihat dan animasi selesai.
 konten. `desktop-slide-2.png` dan `desktop-slide-3.png` menunjukkan foto
 dan judul carousel lainnya. Pada layar pendek, hero dapat digulir; konten
 dan tombol tidak dipotong oleh tinggi yang dikunci.
+
+Ketiga slide memakai cutout transparan dengan `object-fit: contain`, tanpa
+bingkai foto atau garis kecil di samping eyebrow. Slide 2 dan 3 menggunakan
+ilustrasi baru yang berbeda. Sumber dan prompt tersimpan di `landing/SOURCES.md`.
+Deployment carousel terbaru: `dpl_HGEzW2mfe1CvXepBkdcfaazbuY8N`.
 
 Pemeriksaan browser: tiga slide, autoplay, pause, panah/Home/End,
 reduced motion, menu HP dan Escape, tiga contoh nominal, FAQ, CTA
