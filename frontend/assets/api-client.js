@@ -1,6 +1,6 @@
 import { apiURL } from "./api-config.js?v=team2";
 
-export function createAPIClient({ getCSRF, onUnauthorized, fetchImpl = globalThis.fetch }) {
+export function createAPIClient({ getCSRF, onUnauthorized, onForbidden, fetchImpl = globalThis.fetch }) {
   return async function api(path, options = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 32000);
@@ -26,11 +26,18 @@ export function createAPIClient({ getCSRF, onUnauthorized, fetchImpl = globalThi
         error.status = response.status;
         error.requestId = data?.request_id;
         if (response.status === 401) onUnauthorized?.(path);
+        if (response.status === 403 && onForbidden) {
+          const message = await Promise.resolve().then(() => onForbidden(path)).catch(() => null);
+          if (message) error.message = message;
+        }
         throw error;
       }
       if (data === null) throw new Error("Respons server tidak sesuai. Coba muat ulang halaman.");
       return data;
     } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error("Koneksi ke server terputus. Periksa data terbaru sebelum mengirim ulang.");
+      }
       if (error.name === "AbortError") {
         throw new Error("Server belum merespons. Data mungkin tersimpan; muat ulang sebelum mengirim lagi.");
       }

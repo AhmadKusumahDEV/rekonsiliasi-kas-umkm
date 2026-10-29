@@ -60,6 +60,15 @@ body[data-kind="umkm"] .primary:hover:not(:disabled) {
   color: var(--efa-charcoal);
 }
 body[data-kind="umkm"] :focus-visible { outline-color: var(--efa-link); }
+body[data-kind="umkm"] :is(.auth-umkm,.cash-account,#mobile-menu) :focus-visible {
+  outline: 3px solid #9dd6f2;
+  outline-offset: 4px;
+}
+@media (max-width:1100px) {
+  body[data-kind="umkm"] :is(button.small,a.button.small) { min-height: 44px; }
+}
+body[data-kind="umkm"] .toast { display: flex; align-items: center; gap: 12px; }
+body[data-kind="umkm"] .toast .toast-dismiss { flex-shrink: 0; width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; color: inherit; font-size: 24px; }
 body[data-kind="umkm"] :is(input,textarea,select):focus-visible {
   border-color: var(--efa-blue);
   background: #f5faff;

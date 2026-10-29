@@ -131,6 +131,38 @@ func (s *Service) PreviewImport(kind, raw string) (models.PreviewResponse, error
 	}, nil
 }
 
+func (s *Service) PreviewImportForWorkspace(ctx context.Context, user models.User, kind, raw string) (models.PreviewResponse, error) {
+	preview, err := s.PreviewImport(kind, raw)
+	if err != nil {
+		return models.PreviewResponse{}, err
+	}
+	if s.db == nil {
+		return models.PreviewResponse{}, pkgErr.New(pkgErr.ErrServiceUnavailable, "Database belum tersedia.")
+	}
+	ids := make([]string, 0, len(preview.Rows))
+	for _, entry := range preview.Rows {
+		ids = append(ids, entry.SourceID)
+	}
+	rows, err := sqlc.New(s.db.Pool()).ListUmkmEntriesByKindAndSourceIDs(ctx, sqlc.ListUmkmEntriesByKindAndSourceIDsParams{WorkspaceID: user.WorkspaceID, Kind: kind, SourceIds: ids})
+	if err != nil {
+		return models.PreviewResponse{}, fmt.Errorf("preview existing entries: %w", err)
+	}
+	existing := make(map[string]models.Entry, len(rows))
+	for _, row := range rows {
+		entry := mapEntry(row)
+		existing[entry.SourceID] = entry
+	}
+	preview.Rows, preview.Skipped, err = filterImportRows(preview.Rows, existing)
+	if err != nil {
+		return models.PreviewResponse{}, err
+	}
+	preview.Count, preview.Total = len(preview.Rows), 0
+	for _, entry := range preview.Rows {
+		preview.Total += entry.Amount
+	}
+	return preview, nil
+}
+
 func (s *Service) CommitImport(ctx context.Context, user models.User, req models.ImportRequest) (models.CommitImportResponse, error) {
 	if s.db == nil {
 		return models.CommitImportResponse{}, pkgErr.New(pkgErr.ErrServiceUnavailable, "Database belum tersedia.")
@@ -158,15 +190,7 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 		if existingImport.CanceledAt.Valid {
 			return models.CommitImportResponse{}, pkgErr.New(pkgErr.ErrConflict, "Impor ini sudah dibatalkan. Gunakan ID sumber baru jika ingin mencatat ulang.")
 		}
-		version, bumpErr := insertAuditAndBump(ctx, queries, user, "Impor transaksi", "Data CSV tervalidasi")
-		if bumpErr != nil {
-			return models.CommitImportResponse{}, bumpErr
-		}
-		if err = tx.Commit(ctx); err != nil {
-			return models.CommitImportResponse{}, pkgErr.ErrFailCommitTx
-		}
-		s.publishState(user.WorkspaceID, version)
-		return models.CommitImportResponse{ID: existingImport.ID, Duplicate: true}, nil
+		return models.CommitImportResponse{ID: existingImport.ID, Duplicate: true, Skipped: len(entries)}, nil
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return models.CommitImportResponse{}, fmt.Errorf("get import by checksum: %w", err)
@@ -175,9 +199,6 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 	count, err := queries.CountUmkmEntries(ctx, user.WorkspaceID)
 	if err != nil {
 		return models.CommitImportResponse{}, fmt.Errorf("count entries: %w", err)
-	}
-	if count+int64(len(entries)) > 10_000 {
-		return models.CommitImportResponse{}, pkgErr.New(pkgErr.ErrInvalidRequest, "Ruang kerja mencapai batas MVP 10.000 transaksi. Ekspor dan hubungi pengelola.")
 	}
 
 	sourceIDs := make([]string, 0, len(entries))
@@ -198,18 +219,15 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 		existing[mapped.SourceID] = mapped
 	}
 
-	newRows := make([]models.Entry, 0, len(entries))
-	skipped := 0
-	for _, entry := range entries {
-		old, found := existing[entry.SourceID]
-		if !found {
-			newRows = append(newRows, entry)
-			continue
-		}
-		if !sameEntry(old, entry) || old.Canceled {
-			return models.CommitImportResponse{}, pkgErr.New(pkgErr.ErrConflict, "ID sumber "+entry.SourceID+" sudah ada dengan data berbeda atau telah dibatalkan. Impor tidak disimpan.")
-		}
-		skipped++
+	newRows, skipped, err := filterImportRows(entries, existing)
+	if err != nil {
+		return models.CommitImportResponse{}, err
+	}
+	if len(newRows) == 0 {
+		return models.CommitImportResponse{Duplicate: true, Skipped: skipped}, nil
+	}
+	if count+int64(len(newRows)) > 10_000 {
+		return models.CommitImportResponse{}, pkgErr.New(pkgErr.ErrInvalidRequest, "Ruang kerja mencapai batas MVP 10.000 transaksi. Ekspor dan hubungi pengelola.")
 	}
 
 	importID := newID()

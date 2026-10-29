@@ -81,6 +81,7 @@ type PreviewResponse struct {
 	Count    int     `json:"count"`
 	Total    int64   `json:"total"`
 	Checksum string  `json:"checksum"`
+	Skipped  int     `json:"skipped"`
 }
 
 type CommitImportResponse struct {
