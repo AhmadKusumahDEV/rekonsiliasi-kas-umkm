@@ -17,6 +17,7 @@
 - [PRD](PRD.md)
 - [FRD](FRD.md)
 - [Integrasi frontend/backend tim](INTEGRATION.md)
+- [Handoff backend MVP ke frontend](MVP_FRONTEND_INTEGRATION.md)
 - [Hosting dan rollback](HOSTING.md)
 - [Frontend Vercel ke backend tim: deployment dan hasil uji](VERCEL_TEAM_API.md)
 - [Hasil pengujian integrasi](VERIFICATION.md)

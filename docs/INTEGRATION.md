@@ -8,7 +8,8 @@
    seluruh fetch mengirim `credentials: include`, SSE memakai withCredentials.
    Lokal tetap memakai proxy dev.mjs. [Detail deployment](VERCEL_TEAM_API.md).
 3. Login/register menghasilkan cookie HttpOnly dan csrf.
-4. State/suggestions menggunakan identitas sesi; browser tidak menentukan hak akses workspace.
+4. State/suggestions/exceptions menggunakan identitas sesi; browser tidak
+   menentukan hak akses workspace.
 5. Mutasi membawa X-CSRF-Token. Handler memvalidasi input lalu memanggil service.
 6. Service memeriksa ruang kerja, lock, saldo, query sqlc, audit dan version dalam satu transaksi.
 7. UI mengambil ulang data. Perhitungan tampilan tidak menggantikan validasi server.
@@ -21,7 +22,8 @@
 | /api/register, /api/login | POST /api/v1/auth/register, /auth/login |
 | /api/me, /api/logout | GET /api/v1/auth/me, POST /auth/logout |
 | POST /api/password | PUT /api/v1/auth/password |
-| /api/state, /api/suggestions | GET /api/v1/umkm/state, /umkm/suggestions |
+| /api/state, /api/suggestions | GET /api/v1/umkm/state, /umkm/suggestions, /umkm/exceptions |
+| Halaman riwayat (baru) | GET /api/v1/umkm/audit?before_id=...&limit=... |
 | /api/imports/preview, /api/imports | POST /api/v1/umkm/imports/preview, /umkm/imports |
 | /api/imports/:id/cancel | POST /api/v1/umkm/imports/:id/cancel |
 | /api/allocations, /api/allocations/:id/undo | POST /api/v1/umkm/allocations, /umkm/allocations/:id/undo |

@@ -1,4 +1,4 @@
-# API Live — Rekonsiliasi Kas UMKM
+# Kontrak API — Rekonsiliasi Kas UMKM
 
 Base URL production:
 
@@ -6,9 +6,11 @@ Base URL production:
 https://temukas.madgo.my.id
 ```
 
-Semua endpoint domain memakai prefix `/api/v1`. Kontrak ini adalah route yang
-sedang live per 27 Oktober 2026. Path `/api/...` dari prototipe tidak berlaku di
-backend ini.
+Semua endpoint domain memakai prefix `/api/v1`. Route inti sudah live per
+27 Oktober 2026. Entri `limits`, `exceptions`, dan relasi audit di bawah berasal
+dari branch `feat/mvp-gap-backend` dan baru aktif setelah branch di-merge serta
+backend dibangun ulang. Path `/api/...` dari prototipe tidak berlaku di backend
+ini.
 
 ## Ringkasan route
 
@@ -26,6 +28,8 @@ backend ini.
 | PUT | `/api/v1/auth/password` | Cookie | Ya | 200 |
 | GET | `/api/v1/umkm/state` | Cookie | — | 200 |
 | GET | `/api/v1/umkm/suggestions` | Cookie | — | 200 |
+| GET | `/api/v1/umkm/exceptions` | Cookie | — | 200 |
+| GET | `/api/v1/umkm/audit` | Cookie | — | 200 |
 | POST | `/api/v1/umkm/imports/preview` | Cookie | Ya | 200 |
 | POST | `/api/v1/umkm/imports` | Cookie | Ya | 201 |
 | POST | `/api/v1/umkm/imports/{id}/cancel` | Cookie | Ya | 200 |
@@ -66,9 +70,14 @@ GET /api/v1/config
 ```json
 {
   "kind": "umkm",
-  "brand": "Temu Kas",
+  "brand": "Easy Financial Audit",
   "tagline": "Setiap penerimaan, jelas pasangannya.",
-  "roles": ["owner"]
+  "roles": ["owner"],
+  "limits": {
+    "max_import_rows": 500,
+    "max_csv_bytes": 1048576,
+    "max_entries": 10000
+  }
 }
 ```
 
@@ -181,6 +190,11 @@ Import dan allocation memakai field yang sama dengan model prototipe:
 `imports[].rows`, `imports[].checksum`, `allocations[].sale_id`,
 `allocations[].receipt_id`, `allocations[].reversed`, dan seterusnya.
 
+Setiap item `events` berisi `id`, `actor`, `action`, `detail`,
+`entity_type`, `entity_id`, `actor_user_id`, dan `created_at`. Untuk data lama,
+`entity_type`/`entity_id`/`actor_user_id` bernilai `null`; jangan menebak ID
+dari teks `detail`. `entity_type` saat ini `import` atau `allocation`.
+
 ### Suggestions
 
 ```http
@@ -199,6 +213,59 @@ Response `200` berupa array:
   }
 ]
 ```
+
+### Exceptions
+
+```http
+GET /api/v1/umkm/exceptions
+Cookie: rku_session=...
+```
+
+Response `200` berupa array item yang masih membutuhkan keputusan manusia.
+Status yang dikembalikan: `unmatched`, `partial`, atau `ambiguous`.
+
+```json
+[
+  {
+    "entry": {
+      "id": "32-hex",
+      "kind": "sale",
+      "date": "2026-10-01",
+      "reference": "INV-1",
+      "name": "Ayu",
+      "amount": 150000,
+      "channel": "transfer"
+    },
+    "status": "partial",
+    "remaining": 50000,
+    "candidate_ids": [],
+    "candidate_count": 0,
+    "suggestion_available": false,
+    "reason": "Pembayaran sebagian; sisa tagihan Rp50000."
+  }
+]
+```
+
+`remaining` adalah sisa tagihan/penjualan atau sisa penerimaan. Endpoint ini
+tidak mengubah saldo dan tidak menggantikan suggestions. `candidate_ids` berisi
+ID kandidat lawan untuk dipilih pengguna; `candidate_count`
+menghitung kandidat satu sisi dalam jendela 0–3 hari. Hanya
+`suggestion_available: true` yang menandakan pasangan sudah unik di kedua sisi
+dan tersedia di `GET /api/v1/umkm/suggestions`. Status `partial` selalu
+memprioritaskan sisa saldo yang belum dialokasikan.
+
+### Audit page
+
+```http
+GET /api/v1/umkm/audit?before_id=42&limit=50
+Cookie: rku_session=...
+```
+
+Response berupa array audit terbaru, maksimal 100 item per halaman (default
+50). `before_id` opsional; isi dengan ID audit tertua dari halaman sebelumnya
+untuk mengambil halaman berikutnya. Array kosong berarti tidak ada data lagi.
+State dashboard tetap hanya memuat 120 audit terbaru; endpoint ini dipakai oleh
+halaman Riwayat untuk menelusuri seluruh jejak workspace.
 
 ### Import preview
 
@@ -223,7 +290,8 @@ Response `200`:
   "rows": [],
   "count": 1,
   "total": 100000,
-  "checksum": "sha256-hex"
+  "checksum": "sha256-hex",
+  "skipped": 0
 }
 ```
 
@@ -273,6 +341,8 @@ Cookie: rku_session=...
 `key` adalah idempotency key 32 karakter hex dan juga menjadi ID allocation.
 Response `201` adalah objek allocation. Amount penjualan = amount penjualan -
 (amount alokasi + fee); amount penerimaan = amount penerimaan - amount alokasi.
+`reason` wajib minimal 5 karakter bila `fee > 0` atau alokasi meninggalkan sisa
+saldo pada penjualan/penerimaan.
 
 ### Undo/cancel
 

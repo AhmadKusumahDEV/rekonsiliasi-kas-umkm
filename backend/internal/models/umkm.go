@@ -51,11 +51,34 @@ type Workspace struct {
 }
 
 type AuditEvent struct {
-	ID        int64     `json:"id"`
-	Actor     string    `json:"actor"`
-	Action    string    `json:"action"`
-	Detail    string    `json:"detail"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          int64     `json:"id"`
+	Actor       string    `json:"actor"`
+	Action      string    `json:"action"`
+	Detail      string    `json:"detail"`
+	EntityType  *string   `json:"entity_type"`
+	EntityID    *string   `json:"entity_id"`
+	ActorUserID *string   `json:"actor_user_id"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+// Limits are the server-side import and workspace bounds. The frontend should
+// render these values instead of hardcoding its own copy.
+type Limits struct {
+	MaxImportRows int `json:"max_import_rows"`
+	MaxCSVBytes   int `json:"max_csv_bytes"`
+	MaxEntries    int `json:"max_entries"`
+}
+
+// Exception is one item that still needs a human decision: an unmatched
+// entry, an ambiguous candidate, or an entry with a remaining balance.
+type Exception struct {
+	Entry               Entry    `json:"entry"`
+	Status              string   `json:"status"`
+	Remaining           int64    `json:"remaining"`
+	CandidateIDs        []string `json:"candidate_ids"`
+	CandidateCount      int      `json:"candidate_count"`
+	SuggestionAvailable bool     `json:"suggestion_available"`
+	Reason              string   `json:"reason"`
 }
 
 type UMKMState struct {
@@ -73,7 +96,7 @@ type StateResponse struct {
 
 type ImportRequest struct {
 	Kind string `json:"kind" validate:"required,oneof=sale receipt"`
-	CSV  string `json:"csv" validate:"required,max=1048576"`
+	CSV  string `json:"csv" validate:"required"`
 }
 
 type PreviewResponse struct {

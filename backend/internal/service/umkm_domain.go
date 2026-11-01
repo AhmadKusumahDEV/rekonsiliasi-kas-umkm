@@ -19,6 +19,14 @@ import (
 
 var csvHeader = []string{"id", "tanggal", "referensi", "nama", "nominal", "kanal", "catatan"}
 
+const (
+	// MaxImportRows is the documented MVP import limit (data rows, excluding
+	// the header). MaxCSVBytes is the UTF-8 CSV payload limit.
+	MaxImportRows = 500
+	MaxCSVBytes   = 1 << 20
+	MaxEntries    = 10_000
+)
+
 func parseCSV(kind, raw string) ([]models.Entry, int64, string, error) {
 	if !utf8.ValidString(raw) {
 		return nil, 0, "", pkgErr.New(pkgErr.ErrInvalidRequest, "Simpan CSV dengan encoding UTF-8, lalu coba lagi.")
@@ -26,7 +34,7 @@ func parseCSV(kind, raw string) ([]models.Entry, int64, string, error) {
 	if kind != "sale" && kind != "receipt" {
 		return nil, 0, "", pkgErr.New(pkgErr.ErrInvalidRequest, "Pilih jenis penjualan atau penerimaan.")
 	}
-	if len(raw) > 1<<20 {
+	if len(raw) > MaxCSVBytes {
 		return nil, 0, "", pkgErr.New(pkgErr.ErrInvalidRequest, "CSV maksimal 1 MB dan 500 baris.")
 	}
 
@@ -55,7 +63,7 @@ func parseCSV(kind, raw string) ([]models.Entry, int64, string, error) {
 		if err != nil {
 			return nil, 0, "", pkgErr.New(pkgErr.ErrInvalidRequest, fmt.Sprintf("Baris %d: periksa jumlah kolom dan tanda petik.", line))
 		}
-		if len(entries) >= 500 {
+		if len(entries) >= MaxImportRows {
 			return nil, 0, "", pkgErr.New(pkgErr.ErrInvalidRequest, "Satu impor maksimal 500 baris.")
 		}
 
@@ -161,7 +169,7 @@ func suggestions(entries []models.Entry, allocations []models.Allocation) []mode
 	}
 	keyFor := func(entry models.Entry, date string) key {
 		return key{
-			Reference: strings.ToLower(entry.Reference),
+			Reference: strings.ToLower(strings.TrimSpace(entry.Reference)),
 			Channel:   entry.Channel,
 			Date:      date,
 			Amount:    entry.Amount,
@@ -231,6 +239,158 @@ func suggestions(entries []models.Entry, allocations []models.Allocation) []mode
 	return out
 }
 
+// exceptions returns the items that still need a human decision. It uses the
+// same matching rules as suggestions, but keeps ambiguous candidates visible
+// instead of dropping them.
+func exceptions(entries []models.Entry, allocations []models.Allocation) []models.Exception {
+	remainingByID := make(map[string]int64, len(entries))
+	activeByID := make(map[string]int, len(entries))
+	for _, entry := range entries {
+		remainingByID[entry.ID] = entry.Amount
+	}
+	for _, allocation := range allocations {
+		if allocation.Reversed {
+			continue
+		}
+		if _, ok := remainingByID[allocation.SaleID]; ok {
+			remainingByID[allocation.SaleID] -= allocation.Amount + allocation.Fee
+			activeByID[allocation.SaleID]++
+		}
+		if _, ok := remainingByID[allocation.ReceiptID]; ok {
+			remainingByID[allocation.ReceiptID] -= allocation.Amount
+			activeByID[allocation.ReceiptID]++
+		}
+	}
+
+	type candidateKey struct {
+		Reference string
+		Channel   string
+		Date      string
+		Amount    int64
+	}
+	keyFor := func(entry models.Entry, date string) candidateKey {
+		return candidateKey{
+			Reference: strings.ToLower(strings.TrimSpace(entry.Reference)),
+			Channel:   entry.Channel,
+			Date:      date,
+			Amount:    entry.Amount,
+		}
+	}
+	sales := make(map[candidateKey][]models.Entry)
+	receipts := make(map[candidateKey][]models.Entry)
+	for _, entry := range entries {
+		if entry.Canceled || strings.TrimSpace(entry.Reference) == "" || remainingByID[entry.ID] != entry.Amount {
+			continue
+		}
+		switch entry.Kind {
+		case "sale":
+			sales[keyFor(entry, entry.Date)] = append(sales[keyFor(entry, entry.Date)], entry)
+		case "receipt":
+			receipts[keyFor(entry, entry.Date)] = append(receipts[keyFor(entry, entry.Date)], entry)
+		}
+	}
+	// A one-sided bucket is not enough to confirm a pair: both directions
+	// must be unique. Reuse the matcher so exceptions cannot advertise a
+	// suggestion that the suggestions endpoint refuses to emit.
+	suggested := make(map[string]bool)
+	for _, match := range suggestions(entries, allocations) {
+		suggested[match.Sale.ID] = true
+		suggested[match.Receipt.ID] = true
+	}
+
+	out := make([]models.Exception, 0)
+	for _, entry := range entries {
+		if entry.Canceled {
+			continue
+		}
+		remainingAmount := remainingByID[entry.ID]
+		if remainingAmount <= 0 {
+			continue
+		}
+
+		status := "unmatched"
+		reason := ""
+		candidateIDs := make([]string, 0)
+		candidateCount := 0
+		suggestionAvailable := false
+		switch {
+		case activeByID[entry.ID] > 0:
+			status = "partial"
+			reason = partialReason(entry, remainingAmount)
+		case strings.TrimSpace(entry.Reference) == "":
+			reason = "Referensi kosong; periksa dan alokasikan manual."
+		default:
+			date, err := time.Parse("2006-01-02", entry.Date)
+			if err == nil {
+				seenCandidates := make(map[string]struct{})
+				addCandidate := func(candidate models.Entry) {
+					if _, seen := seenCandidates[candidate.ID]; seen {
+						return
+					}
+					seenCandidates[candidate.ID] = struct{}{}
+					candidateIDs = append(candidateIDs, candidate.ID)
+				}
+				for day := 0; day <= 3; day++ {
+					var dateKey string
+					if entry.Kind == "sale" {
+						dateKey = date.AddDate(0, 0, day).Format("2006-01-02")
+					} else {
+						dateKey = date.AddDate(0, 0, -day).Format("2006-01-02")
+					}
+					key := keyFor(entry, dateKey)
+					if entry.Kind == "sale" {
+						for _, candidate := range receipts[key] {
+							addCandidate(candidate)
+						}
+					} else {
+						for _, candidate := range sales[key] {
+							addCandidate(candidate)
+						}
+					}
+				}
+				candidateCount = len(candidateIDs)
+			}
+			switch {
+			case candidateCount == 0:
+				reason = "Tidak ada kandidat otomatis; periksa manual."
+			case candidateCount == 1 && suggested[entry.ID]:
+				suggestionAvailable = true
+				reason = "Kandidat unik tersedia; belum dikonfirmasi."
+			case candidateCount == 1:
+				status = "ambiguous"
+				reason = "Kandidat belum unik di kedua sisi; periksa manual."
+			default:
+				status = "ambiguous"
+				reason = fmt.Sprintf("%d kandidat; pasangan belum unik.", candidateCount)
+			}
+		}
+
+		out = append(out, models.Exception{
+			Entry:               entry,
+			Status:              status,
+			Remaining:           remainingAmount,
+			CandidateIDs:        candidateIDs,
+			CandidateCount:      candidateCount,
+			SuggestionAvailable: suggestionAvailable,
+			Reason:              reason,
+		})
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].Entry.Date == out[j].Entry.Date {
+			return out[i].Entry.ID < out[j].Entry.ID
+		}
+		return out[i].Entry.Date < out[j].Entry.Date
+	})
+	return out
+}
+
+func partialReason(entry models.Entry, remainingAmount int64) string {
+	if entry.Kind == "sale" {
+		return fmt.Sprintf("Pembayaran sebagian; sisa tagihan Rp%d.", remainingAmount)
+	}
+	return fmt.Sprintf("Penerimaan sebagian; Rp%d belum teralokasi.", remainingAmount)
+}
+
 func validateAllocation(sale, receipt models.Entry, active []models.Allocation, amount, fee int64, reason string) error {
 	if amount <= 0 || fee < 0 || amount > 1_000_000_000_000 || fee > 1_000_000_000_000 {
 		return pkgErr.New(pkgErr.ErrInvalidRequest, "Nominal harus positif dan biaya tidak boleh negatif.")
@@ -238,11 +398,14 @@ func validateAllocation(sale, receipt models.Entry, active []models.Allocation, 
 	if sale.Kind != "sale" || receipt.Kind != "receipt" || sale.Canceled || receipt.Canceled {
 		return pkgErr.New(pkgErr.ErrNotFound, "Penjualan atau penerimaan tidak ditemukan.")
 	}
-	if amount+fee > remaining(sale, active) || amount > remaining(receipt, active) {
+	remainingSale := remaining(sale, active)
+	remainingReceipt := remaining(receipt, active)
+	if amount+fee > remainingSale || amount > remainingReceipt {
 		return pkgErr.New(pkgErr.ErrConflict, "Alokasi melebihi sisa tagihan atau penerimaan. Muat ulang dan periksa sisa terbaru.")
 	}
-	if fee > 0 && len(strings.TrimSpace(reason)) < 5 {
-		return pkgErr.New(pkgErr.ErrInvalidRequest, "Jelaskan biaya layanan minimal 5 karakter.")
+	isPartial := amount+fee < remainingSale || amount < remainingReceipt
+	if (fee > 0 || isPartial) && len(strings.TrimSpace(reason)) < 5 {
+		return pkgErr.New(pkgErr.ErrInvalidRequest, "Jelaskan biaya layanan atau pembayaran sebagian minimal 5 karakter.")
 	}
 	if len([]rune(reason)) > 400 || strings.ContainsRune(reason, 0) {
 		return pkgErr.New(pkgErr.ErrInvalidRequest, "Catatan alokasi maksimal 400 karakter dan tidak boleh memuat karakter kosong.")

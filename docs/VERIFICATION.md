@@ -35,6 +35,29 @@ Pengujian dilakukan pada 27 Oktober 2026. Basis tim sudah mencakup main 6cc2d6e 
 
 Screenshot dan keluaran browser lokal disimpan di test-results yang diabaikan Git. API regression test yang ada pada tim tetap menjadi tes aturan saldo, konkurensi dan isolasi workspace; tes baru tidak menggantikan suite tersebut.
 
+## Iterasi MVP gap — 1 November 2026
+
+Perubahan backend pada branch `feat/mvp-gap-backend` diuji dengan Go 1.26.10,
+PostgreSQL 16 disposable dari Compose, dan image golangci-lint v2.15.0.
+
+| Pemeriksaan | Hasil |
+| --- | --- |
+| `go test -race -count=1 ./...` dengan `TEST_DATABASE_URL` dan `TEST_REQUIRE_DB=1` | Lulus, termasuk flow HTTP, migration 000004, exceptions, audit page, idempotensi, dan SSE |
+| `go build ./...` | Lulus |
+| `go vet ./...` | Lulus |
+| `sqlc compile -f scripts/postgres/sqlc.yaml` | Lulus |
+| `sqlc generate` | Lulus; generated code sudah sesuai query |
+| `golangci-lint run ./...` (image v2.15.0) | 0 issues |
+| `git diff --check` | Lulus |
+
+Integration test memakai container `rekonsiliasi-kas-umkm-db-test-1` dengan DSN
+`postgres://postgres:postgres@127.0.0.1:55432/rku_test?sslmode=disable`.
+Harness mereset schema test, sehingga container itu tidak boleh diarahkan ke
+database pengguna.
+
+Yang belum diuji pada iterasi ini: E2E browser setelah endpoint exceptions/audit
+dipakai frontend, deployment VPS, restore backup, dan UAT dengan data UMKM nyata.
+
 ## Menjalankan ulang
 
 Backend:

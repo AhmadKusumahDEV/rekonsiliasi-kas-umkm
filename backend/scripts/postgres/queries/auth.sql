@@ -68,9 +68,17 @@ WHERE workspace_id = @workspace_id AND app = @app
 ORDER BY name, id;
 
 -- name: ListAuditEventsByWorkspace :many
-SELECT id, actor, action, detail, created_at
+SELECT id, actor, actor_user_id, action, detail, entity_type, entity_id, created_at
 FROM public.pblg_audit
 WHERE workspace_id = @workspace_id
+ORDER BY id DESC
+LIMIT @row_limit;
+
+-- name: ListAuditEventsPage :many
+SELECT id, actor, actor_user_id, action, detail, entity_type, entity_id, created_at
+FROM public.pblg_audit
+WHERE workspace_id = @workspace_id
+  AND id < @before_id
 ORDER BY id DESC
 LIMIT @row_limit;
 
@@ -80,8 +88,8 @@ FROM public.pblg_workspaces
 WHERE id = @workspace_id;
 
 -- name: InsertAuditEvent :exec
-INSERT INTO public.pblg_audit (workspace_id, actor, action, detail)
-VALUES (@workspace_id, @actor, @action, @detail);
+INSERT INTO public.pblg_audit (workspace_id, actor, actor_user_id, action, detail, entity_type, entity_id)
+VALUES (@workspace_id, @actor, @actor_user_id, @action, @detail, @entity_type, @entity_id);
 
 -- name: BumpWorkspaceVersion :one
 UPDATE public.pblg_workspaces

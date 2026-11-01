@@ -21,9 +21,12 @@ source untuk sqlc.
 - `000003_backfill_umkm_state` memindahkan data UMKM lama dari JSONB ke tabel
   ternormalisasi. Timestamp cancel/reverse lama memakai waktu backfill karena
   prototipe hanya menyimpan boolean.
+- `000004_audit_entity` menambahkan `entity_type`, `entity_id`, dan
+  `actor_user_id` pada audit. Data historis tetap `NULL`; foreign key pelaku
+  memakai `ON DELETE SET NULL` agar audit tidak ikut hilang.
 - Penjelasan lengkap dan peringatan rollback ada di
   `docs/DATABASE_FROM_PBL.md`.
 
 Jalankan `make pg.migrate.up` satu kali untuk database kosong; golang-migrate
-akan menerapkan 000001, 000002, dan 000003 berurutan. Jangan menjalankan down
+akan menerapkan 000001–000004 berurutan. Jangan menjalankan down
 pada database berisi data tanpa backup.

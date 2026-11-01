@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -118,6 +119,74 @@ func (s *Service) GetSuggestions(ctx context.Context, user models.User) ([]model
 	return suggestions(entries, nil), nil
 }
 
+// ListExceptions returns entries that still need a human decision. It uses
+// the same deterministic matcher as suggestions but retains ambiguous cases.
+func (s *Service) ListExceptions(ctx context.Context, user models.User) ([]models.Exception, error) {
+	if s.db == nil {
+		return nil, pkgErr.New(pkgErr.ErrServiceUnavailable, "Database belum tersedia.")
+	}
+
+	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{
+		IsoLevel:   pgx.RepeatableRead,
+		AccessMode: pgx.ReadOnly,
+	})
+	if err != nil {
+		return nil, pkgErr.ErrFailInitializeTx
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	queries := sqlc.New(tx)
+	entryRows, err := queries.ListUmkmEntriesByWorkspace(ctx, user.WorkspaceID)
+	if err != nil {
+		return nil, fmt.Errorf("list entries: %w", err)
+	}
+	allocationRows, err := queries.ListUmkmAllocationsByWorkspace(ctx, user.WorkspaceID)
+	if err != nil {
+		return nil, fmt.Errorf("list allocations: %w", err)
+	}
+
+	entries := make([]models.Entry, 0, len(entryRows))
+	for _, row := range entryRows {
+		entries = append(entries, mapEntry(row))
+	}
+	allocations := make([]models.Allocation, 0, len(allocationRows))
+	for _, row := range allocationRows {
+		allocations = append(allocations, mapAllocation(row))
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, pkgErr.ErrFailCommitTx
+	}
+	return exceptions(entries, allocations), nil
+}
+
+// ListAuditEvents returns a workspace-scoped audit page. The state endpoint
+// keeps only the newest 120 rows for the dashboard; this endpoint allows the
+// history screen to walk the complete audit trail with a stable cursor.
+func (s *Service) ListAuditEvents(ctx context.Context, user models.User, beforeID int64, limit int32) ([]models.AuditEvent, error) {
+	if s.db == nil {
+		return nil, pkgErr.New(pkgErr.ErrServiceUnavailable, "Database belum tersedia.")
+	}
+	if limit < 1 || limit > 100 {
+		return nil, pkgErr.New(pkgErr.ErrInvalidRequest, "Limit audit harus antara 1 dan 100.")
+	}
+	if beforeID <= 0 {
+		beforeID = math.MaxInt64
+	}
+	rows, err := sqlc.New(s.db.Pool()).ListAuditEventsPage(ctx, sqlc.ListAuditEventsPageParams{
+		WorkspaceID: user.WorkspaceID,
+		BeforeID:    beforeID,
+		RowLimit:    limit,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("list audit page: %w", err)
+	}
+	events := make([]models.AuditEvent, 0, len(rows))
+	for _, row := range rows {
+		events = append(events, mapAuditPageEvent(row))
+	}
+	return events, nil
+}
+
 func (s *Service) PreviewImport(kind, raw string) (models.PreviewResponse, error) {
 	entries, total, sum, err := parseCSV(kind, raw)
 	if err != nil {
@@ -226,7 +295,7 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 	if len(newRows) == 0 {
 		return models.CommitImportResponse{Duplicate: true, Skipped: skipped}, nil
 	}
-	if count+int64(len(newRows)) > 10_000 {
+	if count+int64(len(newRows)) > MaxEntries {
 		return models.CommitImportResponse{}, pkgErr.New(pkgErr.ErrInvalidRequest, "Ruang kerja mencapai batas MVP 10.000 transaksi. Ekspor dan hubungi pengelola.")
 	}
 
@@ -259,7 +328,7 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 		}
 	}
 
-	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Impor transaksi", "Data CSV tervalidasi")
+	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Impor transaksi", "Data CSV tervalidasi", "import", importID)
 	if bumpErr != nil {
 		return models.CommitImportResponse{}, bumpErr
 	}
@@ -300,14 +369,11 @@ func (s *Service) Allocate(ctx context.Context, user models.User, req models.All
 			existing.Amount != req.Amount || existing.Fee != req.Fee || existing.Reason != req.Reason {
 			return models.Allocation{}, pkgErr.New(pkgErr.ErrConflict, "ID permintaan sudah digunakan untuk keputusan berbeda. Buka formulir baru.")
 		}
-		version, bumpErr := insertAuditAndBump(ctx, queries, user, "Konfirmasi pasangan", "Alokasi penerimaan ke penjualan")
-		if bumpErr != nil {
-			return models.Allocation{}, bumpErr
-		}
+		// A retry after an ambiguous timeout is a no-op, not a second decision.
+		// Keep version, audit, and SSE unchanged so the client can safely retry.
 		if err = tx.Commit(ctx); err != nil {
 			return models.Allocation{}, pkgErr.ErrFailCommitTx
 		}
-		s.publishState(user.WorkspaceID, version)
 		return mapAllocation(existing), nil
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
@@ -363,7 +429,7 @@ func (s *Service) Allocate(ctx context.Context, user models.User, req models.All
 	if err != nil {
 		return models.Allocation{}, fmt.Errorf("create allocation: %w", err)
 	}
-	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Konfirmasi pasangan", "Alokasi penerimaan ke penjualan")
+	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Konfirmasi pasangan", "Alokasi penerimaan ke penjualan", "allocation", req.Key)
 	if bumpErr != nil {
 		return models.Allocation{}, bumpErr
 	}
@@ -409,7 +475,7 @@ func (s *Service) UndoAllocation(ctx context.Context, user models.User, id strin
 			return fmt.Errorf("reverse allocation: %w", err)
 		}
 	}
-	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Batalkan pasangan", "Saldo alokasi dikembalikan; riwayat tetap ada")
+	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Batalkan pasangan", "Saldo alokasi dikembalikan; riwayat tetap ada", "allocation", id)
 	if bumpErr != nil {
 		return bumpErr
 	}
@@ -462,7 +528,7 @@ func (s *Service) CancelImport(ctx context.Context, user models.User, id string)
 	if _, err = queries.CancelUmkmImportEntries(ctx, sqlc.CancelUmkmImportEntriesParams{WorkspaceID: user.WorkspaceID, ImportID: id}); err != nil {
 		return fmt.Errorf("cancel import entries: %w", err)
 	}
-	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Batalkan impor", "Baris ditandai batal tanpa menghapus audit")
+	version, bumpErr := insertAuditAndBump(ctx, queries, user, "Batalkan impor", "Baris ditandai batal tanpa menghapus audit", "import", id)
 	if bumpErr != nil {
 		return bumpErr
 	}
@@ -510,6 +576,11 @@ func (s *Service) Config() models.ConfigResponse {
 		Brand:   "Easy Financial Audit",
 		Tagline: "Setiap penerimaan, jelas pasangannya.",
 		Roles:   []string{"owner"},
+		Limits: models.Limits{
+			MaxImportRows: MaxImportRows,
+			MaxCSVBytes:   MaxCSVBytes,
+			MaxEntries:    MaxEntries,
+		},
 	}
 }
 
@@ -527,12 +598,15 @@ func lockWorkspace(ctx context.Context, queries *sqlc.Queries, workspaceID strin
 	return nil
 }
 
-func insertAuditAndBump(ctx context.Context, queries *sqlc.Queries, user models.User, action, detail string) (int64, error) {
+func insertAuditAndBump(ctx context.Context, queries *sqlc.Queries, user models.User, action, detail, entityType, entityID string) (int64, error) {
 	if err := queries.InsertAuditEvent(ctx, sqlc.InsertAuditEventParams{
 		WorkspaceID: user.WorkspaceID,
 		Actor:       user.Name,
+		ActorUserID: pgtype.Text{String: user.ID, Valid: user.ID != ""},
 		Action:      action,
 		Detail:      detail,
+		EntityType:  pgtype.Text{String: entityType, Valid: entityType != ""},
+		EntityID:    pgtype.Text{String: entityID, Valid: entityID != ""},
 	}); err != nil {
 		return 0, fmt.Errorf("insert audit: %w", err)
 	}
