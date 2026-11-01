@@ -295,29 +295,35 @@ func (q *Queries) GetWorkspaceVersion(ctx context.Context, workspaceID string) (
 }
 
 const insertAuditEvent = `-- name: InsertAuditEvent :exec
-INSERT INTO public.pblg_audit (workspace_id, actor, action, detail)
-VALUES ($1, $2, $3, $4)
+INSERT INTO public.pblg_audit (workspace_id, actor, actor_user_id, action, detail, entity_type, entity_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 `
 
 type InsertAuditEventParams struct {
-	WorkspaceID string `json:"workspace_id"`
-	Actor       string `json:"actor"`
-	Action      string `json:"action"`
-	Detail      string `json:"detail"`
+	WorkspaceID string      `json:"workspace_id"`
+	Actor       string      `json:"actor"`
+	ActorUserID pgtype.Text `json:"actor_user_id"`
+	Action      string      `json:"action"`
+	Detail      string      `json:"detail"`
+	EntityType  pgtype.Text `json:"entity_type"`
+	EntityID    pgtype.Text `json:"entity_id"`
 }
 
 func (q *Queries) InsertAuditEvent(ctx context.Context, arg InsertAuditEventParams) error {
 	_, err := q.db.Exec(ctx, insertAuditEvent,
 		arg.WorkspaceID,
 		arg.Actor,
+		arg.ActorUserID,
 		arg.Action,
 		arg.Detail,
+		arg.EntityType,
+		arg.EntityID,
 	)
 	return err
 }
 
 const listAuditEventsByWorkspace = `-- name: ListAuditEventsByWorkspace :many
-SELECT id, actor, action, detail, created_at
+SELECT id, actor, actor_user_id, action, detail, entity_type, entity_id, created_at
 FROM public.pblg_audit
 WHERE workspace_id = $1
 ORDER BY id DESC
@@ -330,11 +336,14 @@ type ListAuditEventsByWorkspaceParams struct {
 }
 
 type ListAuditEventsByWorkspaceRow struct {
-	ID        int64              `json:"id"`
-	Actor     string             `json:"actor"`
-	Action    string             `json:"action"`
-	Detail    string             `json:"detail"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	ID          int64              `json:"id"`
+	Actor       string             `json:"actor"`
+	ActorUserID pgtype.Text        `json:"actor_user_id"`
+	Action      string             `json:"action"`
+	Detail      string             `json:"detail"`
+	EntityType  pgtype.Text        `json:"entity_type"`
+	EntityID    pgtype.Text        `json:"entity_id"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
 func (q *Queries) ListAuditEventsByWorkspace(ctx context.Context, arg ListAuditEventsByWorkspaceParams) ([]ListAuditEventsByWorkspaceRow, error) {
@@ -349,8 +358,66 @@ func (q *Queries) ListAuditEventsByWorkspace(ctx context.Context, arg ListAuditE
 		if err := rows.Scan(
 			&i.ID,
 			&i.Actor,
+			&i.ActorUserID,
 			&i.Action,
 			&i.Detail,
+			&i.EntityType,
+			&i.EntityID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAuditEventsPage = `-- name: ListAuditEventsPage :many
+SELECT id, actor, actor_user_id, action, detail, entity_type, entity_id, created_at
+FROM public.pblg_audit
+WHERE workspace_id = $1
+  AND id < $2
+ORDER BY id DESC
+LIMIT $3
+`
+
+type ListAuditEventsPageParams struct {
+	WorkspaceID string `json:"workspace_id"`
+	BeforeID    int64  `json:"before_id"`
+	RowLimit    int32  `json:"row_limit"`
+}
+
+type ListAuditEventsPageRow struct {
+	ID          int64              `json:"id"`
+	Actor       string             `json:"actor"`
+	ActorUserID pgtype.Text        `json:"actor_user_id"`
+	Action      string             `json:"action"`
+	Detail      string             `json:"detail"`
+	EntityType  pgtype.Text        `json:"entity_type"`
+	EntityID    pgtype.Text        `json:"entity_id"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) ListAuditEventsPage(ctx context.Context, arg ListAuditEventsPageParams) ([]ListAuditEventsPageRow, error) {
+	rows, err := q.db.Query(ctx, listAuditEventsPage, arg.WorkspaceID, arg.BeforeID, arg.RowLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAuditEventsPageRow
+	for rows.Next() {
+		var i ListAuditEventsPageRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Actor,
+			&i.ActorUserID,
+			&i.Action,
+			&i.Detail,
+			&i.EntityType,
+			&i.EntityID,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err

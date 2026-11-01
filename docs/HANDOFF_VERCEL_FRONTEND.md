@@ -68,6 +68,8 @@ Berlaku untuk `fetch`, `EventSource`, dan tautan unduhan.
 | `POST /api/password` | `PUT /api/v1/auth/password` |
 | `GET /api/state` | `GET /api/v1/umkm/state` |
 | `GET /api/suggestions` | `GET /api/v1/umkm/suggestions` |
+| Antrean selisih (baru) | `GET /api/v1/umkm/exceptions` |
+| Riwayat lengkap (baru) | `GET /api/v1/umkm/audit?before_id=...&limit=...` |
 | `POST /api/imports/preview` | `POST /api/v1/umkm/imports/preview` |
 | `POST /api/imports` | `POST /api/v1/umkm/imports` |
 | `POST /api/imports/{id}/cancel` | `POST /api/v1/umkm/imports/{id}/cancel` |
@@ -93,10 +95,10 @@ Perhatikan perubahan method: ganti password memakai `PUT`, bukan `POST`.
 
 `GET /api/v1/umkm/suggestions` mengembalikan **array langsung**, bukan objek.
 
-`GET /api/v1/config` tidak memiliki `realtime`:
+`GET /api/v1/config` tidak memiliki `realtime`, tetapi kini memiliki `limits`:
 
 ```json
-{ "kind": "umkm", "brand": "Easy Financial Audit", "tagline": "...", "roles": ["owner"] }
+{ "kind": "umkm", "brand": "Easy Financial Audit", "tagline": "...", "roles": ["owner"], "limits": { "max_import_rows": 500, "max_csv_bytes": 1048576, "max_entries": 10000 } }
 ```
 
 Error selalu memakai bentuk berikut. Frontend harus membaca `message`, bukan

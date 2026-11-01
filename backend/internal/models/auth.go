@@ -52,4 +52,5 @@ type ConfigResponse struct {
 	Brand   string   `json:"brand"`
 	Tagline string   `json:"tagline"`
 	Roles   []string `json:"roles"`
+	Limits  Limits   `json:"limits"`
 }

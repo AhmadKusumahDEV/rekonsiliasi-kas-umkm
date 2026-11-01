@@ -317,7 +317,8 @@ Temu Kas memakai room berdasarkan workspace. Kemampuan bus/presence pada package
 2. app.js menjalankan init().
 3. GET /api/v1/config memberi identitas produk.
 4. GET /api/v1/auth/me mengecek sesi.
-5. Jika 401, UI menampilkan login. Jika valid, UI mengambil state dan suggestions.
+5. Jika 401, UI menampilkan login. Jika valid, UI mengambil state, suggestions,
+   dan exceptions.
 6. UI membentuk shell dan halaman, lalu membuka SSE.
 
 Alamat seperti /#entries adalah **navigasi UI di browser**. Itu bukan endpoint API dan bukan route Go untuk mengambil transaksi.
@@ -511,7 +512,7 @@ SSE handshake bisa menggunakan respons penolakan dari package stream; jangan men
 
 ## 8. Daftar seluruh endpoint integrasi
 
-**17 endpoint utama.** OPTIONS untuk preflight/CORS bukan fitur bisnis tambahan.
+**19 endpoint utama.** OPTIONS untuk preflight/CORS bukan fitur bisnis tambahan.
 
 | ID | Method dan path | Sesi | CSRF | Fungsi |
 | --- | --- | --- | --- | --- |
@@ -525,13 +526,15 @@ SSE handshake bisa menggunakan respons penolakan dari package stream; jangan men
 | E08 | PUT /api/v1/auth/password | Ya | Ya | Ganti password |
 | E09 | GET /api/v1/umkm/state | Ya | Tidak | Data workspace |
 | E10 | GET /api/v1/umkm/suggestions | Ya | Tidak | Usulan pasangan |
-| E11 | POST /api/v1/umkm/imports/preview | Ya | Ya | Periksa CSV |
-| E12 | POST /api/v1/umkm/imports | Ya | Ya | Simpan CSV |
-| E13 | POST /api/v1/umkm/imports/:id/cancel | Ya | Ya | Batalkan batch |
-| E14 | POST /api/v1/umkm/allocations | Ya | Ya | Simpan pasangan |
-| E15 | POST /api/v1/umkm/allocations/:id/undo | Ya | Ya | Balikkan pasangan |
-| E16 | GET /api/v1/umkm/export | Ya | Tidak | Unduh laporan |
-| E17 | GET /api/v1/umkm/events | Ya | Tidak | Stream perubahan |
+| E11 | GET /api/v1/umkm/exceptions | Ya | Tidak | Antrean selisih |
+| E12 | POST /api/v1/umkm/imports/preview | Ya | Ya | Periksa CSV |
+| E13 | POST /api/v1/umkm/imports | Ya | Ya | Simpan CSV |
+| E14 | POST /api/v1/umkm/imports/:id/cancel | Ya | Ya | Batalkan batch |
+| E15 | POST /api/v1/umkm/allocations | Ya | Ya | Simpan pasangan |
+| E16 | POST /api/v1/umkm/allocations/:id/undo | Ya | Ya | Balikkan pasangan |
+| E17 | GET /api/v1/umkm/export | Ya | Tidak | Unduh laporan |
+| E18 | GET /api/v1/umkm/events | Ya | Tidak | Stream perubahan |
+| E19 | GET /api/v1/umkm/audit | Ya | Tidak | Halaman audit workspace |
 
 ## 9. Penjelasan setiap endpoint
 
@@ -562,11 +565,13 @@ Memberi konfigurasi publik agar UI mengetahui produk dan role yang tersedia.
   "kind": "umkm",
   "brand": "Easy Financial Audit",
   "tagline": "Setiap penerimaan, jelas pasangannya.",
-  "roles": ["owner"]
+  "roles": ["owner"],
+  "limits": {"max_import_rows": 500, "max_csv_bytes": 1048576, "max_entries": 10000}
 }
 ```
 
-Tidak mengembalikan password, DSN, atau environment privat. Service: Config().
+Tidak mengembalikan password, DSN, atau environment privat. Frontend memakai
+`limits` sebagai sumber angka batas. Service: Config().
 
 ### E04 — POST /api/v1/auth/register
 
@@ -649,11 +654,26 @@ Mengambil data untuk seluruh halaman kas:
   "workspace": {"id": "contoh-id", "name": "Usaha Contoh", "code": "CONTOH", "version": 3},
   "state": {"entries": [], "imports": [], "allocations": []},
   "users": [],
-  "events": []
+  "events": [
+    {
+      "id": 42,
+      "actor": "Ayu",
+      "action": "Konfirmasi pasangan",
+      "detail": "Alokasi penerimaan ke penjualan",
+      "entity_type": "allocation",
+      "entity_id": "0123456789abcdef0123456789abcdef",
+      "actor_user_id": "fedcba9876543210fedcba9876543210",
+      "created_at": "2026-11-01T08:00:00Z"
+    }
+  ]
 }
 ```
 
-entries berisi penjualan/penerimaan. imports berisi batch. allocations berisi keputusan. events berisi audit terbaru, dibatasi 120 baris oleh service.
+entries berisi penjualan/penerimaan. imports berisi batch. allocations berisi
+keputusan. events berisi audit terbaru, dibatasi 120 baris oleh service.
+`entity_type` saat ini `import` atau `allocation`; `entity_id` dan
+`actor_user_id` dapat `null` pada data historis. Jangan menebak ID dari teks
+`detail`.
 
 Pencarian, filter dan paging 20/50/100 dilakukan frontend atas data state. Tidak ada parameter ?limit=20 yang otomatis membuat endpoint ini menjadi server pagination. Service: GetState().
 
@@ -667,7 +687,33 @@ Respons berupa **array langsung**, bukan objek dengan field suggestions.
 
 Setiap item ketika ada kandidat mempunyai sale, receipt dan reason. Frontend menggabungkan hasil ini ke state tampilannya sendiri. Endpoint tidak menyimpan alokasi. Service: GetSuggestions().
 
-### E11 — POST /api/v1/umkm/imports/preview
+### E11 — GET /api/v1/umkm/exceptions
+
+Mengembalikan array entry yang masih membutuhkan keputusan. Endpoint ini
+read-only dan tidak membutuhkan CSRF karena memakai GET. Contoh:
+
+```json
+[
+  {
+    "entry": {"id": "0123456789abcdef0123456789abcdef", "kind": "sale", "amount": 150000},
+    "status": "unmatched",
+    "remaining": 150000,
+    "candidate_ids": ["fedcba9876543210fedcba9876543210"],
+    "candidate_count": 1,
+    "suggestion_available": true,
+    "reason": "Kandidat unik tersedia; belum dikonfirmasi."
+  }
+]
+```
+
+Status `partial` berarti sudah ada alokasi tetapi masih ada sisa; `ambiguous`
+berarti kandidat tidak unik di kedua sisi. `candidate_ids` adalah ID kandidat
+lawan untuk ditampilkan; `candidate_count` adalah jumlahnya. Jendela
+pencocokan 0–3 hari. `suggestion_available` hanya benar untuk pasangan yang
+juga muncul di suggestions. Service:
+ListExceptions().
+
+### E12 — POST /api/v1/umkm/imports/preview
 
 File dikirim sebagai **teks CSV di dalam JSON**, bukan multipart upload.
 
@@ -708,7 +754,7 @@ ID dan checksum di atas ilustrasi; API membuat nilainya sendiri. Preview belum m
 
 Batas utama: 1 MiB, 500 baris, tujuh kolom, source ID maksimal 80 byte menurut parser, field CSV maksimal 400 byte menurut parser, tanggal valid, nominal integer positif maksimal satu triliun. BOM UTF-8 diterima. Service: PreviewImport() dan parseCSV().
 
-### E12 — POST /api/v1/umkm/imports
+### E13 — POST /api/v1/umkm/imports
 
 Body sama dengan preview. Tidak perlu mengirim checksum atau rows hasil preview; server menghitung dan memvalidasi ulang.
 
@@ -726,13 +772,13 @@ File identik yang masih aktif dapat menghasilkan duplicate true. Baris identik d
 
 Workspace maksimal 10.000 entri. Batch canceled tidak bisa dipulihkan dengan mengimpor file identik. Service: CommitImport().
 
-### E13 — POST /api/v1/umkm/imports/:id/cancel
+### E14 — POST /api/v1/umkm/imports/:id/cancel
 
 :id adalah ID batch, bukan source ID CSV atau ID salah satu entry. Body {}.
 
 Respons 200 dengan ok true. Jika batch masih terhubung ke alokasi aktif, 409. Entri dan batch ditandai canceled; tidak dihapus permanen. Service: CancelImport().
 
-### E14 — POST /api/v1/umkm/allocations
+### E15 — POST /api/v1/umkm/allocations
 
 Request:
 
@@ -749,15 +795,15 @@ Request:
 
 ID harus 32 digit hex lowercase. key dibuat baru untuk keputusan baru, dan dipakai kembali untuk mencoba ulang keputusan yang sama. Sukses 201 berupa Allocation langsung, dengan id, sale_id, receipt_id, amount, fee, reason, created_at dan reversed.
 
-Aturan: amount positif; fee tidak negatif; amount <= sisa receipt; amount+fee <= sisa sale. Fee positif memerlukan alasan setidaknya 5 byte setelah trim; alasan maksimal 400 rune menurut service. Key yang sama dengan isi berbeda menghasilkan 409. Service: Allocate() dan validateAllocation().
+Aturan: amount positif; fee tidak negatif; amount <= sisa receipt; amount+fee <= sisa sale. Fee positif atau alokasi yang menyisakan saldo memerlukan alasan setidaknya 5 byte setelah trim; alasan maksimal 400 rune menurut service. Key yang sama dengan isi identik mengembalikan allocation lama tanpa audit/version/SSE baru; isi berbeda menghasilkan 409. Service: Allocate() dan validateAllocation().
 
-### E15 — POST /api/v1/umkm/allocations/:id/undo
+### E16 — POST /api/v1/umkm/allocations/:id/undo
 
 :id adalah ID alokasi, body {}. Respons 200 dengan ok true.
 
 Alokasi menjadi reversed, sisa saldo dihitung tanpa alokasi itu. Ini bukan cara menghapus catatan penjualan. Service: UndoAllocation().
 
-### E16 — GET /api/v1/umkm/export
+### E17 — GET /api/v1/umkm/export
 
 Respons bukan JSON. Content-Type text/csv; charset=utf-8, Content-Disposition attachment, nama file umkm-rekap.csv.
 
@@ -769,7 +815,7 @@ id,jenis,tanggal,referensi,nama,nominal,sisa,kanal,status,catatan
 
 CSV menyertakan BOM UTF-8, mengurutkan entri, menampilkan status aktif/batal, dan menetralkan teks awal formula spreadsheet. Hanya owner boleh ekspor. Service: ExportCSV() dan buildExportCSV().
 
-### E17 — GET /api/v1/umkm/events
+### E18 — GET /api/v1/umkm/events
 
 Koneksi SSE jangka panjang menggunakan cookie sesi. Tidak membawa body atau CSRF. Route dipasang jika manager SSE diberikan; cmd/api/main.go membuat dan menjalankan manager tersebut.
 
@@ -791,6 +837,19 @@ data: 42
 Batas konfigurasi integrasi: 5 koneksi per user, 10.000 total, maksimal umur koneksi 12 jam, antrean kirim 64. Jumlah batas bukan bukti kapasitas sudah diuji dengan pengguna sebanyak itu.
 
 OPTIONS pada path ini juga didaftarkan untuk kebutuhan browser/CORS. Package SSE menangani stream secara terpisah dari sessionMiddleware biasa, tetapi autentikasinya tetap memanggil GetSession().
+
+### E19 — GET /api/v1/umkm/audit
+
+Mengambil audit workspace per halaman untuk halaman Riwayat. Query opsional:
+
+```text
+GET /api/v1/umkm/audit?before_id=42&limit=50
+```
+
+`limit` default 50 dan maksimal 100. `before_id` adalah cursor; gunakan ID audit
+tertua pada halaman sebelumnya untuk halaman berikutnya. Array kosong berarti
+sudah tidak ada data. Endpoint ini membaca workspace dari sesi dan tidak menerima
+workspace_id dari browser. Service: ListAuditEvents().
 
 ## 10. Contoh mencoba API dari browser
 
@@ -831,9 +890,10 @@ Contoh berikut membaca data saja sesudah login demo. Login membuat sesi baru pad
   });
   const data = await request("/api/v1/umkm/state");
   const suggestions = await request("/api/v1/umkm/suggestions");
+  const exceptions = await request("/api/v1/umkm/exceptions");
   console.log({ brand: config.brand, usaha: data.workspace.name,
     jumlahTransaksi: data.state.entries.length,
-    jumlahUsulan: suggestions.length });
+    jumlahUsulan: suggestions.length, jumlahSelisih: exceptions.length });
 
   // Untuk mutasi berikutnya, gunakan login.csrf sebagai argumen keempat.
   // Jangan mencetak atau membagikan cookie, CSRF, atau credential privat.

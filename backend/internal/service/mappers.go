@@ -62,12 +62,36 @@ func mapUser(row sqlc.ListUsersByWorkspaceRow) models.User {
 
 func mapAuditEvent(row sqlc.ListAuditEventsByWorkspaceRow) models.AuditEvent {
 	return models.AuditEvent{
-		ID:        row.ID,
-		Actor:     row.Actor,
-		Action:    row.Action,
-		Detail:    row.Detail,
-		CreatedAt: timeValue(row.CreatedAt),
+		ID:          row.ID,
+		Actor:       row.Actor,
+		Action:      row.Action,
+		Detail:      row.Detail,
+		EntityType:  textPointer(row.EntityType),
+		EntityID:    textPointer(row.EntityID),
+		ActorUserID: textPointer(row.ActorUserID),
+		CreatedAt:   timeValue(row.CreatedAt),
 	}
+}
+
+func mapAuditPageEvent(row sqlc.ListAuditEventsPageRow) models.AuditEvent {
+	return models.AuditEvent{
+		ID:          row.ID,
+		Actor:       row.Actor,
+		Action:      row.Action,
+		Detail:      row.Detail,
+		EntityType:  textPointer(row.EntityType),
+		EntityID:    textPointer(row.EntityID),
+		ActorUserID: textPointer(row.ActorUserID),
+		CreatedAt:   timeValue(row.CreatedAt),
+	}
+}
+
+func textPointer(value pgtype.Text) *string {
+	if !value.Valid {
+		return nil
+	}
+	text := value.String
+	return &text
 }
 
 func dateString(value pgtype.Date) string {
