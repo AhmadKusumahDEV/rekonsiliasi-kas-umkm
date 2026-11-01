@@ -52,11 +52,14 @@ id,tanggal,referensi,nama,nominal,kanal,catatan
 | REC-02 | Kandidat unik di kedua sisi; kandidat ambigu tidak dipilih otomatis |
 | REC-03 | Hanya konfirmasi pemilik menyimpan keputusan |
 | REC-04 | Amount > 0, fee >= 0; amount <= sisa penerimaan; amount + fee <= sisa penjualan |
-| REC-05 | Fee > 0 memerlukan alasan minimal 5 karakter; alasan maksimal 400 |
+| REC-05 | Fee > 0 atau alokasi yang meninggalkan sisa pada salah satu sisi memerlukan alasan minimal 5 karakter; alasan maksimal 400 |
 | REC-06 | Beberapa alokasi mendukung pembayaran sebagian dan penerimaan gabungan |
-| REC-07 | Key 32 hex untuk idempotensi; ulang identik tidak menduplikasi, isi berbeda ditolak |
+| REC-07 | Key 32 hex untuk idempotensi; ulang identik mengembalikan allocation lama tanpa audit/version/SSE baru, isi berbeda ditolak |
 | REC-08 | Lock workspace dan transaksi mencegah pemakaian saldo berlebih saat dua penulis bersamaan |
 | REC-09 | Undo menandai reversed dan mengembalikan saldo tanpa menghapus riwayat |
+| REC-10 | `GET /umkm/exceptions` mengembalikan entry aktif yang belum lunas, dengan status `unmatched`, `partial`, atau `ambiguous` |
+| REC-11 | `candidate_ids`/`candidate_count` memuat kandidat satu sisi pada jendela 0–3 hari; `suggestion_available` hanya benar bila pasangan unik dua arah dan ada di suggestions |
+| REC-12 | `GET /umkm/audit` memakai cursor `before_id` dan limit 1–100; state tetap memuat 120 audit terbaru untuk dashboard |
 
 Sisa penjualan = nominal − amount aktif − fee aktif. Sisa penerimaan = nominal − amount aktif. Fee tidak menambah penerimaan. Penerimaan bukan laba.
 
@@ -66,7 +69,7 @@ Prefix **/api/v1** untuk semua path di tabel.
 
 | Method | Path | Hasil |
 | --- | --- | --- |
-| GET | /config | kind, brand, tagline, roles |
+| GET | /config | kind, brand, tagline, roles, limits |
 | POST | /auth/register | 201 user + csrf dan cookie |
 | POST | /auth/login | 200 user + csrf dan cookie |
 | GET | /auth/me | user + csrf |
@@ -74,6 +77,8 @@ Prefix **/api/v1** untuk semua path di tabel.
 | PUT | /auth/password | Ganti password dan akhiri seluruh sesi |
 | GET | /umkm/state | workspace, state, users, events |
 | GET | /umkm/suggestions | Kandidat unik |
+| GET | /umkm/exceptions | Antrean entry yang masih perlu keputusan |
+| GET | /umkm/audit | Halaman audit workspace dengan cursor before_id |
 | POST | /umkm/imports/preview | Validasi tanpa tulis |
 | POST | /umkm/imports | Commit batch |
 | POST | /umkm/imports/:id/cancel | Pembatalan batch |
@@ -93,12 +98,16 @@ Error JSON: {code,status,message,request_id}. 400 input; 401 sesi/kredensial; 40
 | pblg_workspaces | Usaha dan version mutasi |
 | pblg_users | Pemilik dan hash password |
 | pblg_sessions | Hash token, CSRF, expiry |
-| pblg_audit | Aktor, aksi, detail dan waktu |
+| pblg_audit | Aktor, aksi, detail, waktu, entity_type/entity_id, actor_user_id |
 | umkm_imports | Batch, checksum, jenis, waktu cancel |
 | umkm_entries | Penjualan/penerimaan, source ID |
 | umkm_allocations | Pasangan, nominal, biaya, alasan, waktu reversal |
 
-000001 adalah baseline historis; 000002 normalisasi; 000003 backfill idempotent. Tabel jobs/photos dan state JSON historis tidak dihapus. Endpoint Grader/Facility tidak didaftarkan. Integrasi UI tidak menambah migration atau mengubah generated sqlc.
+000001 adalah baseline historis; 000002 normalisasi; 000003 backfill idempotent;
+000004 menambahkan relasi audit ke import/allocation dan pelaku. Tabel
+jobs/photos dan state JSON historis tidak dihapus. Endpoint Grader/Facility
+tidak didaftarkan. Semua perubahan schema harus melalui migration baru dan
+generated sqlc harus diregenerasi, bukan diedit manual.
 
 ## Ketahanan UI
 
@@ -147,4 +156,8 @@ Build statis menyalin landing, app.html dan aset ke `dist`. Tidak ada
 endpoint, schema, secret, dokumentasi atau server dev yang dipublikasikan
 sebagai bagian landing. Detail edit dan pengujian: [panduan landing](../landing/README.md).
 
-[Demo](DEMO.md), [API](INTEGRATION.md), [hosting](HOSTING.md), [tes](VERIFICATION.md). SSE berasal dari main tim terbaru dan terhubung ke EventSource frontend. Tidak ada perubahan Dockerfile, schema, atau kontrak API versi tim.
+[Demo](DEMO.md), [API](INTEGRATION.md), [hosting](HOSTING.md), [tes](VERIFICATION.md).
+SSE berasal dari main tim terbaru dan terhubung ke EventSource frontend.
+Working tree `feat/mvp-gap-backend` menambahkan migration `000004`, `limits`,
+`GET /umkm/exceptions`, dan field audit entity; perubahan itu baru aktif setelah
+branch di-merge, image dibangun ulang, dan migration dijalankan.

@@ -15,6 +15,9 @@ type PblgAudit struct {
 	Action      string             `json:"action"`
 	Detail      string             `json:"detail"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	EntityType  pgtype.Text        `json:"entity_type"`
+	EntityID    pgtype.Text        `json:"entity_id"`
+	ActorUserID pgtype.Text        `json:"actor_user_id"`
 }
 
 type PblgJob struct {

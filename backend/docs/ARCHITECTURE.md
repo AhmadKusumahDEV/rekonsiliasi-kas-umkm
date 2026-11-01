@@ -77,7 +77,8 @@ API domain memakai prefix `/api/v1`. Endpoint publik:
 Group privat memakai `sessionMiddleware` (cookie + CSRF):
 
 - `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`, `PUT /api/v1/auth/password`
-- `GET /api/v1/umkm/state`, `GET /api/v1/umkm/suggestions`
+- `GET /api/v1/umkm/state`, `GET /api/v1/umkm/suggestions`,
+  `GET /api/v1/umkm/exceptions`, `GET /api/v1/umkm/audit`
 - `POST /api/v1/umkm/imports/preview`, `POST /api/v1/umkm/imports`, `POST /api/v1/umkm/imports/:id/cancel`
 - `POST /api/v1/umkm/allocations`, `POST /api/v1/umkm/allocations/:id/undo`, `GET /api/v1/umkm/export`
 

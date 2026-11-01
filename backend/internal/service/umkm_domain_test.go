@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -58,6 +59,12 @@ func TestSuggestionsRequireUniqueCandidateInBothDirections(t *testing.T) {
 	if matches := suggestions([]models.Entry{sale, receipt, second}, nil); len(matches) != 0 {
 		t.Fatalf("ambiguous pair matched: %+v", matches)
 	}
+
+	spaced := sale
+	spaced.Reference = "  INV-1  "
+	if matches := suggestions([]models.Entry{spaced, receipt}, nil); len(matches) != 1 {
+		t.Fatalf("trim-normalized reference did not match: %+v", matches)
+	}
 }
 
 func TestAllocationRemainingAndValidation(t *testing.T) {
@@ -73,6 +80,12 @@ func TestAllocationRemainingAndValidation(t *testing.T) {
 	}
 	if err := validateAllocation(sale, receipt, active, 1000, 1000, "x"); !errors.Is(err, pkgErr.ErrInvalidRequest) {
 		t.Fatalf("short fee reason error = %v, want invalid request", err)
+	}
+	if err := validateAllocation(sale, receipt, active, 150000, 0, ""); !errors.Is(err, pkgErr.ErrInvalidRequest) {
+		t.Fatalf("partial allocation without reason error = %v, want invalid request", err)
+	}
+	if err := validateAllocation(sale, receipt, active, 150000, 0, "cicilan pertama"); err != nil {
+		t.Fatalf("partial allocation with reason rejected: %v", err)
 	}
 
 	allocated := []models.Allocation{{SaleID: sale.ID, ReceiptID: receipt.ID, Amount: 100000, Fee: 5000}}
@@ -115,5 +128,85 @@ func TestExportNeutralizesSpreadsheetFormulas(t *testing.T) {
 	}
 	if !strings.Contains(text, "'=HYPERLINK") || !strings.Contains(text, "'+catatan") {
 		t.Fatalf("formula was not neutralized: %s", text)
+	}
+}
+
+func TestLimitsConstants(t *testing.T) {
+	if MaxImportRows != 500 || MaxCSVBytes != 1<<20 || MaxEntries != 10_000 {
+		t.Fatalf("unexpected limits: rows=%d bytes=%d entries=%d", MaxImportRows, MaxCSVBytes, MaxEntries)
+	}
+}
+
+func TestParseCSVEnforcesRowLimit(t *testing.T) {
+	var raw strings.Builder
+	raw.WriteString("id,tanggal,referensi,nama,nominal,kanal,catatan\n")
+	for i := 0; i < MaxImportRows; i++ {
+		fmt.Fprintf(&raw, "S%d,2026-10-01,REF%d,Ayu,1000,transfer,\n", i, i)
+	}
+	if _, _, _, err := parseCSV("sale", raw.String()); err != nil {
+		t.Fatalf("500 rows rejected: %v", err)
+	}
+	fmt.Fprintf(&raw, "S%d,2026-10-01,REF-LAST,Ayu,1000,transfer,\n", MaxImportRows)
+	if _, _, _, err := parseCSV("sale", raw.String()); err == nil {
+		t.Fatal("501 rows accepted")
+	}
+}
+
+func TestParseCSVEnforcesByteLimit(t *testing.T) {
+	raw := "id,tanggal,referensi,nama,nominal,kanal,catatan\n" + strings.Repeat("x", MaxCSVBytes)
+	if _, _, _, err := parseCSV("sale", raw); err == nil {
+		t.Fatal("oversize CSV accepted")
+	}
+}
+
+func TestExceptionsClassify(t *testing.T) {
+	sale := models.Entry{ID: "sale-1", Kind: "sale", Date: "2026-10-01", Reference: "INV-1", Channel: "transfer", Amount: 100000}
+	receipt := models.Entry{ID: "receipt-1", Kind: "receipt", Date: "2026-10-02", Reference: "inv-1", Channel: "transfer", Amount: 100000}
+
+	items := exceptions([]models.Entry{sale, receipt}, nil)
+	if len(items) != 2 {
+		t.Fatalf("unique pair exceptions = %+v, want both sides", items)
+	}
+	for _, item := range items {
+		if item.Status != "unmatched" || item.CandidateCount != 1 || len(item.CandidateIDs) != 1 || !item.SuggestionAvailable || !strings.Contains(item.Reason, "Kandidat unik") {
+			t.Fatalf("unique pair item = %+v", item)
+		}
+	}
+
+	second := receipt
+	second.ID = "receipt-2"
+	second.Date = "2026-10-03"
+	items = exceptions([]models.Entry{sale, receipt, second}, nil)
+	var ambiguous bool
+	for _, item := range items {
+		if item.Entry.ID == sale.ID && item.Status == "ambiguous" && item.CandidateCount == 2 && len(item.CandidateIDs) == 2 && strings.Contains(item.Reason, "2 kandidat") {
+			ambiguous = true
+		}
+	}
+	if !ambiguous {
+		t.Fatalf("ambiguous sale not detected: %+v", items)
+	}
+	for _, item := range items {
+		if item.Entry.Kind == "receipt" && (item.Status != "ambiguous" || item.CandidateCount != 1 || len(item.CandidateIDs) != 1 || item.SuggestionAvailable) {
+			t.Fatalf("reverse-side ambiguity not retained: %+v", item)
+		}
+	}
+
+	bigSale := sale
+	bigSale.ID = "sale-2"
+	bigSale.Amount = 200000
+	bigReceipt := receipt
+	bigReceipt.ID = "receipt-3"
+	allocations := []models.Allocation{{SaleID: bigSale.ID, ReceiptID: bigReceipt.ID, Amount: 100000}}
+	items = exceptions([]models.Entry{bigSale, bigReceipt}, allocations)
+	if len(items) != 1 || items[0].Entry.ID != bigSale.ID || items[0].Status != "partial" || items[0].Remaining != 100000 || items[0].CandidateCount != 0 || items[0].SuggestionAvailable {
+		t.Fatalf("partial exception = %+v", items)
+	}
+
+	canceled := sale
+	canceled.ID = "sale-canceled"
+	canceled.Canceled = true
+	if items = exceptions([]models.Entry{canceled}, nil); len(items) != 0 {
+		t.Fatalf("canceled entry appeared in exceptions: %+v", items)
 	}
 }

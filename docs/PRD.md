@@ -1,5 +1,9 @@
 # Product Requirements Document — Temu Kas
 
+Status: draft untuk review Project Owner. Belum ada persetujuan pilot data
+nyata yang tercatat di repo. Angka target di bawah adalah rencana pengujian,
+bukan hasil yang sudah dicapai.
+
 ## Tujuan
 
 Pemilik usaha perlu menelusuri setiap penjualan sampai pembayaran diterima. Selisih bisa berasal dari pembayaran bertahap, tanggal pencairan, biaya layanan, atau satu pencairan untuk beberapa pesanan. Selisih tidak otomatis berarti kehilangan uang.
@@ -26,13 +30,15 @@ Pengguna aktif adalah pemilik UMKM. Registrasi membuat akun owner dan ruang kerj
 | P-03 | Hindari data ganda | File sama tidak menambah data; ID dengan isi berbeda ditolak |
 | P-04 | Usulan dapat dijelaskan | Referensi, kanal, nominal, tanggal dan keunikan kedua sisi diperiksa |
 | P-05 | Keputusan di tangan pemilik | Usulan tidak otomatis menjadi alokasi |
-| P-06 | Pembayaran realistis | Alokasi sebagian/gabungan dan biaya tidak melewati sisa saldo |
+| P-06 | Pembayaran realistis | Alokasi sebagian/gabungan dan biaya tidak melewati sisa saldo; alasan wajib untuk fee atau sisa |
 | P-07 | Koreksi terlacak | Undo dan pembatalan tidak menghapus audit |
 | P-08 | Total konsisten | Ringkasan memakai seluruh data aktif, bukan halaman tabel |
 | P-09 | Laporan berguna | CSV mempertahankan status dan aman terhadap formula spreadsheet |
 | P-10 | Koneksi gagal ditangani | Error terlihat, isian bertahan, submit ganda diblokir |
 | P-11 | Bisa dipakai di HP | Navigasi mobile, tabel scroll, dialog dan reduced motion |
 | P-12 | Dapat dilanjutkan tim | UI memakai API versi tim dan mendukung hosting satu domain HTTPS |
+| P-13 | Antrean selisih jelas | Entry belum lunas, parsial, atau ambigu tampil dengan sisa dan alasan |
+| P-14 | Jejak dapat ditelusuri | Audit menunjuk import/allocation yang berubah; data lama tetap terbaca tanpa menebak ID |
 
 ## Halaman
 
@@ -42,7 +48,9 @@ Hero memakai tiga foto responsif dengan kontrol manual dan autoplay yang
 bisa dijeda. Landing tidak meminta akses atau data transaksi.
 
 Aplikasi pada `/app`: Masuk/daftar, Ringkasan, Transaksi, Cocokkan kas,
-Impor CSV, Riwayat, Laporan, dan Pengaturan. Identitas EFA, form dan fitur
+Impor CSV, Riwayat, Laporan, dan Pengaturan. Antrean selisih menjadi bagian
+dari alur Cocokkan kas setelah frontend memakai endpoint exceptions.
+Identitas EFA, form dan fitur
 aplikasi tetap dipertahankan. Tautan hash aplikasi lama di root dialihkan.
 Sumber analisis dan batas klaim dicatat pada [SOURCES](../landing/SOURCES.md).
 
@@ -64,6 +72,12 @@ atau antrean perubahan offline. Source dan panduan ada di [pwa/](../pwa/README.m
 ## Keberhasilan yang perlu diukur
 
 Bandingkan waktu menyelesaikan pencocokan, jumlah koreksi pasangan, dan selisih tanpa penjelasan sebelum/sesudah memakai aplikasi pada dataset yang sama. Tetapkan target setelah baseline diukur, jangan mengarang angka manfaat.
+
+Target uji yang diusulkan di PDF — bukan hasil yang sudah tercapai: 100 baris
+data sintetis dengan pasangan acuan, tidak ada pasangan otomatis yang salah,
+100% kasus ambigu ditahan untuk manusia, minimal 90% dari 10 skenario lulus,
+nol bug kritis terbuka, dan penurunan median waktu pemeriksaan minimal 20% pada
+tugas yang setara. Baseline lapangan belum tersedia.
 
 ## Referensi
 

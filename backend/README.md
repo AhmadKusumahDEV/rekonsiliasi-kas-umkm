@@ -5,8 +5,9 @@ layer yang mengikuti `init-project.md`. Project ini sengaja tidak memakai
 `vendor`; dependency diambil lewat Go module seperti kebiasaan project
 `go-chat`.
 
-Status saat ini: autentikasi sesi dan CSRF, alur UMKM (import, alokasi, undo,
-cancel, export), serta stream SSE untuk sinkronisasi state sudah berjalan.
+Status saat ini: autentikasi sesi dan CSRF, alur UMKM (import, suggestions,
+exceptions, alokasi, undo, cancel, export), audit entity, serta stream SSE untuk
+sinkronisasi state sudah berjalan.
 Migration baseline PBL, tabel UMKM ternormalisasi, backfill dari JSONB, dan
 generated sqlc tersedia; endpoint aktif berada di bawah `/api/v1` dan `/health`.
 
@@ -56,6 +57,8 @@ POST /api/v1/auth/logout
 PUT  /api/v1/auth/password
 GET  /api/v1/umkm/state
 GET  /api/v1/umkm/suggestions
+GET  /api/v1/umkm/exceptions
+GET  /api/v1/umkm/audit
 POST /api/v1/umkm/imports/preview
 POST /api/v1/umkm/imports
 POST /api/v1/umkm/imports/:id/cancel

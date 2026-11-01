@@ -71,6 +71,16 @@ func TestUMKMIntegrationFlow(t *testing.T) {
 	if len(matches) != 1 {
 		t.Fatalf("suggestions = %+v, want one match", matches)
 	}
+	var exceptions []models.Exception
+	decode(t, client.request(http.MethodGet, "/api/v1/umkm/exceptions", nil, false), &exceptions)
+	if len(exceptions) != 2 {
+		t.Fatalf("exceptions = %+v, want sale and receipt", exceptions)
+	}
+	for _, item := range exceptions {
+		if item.Status != "unmatched" || item.CandidateCount != 1 || len(item.CandidateIDs) != 1 || !item.SuggestionAvailable {
+			t.Fatalf("unexpected pending item: %+v", item)
+		}
+	}
 
 	allocationRequest := models.AllocationRequest{
 		SaleID:    matches[0].Sale.ID,
@@ -91,6 +101,15 @@ func TestUMKMIntegrationFlow(t *testing.T) {
 	decode(t, state, &stateBody)
 	if len(stateBody.State.Entries) != 2 || len(stateBody.State.Allocations) != 1 {
 		t.Fatalf("unexpected state: %+v", stateBody.State)
+	}
+	replay := client.request(http.MethodPost, "/api/v1/umkm/allocations", allocationRequest, true)
+	requireStatus(t, replay, http.StatusCreated)
+	var replayState models.StateResponse
+	decode(t, client.request(http.MethodGet, "/api/v1/umkm/state", nil, false), &replayState)
+	if replayState.Workspace.Version != stateBody.Workspace.Version ||
+		len(replayState.Events) != len(stateBody.Events) ||
+		len(replayState.State.Allocations) != len(stateBody.State.Allocations) {
+		t.Fatalf("idempotent allocation changed workspace: before=%+v after=%+v", stateBody, replayState)
 	}
 
 	export := client.request(http.MethodGet, "/api/v1/umkm/export", nil, false)
