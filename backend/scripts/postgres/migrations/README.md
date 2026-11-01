@@ -24,6 +24,9 @@ source untuk sqlc.
 - `000004_audit_entity` menambahkan `entity_type`, `entity_id`, dan
   `actor_user_id` pada audit. Data historis tetap `NULL`; foreign key pelaku
   memakai `ON DELETE SET NULL` agar audit tidak ikut hilang.
+- `000004` memakai `ON DELETE SET NULL (actor_user_id)` sehingga membutuhkan
+  PostgreSQL 15+. Compose dan CI memakai PostgreSQL 16; jangan targetkan versi
+  lama tanpa mengubah migration ini.
 - Penjelasan lengkap dan peringatan rollback ada di
   `docs/DATABASE_FROM_PBL.md`.
 

@@ -131,7 +131,7 @@ func (s *Service) ListExceptions(ctx context.Context, user models.User) ([]model
 		AccessMode: pgx.ReadOnly,
 	})
 	if err != nil {
-		return nil, pkgErr.ErrFailInitializeTx
+		return nil, pkgErr.New(pkgErr.ErrServiceUnavailable, "Database belum siap untuk memuat antrean selisih.")
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 	queries := sqlc.New(tx)
@@ -178,7 +178,7 @@ func (s *Service) ListAuditEvents(ctx context.Context, user models.User, beforeI
 		RowLimit:    limit,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("list audit page: %w", err)
+		return nil, pkgErr.New(pkgErr.ErrServiceUnavailable, "Database belum siap untuk memuat audit.")
 	}
 	events := make([]models.AuditEvent, 0, len(rows))
 	for _, row := range rows {

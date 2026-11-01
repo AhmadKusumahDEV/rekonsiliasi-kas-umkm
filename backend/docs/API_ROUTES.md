@@ -240,6 +240,7 @@ Status yang dikembalikan: `unmatched`, `partial`, atau `ambiguous`.
     "remaining": 50000,
     "candidate_ids": [],
     "candidate_count": 0,
+    "candidate_ids_truncated": false,
     "suggestion_available": false,
     "reason": "Pembayaran sebagian; sisa tagihan Rp50000."
   }
@@ -252,7 +253,9 @@ ID kandidat lawan untuk dipilih pengguna; `candidate_count`
 menghitung kandidat satu sisi dalam jendela 0–3 hari. Hanya
 `suggestion_available: true` yang menandakan pasangan sudah unik di kedua sisi
 dan tersedia di `GET /api/v1/umkm/suggestions`. Status `partial` selalu
-memprioritaskan sisa saldo yang belum dialokasikan.
+memprioritaskan sisa saldo yang belum dialokasikan. `candidate_ids` dibatasi 20
+per item; `candidate_ids_truncated` menandai pemotongan dan `candidate_count`
+tetap menghitung seluruh kandidat.
 
 ### Audit page
 
@@ -341,8 +344,9 @@ Cookie: rku_session=...
 `key` adalah idempotency key 32 karakter hex dan juga menjadi ID allocation.
 Response `201` adalah objek allocation. Amount penjualan = amount penjualan -
 (amount alokasi + fee); amount penerimaan = amount penerimaan - amount alokasi.
-`reason` wajib minimal 5 karakter bila `fee > 0` atau alokasi meninggalkan sisa
-saldo pada penjualan/penerimaan.
+`reason` wajib minimal 5 karakter bila `fee > 0`. Untuk alokasi yang
+meninggalkan sisa saldo, alasan dianjurkan dan ditampilkan oleh frontend, tetapi
+belum diwajibkan server agar frontend lama tetap kompatibel.
 
 ### Undo/cancel
 

@@ -28,7 +28,7 @@ Yang siap dipakai dari branch backend:
 | Jejak keputusan terhubung entitas | field baru pada `events` di `GET /api/v1/umkm/state` | Riwayat dapat membuka import/allocation yang tepat |
 | Riwayat audit berpaginasi | `GET /api/v1/umkm/audit` | Halaman Riwayat tidak terpotong pada 120 event |
 | Alasan pasangan | `reason` pada suggestions (sudah ada sebelumnya) | Pemilik melihat alasan, bukan sekadar label “cocok” |
-| Penanda kandidat | `candidate_ids`, `candidate_count`, `suggestion_available` | Frontend tahu kandidat mana yang bisa dipilih dan kapan tombol konfirmasi aman ditampilkan |
+| Penanda kandidat | `candidate_ids`, `candidate_count`, `candidate_ids_truncated`, `suggestion_available` | Frontend tahu kandidat mana yang bisa dipilih dan kapan tombol konfirmasi aman ditampilkan |
 
 Yang sudah ada sebelumnya dan tidak perlu dibuat ulang: register/login/sesi,
 CSRF, workspace isolation, preview dan commit CSV, suggestions deterministik,
@@ -126,7 +126,9 @@ GET. Response berupa array langsung:
     },
     "status": "partial",
     "remaining": 50000,
+    "candidate_ids": [],
     "candidate_count": 0,
+    "candidate_ids_truncated": false,
     "suggestion_available": false,
     "reason": "Pembayaran sebagian; sisa tagihan Rp50000."
   }
@@ -141,13 +143,17 @@ Arti field:
 - `remaining`: sisa tagihan untuk penjualan, atau sisa penerimaan yang belum
   teralokasi. Alokasi yang sudah di-undo atau dibatalkan tidak dihitung.
 - `candidate_count`: jumlah kandidat satu sisi dalam jendela tanggal yang sama
-  (0–3 hari), tanpa menganggapnya otomatis cocok.
+  (0–3 hari), tanpa menganggapnya otomatis cocok. Nilai ini tetap penuh walaupun
+  daftar ID dibatasi.
 - `suggestion_available: true`: pasangan lolos aturan unik dua arah dan juga
   muncul di `GET /api/v1/umkm/suggestions`. Hanya nilai ini yang boleh
   memunculkan tombol “Konfirmasi usulan” tanpa pemilihan manual.
-- `candidate_ids`: daftar ID kandidat lawan yang berada dalam jendela pencocokan.
-  Gunakan ID ini untuk membuka pilihan kandidat; jangan mengarang ID dari
-  `reason` atau `entity_id` audit.
+- `candidate_ids`: daftar ID kandidat lawan yang berada dalam jendela pencocokan,
+  maksimal 20 ID per item. Jika `candidate_ids_truncated` benar, tampilkan
+  `candidate_count` penuh dan gunakan pencarian manual untuk kandidat lainnya.
+  Jangan mengarang ID dari `reason` atau `entity_id` audit.
+- `candidate_ids_truncated`: penanda bahwa daftar ID dipotong karena melewati
+  batas; `candidate_count` tetap menunjukkan jumlah sebenarnya.
 - `reason`: teks siap tampil dalam Bahasa Indonesia; frontend tetap boleh
   menambahkan penjelasan visual, tetapi jangan mengubah maknanya.
 
@@ -291,7 +297,7 @@ Petakan entry ke suggestions dan tampilkan satu kartu per entry. Contoh aturan
 aksi:
 
 ```js
-function exceptionAction(item, suggestions) {
+function exceptionAction(item) {
   if (item.status === "partial") return "Tambah alokasi";
   if (item.suggestion_available) return "Konfirmasi usulan";
   if (item.status === "ambiguous") return "Pilih kandidat";
@@ -299,14 +305,14 @@ function exceptionAction(item, suggestions) {
 }
 
 const suggestion = item.suggestion_available
-  ? suggestions.find((candidate) =>
+  ? (suggestions || []).find((candidate) =>
       candidate.sale.id === item.entry.id ||
       candidate.receipt.id === item.entry.id,
     )
   : null;
 
-const choices = item.candidate_ids
-  .map((id) => state.state.entries.find((entry) => entry.id === id))
+const choices = (item.candidate_ids || [])
+  .map((id) => (state?.state?.entries || []).find((entry) => entry.id === id))
   .filter(Boolean);
 ```
 
@@ -345,9 +351,9 @@ Retry dengan key dan isi yang sama aman: server mengembalikan allocation lama
 tanpa menambah audit, versi, atau event SSE. Jangan mengganti key saat timeout;
 itu dapat membuat alokasi kedua.
 
-`reason` wajib diisi minimal 5 karakter bila ada `fee > 0` atau alokasi
-meninggalkan sisa pada penjualan/penerimaan. Ini berlaku untuk pembayaran
-sebagian, bukan hanya biaya layanan.
+`reason` wajib diisi minimal 5 karakter bila ada `fee > 0`. Untuk pembayaran
+sebagian, tampilkan field alasan sebagai anjuran; server belum memblokir alasan
+kosong agar form frontend lama tetap kompatibel.
 
 ### 4.5 SSE, ekspor, dan audit
 
@@ -395,6 +401,10 @@ $env:TEST_DATABASE_URL="postgres://postgres:postgres@127.0.0.1:55432/rku_test?ss
 $env:TEST_REQUIRE_DB="1"
 go test -race -count=1 ./...
 ```
+
+Migration `000004` membutuhkan PostgreSQL 15+ karena memakai kolom target pada
+`ON DELETE SET NULL`. Compose dan CI memakai PostgreSQL 16; pastikan database
+deployment juga PostgreSQL 16 sebelum rebuild.
 
 Uji endpoint setelah backend baru live: config memiliki `limits`, exceptions
 tanpa cookie menghasilkan `401`, exceptions dengan cookie menghasilkan array,

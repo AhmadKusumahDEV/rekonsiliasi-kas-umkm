@@ -700,6 +700,7 @@ read-only dan tidak membutuhkan CSRF karena memakai GET. Contoh:
     "remaining": 150000,
     "candidate_ids": ["fedcba9876543210fedcba9876543210"],
     "candidate_count": 1,
+    "candidate_ids_truncated": false,
     "suggestion_available": true,
     "reason": "Kandidat unik tersedia; belum dikonfirmasi."
   }
@@ -708,9 +709,10 @@ read-only dan tidak membutuhkan CSRF karena memakai GET. Contoh:
 
 Status `partial` berarti sudah ada alokasi tetapi masih ada sisa; `ambiguous`
 berarti kandidat tidak unik di kedua sisi. `candidate_ids` adalah ID kandidat
-lawan untuk ditampilkan; `candidate_count` adalah jumlahnya. Jendela
-pencocokan 0–3 hari. `suggestion_available` hanya benar untuk pasangan yang
-juga muncul di suggestions. Service:
+lawan untuk ditampilkan, maksimal 20; `candidate_count` adalah jumlah penuh.
+`candidate_ids_truncated` menandai pemotongan daftar. Jendela pencocokan 0–3
+hari. `suggestion_available` hanya benar untuk pasangan yang juga muncul di
+suggestions. Service:
 ListExceptions().
 
 ### E12 — POST /api/v1/umkm/imports/preview
@@ -795,7 +797,7 @@ Request:
 
 ID harus 32 digit hex lowercase. key dibuat baru untuk keputusan baru, dan dipakai kembali untuk mencoba ulang keputusan yang sama. Sukses 201 berupa Allocation langsung, dengan id, sale_id, receipt_id, amount, fee, reason, created_at dan reversed.
 
-Aturan: amount positif; fee tidak negatif; amount <= sisa receipt; amount+fee <= sisa sale. Fee positif atau alokasi yang menyisakan saldo memerlukan alasan setidaknya 5 byte setelah trim; alasan maksimal 400 rune menurut service. Key yang sama dengan isi identik mengembalikan allocation lama tanpa audit/version/SSE baru; isi berbeda menghasilkan 409. Service: Allocate() dan validateAllocation().
+Aturan: amount positif; fee tidak negatif; amount <= sisa receipt; amount+fee <= sisa sale. Fee positif memerlukan alasan setidaknya 5 rune setelah trim; alokasi yang menyisakan saldo dianjurkan memberi alasan tetapi tidak diblokir; alasan maksimal 400 rune menurut service. Key yang sama dengan isi identik mengembalikan allocation lama tanpa audit/version/SSE baru; isi berbeda menghasilkan 409. Service: Allocate() dan validateAllocation().
 
 ### E16 — POST /api/v1/umkm/allocations/:id/undo
 

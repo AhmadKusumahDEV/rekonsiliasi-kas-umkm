@@ -30,7 +30,7 @@ Pengguna aktif adalah pemilik UMKM. Registrasi membuat akun owner dan ruang kerj
 | P-03 | Hindari data ganda | File sama tidak menambah data; ID dengan isi berbeda ditolak |
 | P-04 | Usulan dapat dijelaskan | Referensi, kanal, nominal, tanggal dan keunikan kedua sisi diperiksa |
 | P-05 | Keputusan di tangan pemilik | Usulan tidak otomatis menjadi alokasi |
-| P-06 | Pembayaran realistis | Alokasi sebagian/gabungan dan biaya tidak melewati sisa saldo; alasan wajib untuk fee atau sisa |
+| P-06 | Pembayaran realistis | Alokasi sebagian/gabungan dan biaya tidak melewati sisa saldo; alasan wajib untuk fee dan dianjurkan untuk sisa |
 | P-07 | Koreksi terlacak | Undo dan pembatalan tidak menghapus audit |
 | P-08 | Total konsisten | Ringkasan memakai seluruh data aktif, bukan halaman tabel |
 | P-09 | Laporan berguna | CSV mempertahankan status dan aman terhadap formula spreadsheet |

@@ -72,13 +72,14 @@ type Limits struct {
 // Exception is one item that still needs a human decision: an unmatched
 // entry, an ambiguous candidate, or an entry with a remaining balance.
 type Exception struct {
-	Entry               Entry    `json:"entry"`
-	Status              string   `json:"status"`
-	Remaining           int64    `json:"remaining"`
-	CandidateIDs        []string `json:"candidate_ids"`
-	CandidateCount      int      `json:"candidate_count"`
-	SuggestionAvailable bool     `json:"suggestion_available"`
-	Reason              string   `json:"reason"`
+	Entry                 Entry    `json:"entry"`
+	Status                string   `json:"status"`
+	Remaining             int64    `json:"remaining"`
+	CandidateIDs          []string `json:"candidate_ids"`
+	CandidateCount        int      `json:"candidate_count"`
+	CandidateIDsTruncated bool     `json:"candidate_ids_truncated"`
+	SuggestionAvailable   bool     `json:"suggestion_available"`
+	Reason                string   `json:"reason"`
 }
 
 type UMKMState struct {
