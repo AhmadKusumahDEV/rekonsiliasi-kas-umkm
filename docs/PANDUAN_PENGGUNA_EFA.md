@@ -18,6 +18,14 @@ menutup kas harian: apa yang saya pikirkan, apa yang saya lakukan, bagian mana
 yang membantu, dan bagian mana yang masih membingungkan. Bagian akhir berisi
 usulan alur panduan yang bisa dipakai untuk onboarding pengguna baru.
 
+## Cara membaca dokumen ini
+
+Setiap bagian memiliki tautan halaman live di bagian paling atas. Di VSCode,
+buka **Markdown Preview** dengan `Ctrl+Shift+V` atau preview ke samping dengan
+`Ctrl+K` lalu `V`; gambar tidak dirender di editor teks mentah. Jika file ini
+dikirim ke orang lain, sertakan folder `docs/images/` atau ubah menjadi PDF/HTML
+agar gambar tetap terlihat.
+
 ## 1. Gambaran pengalaman
 
 EFA terasa seperti alat pemeriksaan kas, bukan aplikasi akuntansi lengkap. Saya
@@ -49,6 +57,8 @@ penjelasan bahwa penjualan dan penerimaan dihitung sebagai dua sisi terpisah.
 
 ### 3.1 Masuk dan orientasi
 
+**Halaman:** [Masuk](https://efa.madgo.my.id/app#login) · [Daftar](https://efa.madgo.my.id/app#register)
+
 Saya membuka `#login`, mengisi email dan kata sandi, lalu menekan **Masuk**.
 Setelah berhasil, saya langsung dibawa ke **Ringkasan** workspace, bukan ke
 halaman kosong. Header menunjukkan nama usaha, peran "Pemilik usaha", dan status
@@ -76,6 +86,8 @@ kata sandi 12 karakter dan 72 byte UTF-8.
 
 ### 3.2 Ringkasan: "Apakah kas hari ini sudah jelas?"
 
+**Halaman:** [Ringkasan](https://efa.madgo.my.id/app#overview)
+
 Ringkasan menjawab pertanyaan pertama saya: berapa yang tercatat, berapa yang
 sudah masuk, dan berapa yang masih perlu dicocokkan. Angka besar di kartu
 pertama terasa sebagai fokus utama, sementara daftar "Perlu dicocokkan"
@@ -101,6 +113,8 @@ pertahankan pada semua tampilan yang menampilkan angka besar.
 
 ### 3.3 Transaksi: mencari jejak transaksi
 
+**Halaman:** [Transaksi](https://efa.madgo.my.id/app#entries)
+
 Saya membuka **Transaksi** dan mencari `INV-102`. Hasilnya dua baris: satu
 penjualan dan satu penerimaan dengan referensi yang sama. Saya juga dapat
 memfilter Penjualan/Penerimaan/Dibatalkan dan memilih 20, 50, atau 100 baris.
@@ -123,6 +137,8 @@ diperiksa**. Ini masih bisa dipahami, tetapi tombol kecil "Tindak lanjuti" di
 baris yang memiliki sisa akan mengurangi perpindahan halaman.
 
 ### 3.4 Cocokkan kas: melihat usulan sebelum mengambil keputusan
+
+**Halaman:** [Cocokkan kas](https://efa.madgo.my.id/app#reconcile)
 
 Halaman **Cocokkan kas** menampilkan pasangan yang diusulkan beserta alasannya.
 Pada data demo, pasangan INV-102 muncul dengan keterangan bahwa referensi, kanal,
@@ -158,6 +174,8 @@ kandidat di kedua sisi" masih teknis. Untuk pemilik usaha, kalimat seperti
 
 ### 3.5 Perlu diperiksa: antrean yang harus dibereskan
 
+**Halaman:** [Perlu diperiksa](https://efa.madgo.my.id/app#exceptions)
+
 Ini halaman yang paling terasa seperti daftar pekerjaan. Setiap kartu
 menjelaskan apakah yang terlihat adalah penjualan atau penerimaan, berapa sisa
 tagihannya, mengapa transaksi masuk antrean, dan berapa kandidat yang ditemukan.
@@ -192,6 +210,8 @@ juga membantu menjelaskan mengapa tidak ada tautan entitas.
 
 ### 3.6 Impor CSV: menyiapkan data dengan aman
 
+**Halaman:** [Impor CSV](https://efa.madgo.my.id/app#imports)
+
 Halaman **Impor CSV** menyediakan contoh file penjualan dan penerimaan, batas
 500 baris/1.048.576 byte, serta riwayat batch. Saya membuka modal, memilih file
 contoh penjualan, lalu menekan **Periksa CSV**. Hasilnya: 0 baris baru, total
@@ -216,6 +236,8 @@ kali mungkin belum tahu format kolom sebelum mengunduh contoh. Tambahkan ringkas
 tujuh kolom (`id,tanggal,referensi,nama,nominal,kanal,catatan`) langsung di modal.
 
 ### 3.7 Riwayat: siapa mengubah apa
+
+**Halaman:** [Riwayat](https://efa.madgo.my.id/app#history)
 
 Halaman **Riwayat** menampilkan 9 aktivitas demo. Kolom **Terkait** berisi
 "Catatan historis" untuk data lama karena record tersebut belum memiliki entity
@@ -242,6 +264,8 @@ lebih menjelaskan.
 
 ### 3.8 Laporan: rekap dan ekspor
 
+**Halaman:** [Laporan](https://efa.madgo.my.id/app#reports)
+
 Halaman **Laporan** memberi ringkasan penjualan, penerimaan, sisa tagihan, dan
 pasangan aktif. Tombol **Unduh rekap CSV** berhasil mengunduh `umkm-rekap.csv`
 dengan header kolom yang jelas: id, jenis, tanggal, referensi, nama, nominal,
@@ -265,6 +289,8 @@ kanal di halaman ini; angka per kanal hanya terlihat di Ringkasan.
 
 ### 3.9 Pengaturan: akun dan batas penggunaan
 
+**Halaman:** [Pengaturan](https://efa.madgo.my.id/app#settings)
+
 Halaman **Pengaturan akun** menampilkan email, peran, workspace, penyimpanan,
 batas impor, tombol ganti kata sandi, keluar, dan pasang EFA. Modal ganti kata
 sandi meminta kata sandi lama dan baru serta menjelaskan bahwa semua sesi akan
@@ -287,6 +313,8 @@ data. Ini memang fitur yang belum tersedia, tetapi pengguna yang mencari
 pengelolaan data perlu diberi penjelasan agar tidak mengira tombolnya rusak.
 
 ### 3.10 Pengalaman mobile
+
+**Halaman:** [Ringkasan versi mobile](https://efa.madgo.my.id/app#overview)
 
 Saya mengubah viewport ke 390×844. Navigasi utama berubah menjadi tombol
 **Menu** dan membuka dialog berisi seluruh menu. Kartu Ringkasan tetap terbaca,

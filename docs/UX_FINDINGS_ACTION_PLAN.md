@@ -38,6 +38,8 @@ risiko sinkronisasi source frontend lokal dengan bundle Vercel.
 
 ### F-01 — Satu pasangan menghasilkan dua kartu
 
+**Halaman:** [Perlu diperiksa](https://efa.madgo.my.id/app#exceptions)
+
 **Apa yang saya lihat:** Di **Perlu diperiksa**, INV-102 muncul sebagai kartu
 Penjualan dan kartu Penerimaan. Keduanya menyatakan "Kandidat unik tersedia"
 dan masing-masing memiliki tombol **Konfirmasi usulan**. Jumlah tampilan adalah
@@ -70,6 +72,8 @@ berubah.
 
 ### F-02 — Kandidat lawan tidak terlihat sebelum modal dibuka
 
+**Halaman:** [Perlu diperiksa](https://efa.madgo.my.id/app#exceptions)
+
 **Apa yang saya lihat:** Kartu hanya menampilkan "1 kandidat" dan alasan. Saya
 harus menekan tombol untuk mengetahui transaksi lawan yang akan dipasangkan.
 
@@ -99,6 +103,8 @@ modal dibuka; `candidate_ids_truncated: true` menampilkan hint pencarian manual.
 
 ### F-03 — Transaksi tidak memiliki tindakan langsung
 
+**Halaman:** [Transaksi](https://efa.madgo.my.id/app#entries)
+
 **Apa yang saya lihat:** Pencarian `INV-102` berhasil, filter Penjualan/
 Penerimaan berfungsi, tetapi tabel tidak menawarkan tombol untuk menindaklanjuti
 baris. Pengguna harus pindah ke **Cocokkan kas** atau **Perlu diperiksa**.
@@ -123,6 +129,8 @@ yang benar dan sisa yang sesuai; tidak mengubah data sampai pengguna menyimpan.
 
 ### F-04 — Label Sisa Tagihan mudah disalahartikan
 
+**Halaman:** [Laporan](https://efa.madgo.my.id/app#reports)
+
 **Apa yang saya lihat:** Laporan menampilkan Penjualan Rp650.000, Penerimaan
 Rp590.000, dan Sisa Tagihan Rp650.000. Secara teknis angka ini benar untuk data
 demo, tetapi pengguna bisa mengira Rp650.000 adalah kerugian atau uang hilang.
@@ -145,6 +153,8 @@ berarti belum dibayar, dibayar sebagian, atau menunggu pencairan."
 sisa tagihan, dan laba; laporan tetap menyatakan bahwa ini bukan laba.
 
 ### F-05 — Riwayat lama terasa buntu
+
+**Halaman:** [Riwayat](https://efa.madgo.my.id/app#history)
 
 **Apa yang saya lihat:** Kolom **Terkait** berisi "Catatan historis" untuk data
 lama. Tidak ada tooltip atau tombol detail. Event baru seharusnya memiliki
@@ -170,6 +180,8 @@ menampilkan alasan yang jelas tanpa error.
 
 ### F-06 — Belum ada alur lupa kata sandi
 
+**Halaman:** [Masuk](https://efa.madgo.my.id/app#login)
+
 **Apa yang saya lihat:** Halaman login hanya memiliki email, kata sandi, dan
 tautan daftar. Tidak ada **Lupa kata sandi**. Pengaturan hanya menyediakan ganti
 kata sandi dengan kata sandi lama.
@@ -190,6 +202,8 @@ sebelum backend siap.
 
 ### F-07 — Retensi, hapus data, dan backup belum ada di UI/API
 
+**Halaman:** [Pengaturan](https://efa.madgo.my.id/app#settings)
+
 **Apa yang saya lihat:** Pengaturan menjelaskan batas impor dan data sintetis,
 tetapi tidak memiliki retensi, hapus workspace, atau kebijakan data.
 
@@ -209,6 +223,8 @@ Jangan menampilkan tombol hapus palsu hanya untuk memenuhi tampilan.
 
 ### F-08 — Data demo memiliki noise
 
+**Halaman:** [Transaksi](https://efa.madgo.my.id/app#entries)
+
 **Apa yang saya lihat:** Tabel Transaksi memuat `INV-SSE-1` dengan status
 Dibatalkan. Baris ini tampak seperti data uji internal dan mengganggu cerita demo.
 
@@ -226,6 +242,8 @@ SSE, atau sembunyikan baris yang ditandai sebagai data uji pada seed demo.
 
 ### F-09 — Status koneksi saat SSE gagal
 
+**Halaman:** [Ringkasan](https://efa.madgo.my.id/app#overview)
+
 **Apa yang saya lihat:** Console browser mencatat satu `ERR_QUIC_PROTOCOL_ERROR`
 untuk stream SSE, sementara header aplikasi sempat menampilkan "Data terhubung".
 Aplikasi tetap dapat digunakan dan REST state tetap termuat.
@@ -240,6 +258,8 @@ mengira data real-time terus masuk. Uji reconnect dan state version.
 **Pemilik:** Frontend/observability, dengan backend SSE sebagai sumber event.
 
 ### F-10 — Source frontend lokal dan bundle live berbeda
+
+**Halaman:** [Aplikasi](https://efa.madgo.my.id/app)
 
 **Apa yang saya lihat:** Bundle live memiliki `exceptionsPage`, pemuatan audit
 berpaginasi, `limitDescription`, dan `audit-entity`. File
