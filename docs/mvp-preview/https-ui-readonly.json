@@ -1,0 +1,127 @@
+{
+  "mode": "local frontend assets in isolated browser; existing live API",
+  "views": [
+    {
+      "width": 375,
+      "route": "overview",
+      "overflow": false
+    },
+    {
+      "width": 375,
+      "route": "entries",
+      "overflow": false
+    },
+    {
+      "width": 375,
+      "route": "reconcile",
+      "overflow": false
+    },
+    {
+      "width": 375,
+      "route": "exceptions",
+      "overflow": false
+    },
+    {
+      "width": 375,
+      "route": "imports",
+      "overflow": false
+    },
+    {
+      "width": 375,
+      "route": "history",
+      "overflow": false
+    },
+    {
+      "width": 375,
+      "route": "reports",
+      "overflow": false
+    },
+    {
+      "width": 375,
+      "route": "settings",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "route": "overview",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "route": "entries",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "route": "reconcile",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "route": "exceptions",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "route": "imports",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "route": "history",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "route": "reports",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "route": "settings",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "route": "overview",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "route": "entries",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "route": "reconcile",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "route": "exceptions",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "route": "imports",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "route": "history",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "route": "reports",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "route": "settings",
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "transactionWrites": 0
+}

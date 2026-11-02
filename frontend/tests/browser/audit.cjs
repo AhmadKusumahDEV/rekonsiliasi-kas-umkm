@@ -17,7 +17,8 @@ const sleep=n=>new Promise(r=>setTimeout(r,n));
   await page.route('**/api/v1/**',async r=>{
    const req=r.request(),path=new URL(req.url()).pathname,method=req.method();fixture.calls.push({path,method});
    const send=(body,status=200,type='application/json')=>r.fulfill({status,contentType:type,body:typeof body==='string'?body:JSON.stringify(body)});
-   if(path.endsWith('/config'))return send({brand:'Easy Financial Audit',kind:'umkm'});
+   if(path.endsWith('/config'))return send({brand:'Easy Financial Audit',kind:'umkm',limits:{max_import_rows:500,max_csv_bytes:1048576,max_entries:10000}});
+   if(path.endsWith('/umkm/exceptions'))return send([]);
    if(path.endsWith('/auth/me'))return send(fixture.loggedIn?{user,csrf:'fake-csrf'}:{message:'Sesi berakhir'},fixture.loggedIn?200:401);
    if(path.endsWith('/auth/login')){fixture.loggedIn=true;return send({user,csrf:'fake-csrf'});}
    if(path.endsWith('/umkm/state')){

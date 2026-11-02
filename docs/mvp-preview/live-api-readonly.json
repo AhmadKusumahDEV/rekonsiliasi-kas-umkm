@@ -1,0 +1,11 @@
+{
+  "config_limits_present": true,
+  "unauthorized_exceptions_status": 401,
+  "authenticated_get_status": {
+    "state": 200,
+    "suggestions": 200,
+    "exceptions": 200,
+    "audit": 200
+  },
+  "transaction_writes": 0
+}

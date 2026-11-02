@@ -1,4 +1,11 @@
 /* Easy Financial Audit: supplied palette; darker text shades keep it readable. */
+.exception-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,320px),1fr)); gap: 20px; margin-top: 24px; }
+.exception-card { display: flex; flex-direction: column; gap: 14px; }
+.exception-card header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.exception-card h2 { margin: 6px 0 0; font-size: 21px; overflow-wrap: anywhere; }
+.exception-card p { margin: 0; }
+.exception-card .inline-actions { margin-top: auto; padding-top: 6px; }
+.match-reason { grid-column: 1 / -1; margin: 0; color: var(--muted); }
 :root,
 body[data-kind="umkm"] {
   --efa-blue: #5aa2e0;

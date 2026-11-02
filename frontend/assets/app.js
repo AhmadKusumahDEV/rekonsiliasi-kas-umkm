@@ -1,3 +1,4 @@
+import { importLimits, validateImportSize, uniqueSuggestion, auditTarget, mergeAudit } from "./mvp.js?v=mvp1";
 import { apiURL } from "./api-config.js?v=team2";
 import { createAPIClient } from "./api-client.js?v=team2";
 import { validatePassword, deduplicatePreview, selectAllocation } from "./validation.js?v=audit1";
@@ -16,6 +17,8 @@ const toastElement = document.querySelector("#toast");
 
 const state = {
   config: null,
+  audit: { rows: [], loading: false, loaded: false, more: true, error: "", generation: 0 },
+  exceptionFilter: "",
   me: null,
   csrf: "",
   data: null,
@@ -283,7 +286,7 @@ function matches() {
       : state.data.suggestionsError
       ? '<p class="warning" role="status">Usulan belum bisa dimuat. Gunakan tombol muat ulang untuk mencoba lagi.</p>'
       : suggestions.length
-      ? `<div class="matches">${suggestions.map((x) => `<article class="match"><div><small>Penjualan ${e(x.sale.reference)}</small><strong>${e(money(x.sale.amount))}</strong><p>${e(x.sale.name)}</p></div><div><small>Penerimaan ${e(x.receipt.channel)}</small><strong>${e(money(x.receipt.amount))}</strong><p>${e(x.receipt.name)}</p></div>${button("Periksa pasangan", "match", x.sale.id, "secondary")}</article>`).join("")}</div>`
+      ? `<div class="matches">${suggestions.map((x) => `<article class="match"><div><small>Penjualan ${e(x.sale.reference)}</small><strong>${e(money(x.sale.amount))}</strong><p>${e(x.sale.name)}</p></div><div><small>Penerimaan ${e(x.receipt.channel)}</small><strong>${e(money(x.receipt.amount))}</strong><p>${e(x.receipt.name)}</p></div><p class="match-reason">${e(x.reason)}</p>${button("Periksa pasangan", "match", x.sale.id, "secondary")}</article>`).join("")}</div>`
       : empty(
           "Tidak ada pasangan unik yang tersisa",
           "Gunakan alokasi manual untuk biaya layanan, pembayaran sebagian, atau pencairan gabungan.",
@@ -319,7 +322,7 @@ function importsPage() {
   return (
     title(
       "Impor CSV",
-      "Pratinjau sebelum menyimpan. Maksimal 500 baris dan 1 MB per file.",
+      "Pratinjau sebelum menyimpan. " + limitDescription(),
       button("Impor CSV", "import", "", "primary"),
     ) +
     `<div class="intro-note"><p>Gunakan satu file penjualan dan satu file penerimaan. Nominal berupa bilangan Rupiah tanpa pemisah ribuan.</p><div class="inline-actions"><a class="button small" href="/assets/contoh-penjualan.csv" download>Contoh penjualan</a><a class="button small" href="/assets/contoh-penerimaan.csv" download>Contoh penerimaan</a></div></div>` +
@@ -328,25 +331,80 @@ function importsPage() {
 }
 
 function historyPage() {
-  return (
-    title(
-      "Riwayat aktivitas",
-      "Keputusan dan perubahan tersimpan tanpa menghapus jejak sebelumnya.",
-    ) +
-    listHTML(
-      ["Waktu", "Pelaksana", "Aktivitas", "Keterangan"],
-      (state.data.events || []).map((x) => ({
-        search: `${x.actor} ${x.action} ${x.detail}`,
-        status: "",
-        cells: [
-          e(date(x.created_at)),
-          e(x.actor),
-          `<strong>${e(x.action)}</strong>`,
-          e(x.detail),
-        ],
-      })),
-    )
-  );
+  const audit = state.audit;
+  return title("Riwayat aktivitas", "Jejak keputusan dari server, termasuk aktivitas yang lebih lama.") +
+    (audit.loading ? '<p role="status">Memuat riwayat…</p>' : '') +
+    (audit.error ? `<p class="warning" role="alert">${e(audit.error)}</p>${button("Coba muat riwayat", "audit-retry")}` : '') +
+    listHTML(["Waktu", "Pelaksana", "Aktivitas", "Keterangan", "Terkait"], audit.rows.map(x => ({
+      search: `${x.actor} ${x.action} ${x.detail}`, status: "",
+      cells: [e(date(x.created_at)), e(x.actor), `<strong>${e(x.action)}</strong>`, e(x.detail),
+        auditTarget(x) ? button("Lihat detail", "audit-entity", auditTarget(x)) : '<span class="muted">Catatan historis</span>'],
+    }))) + (audit.loaded && audit.more && !audit.loading && !audit.error ? button("Muat aktivitas lebih lama", "audit-more") : '') +
+    (audit.loaded && !audit.more && !audit.loading ? '<p class="muted">Seluruh riwayat sudah dimuat.</p>' : '');
+}
+
+async function loadAudit(reset = false) {
+  const audit = state.audit, epoch = state.epoch || 0;
+  if (audit.loading && !reset) return;
+  const generation = ++audit.generation;
+  audit.retryReset = reset;
+  audit.loading = true; audit.error = '';
+  if (location.hash === '#history') renderPage();
+  try {
+    const cursor = reset ? null : audit.rows.at(-1)?.id;
+    const rows = await api('/api/v1/umkm/audit?limit=50' + (cursor ? '&before_id=' + encodeURIComponent(cursor) : ''));
+    if (epoch !== (state.epoch || 0) || !state.me || state.audit !== audit || generation !== audit.generation) return;
+    if (!Array.isArray(rows)) throw new Error('Respons riwayat tidak sesuai. Coba lagi.');
+    audit.rows = mergeAudit(reset ? [] : audit.rows, rows);
+    audit.loaded = true; audit.more = rows.length === 50; audit.version = state.data.workspace.version; audit.retryReset = false;
+  } catch (error) {
+    if (state.audit !== audit || generation !== audit.generation) return;
+    audit.error = error.status === 404 ? 'Riwayat lengkap belum tersedia di server. Catatan lama tetap dipertahankan.' : error.message;
+    // Do not substitute the 120-event dashboard snapshot as a complete archive.
+    audit.loaded = true;
+  } finally {
+    if (state.audit === audit && generation === audit.generation) {
+      audit.loading = false;
+      if (location.hash === '#history' && state.me && canReplacePage()) renderPage();
+    }
+  }
+}
+
+function limitDescription() {
+  try {
+    const limits = importLimits(state.config);
+    return `Maksimal ${limits.max_import_rows.toLocaleString('id-ID')} baris data dan ${limits.max_csv_bytes.toLocaleString('id-ID')} byte per file; ${limits.max_entries.toLocaleString('id-ID')} transaksi per ruang kerja.`;
+  } catch { return 'Batas impor belum tersedia dari server; impor dinonaktifkan sampai konfigurasi dimuat ulang.'; }
+}
+
+function exceptionsPage() {
+  const data = state.data;
+  let content;
+  if (data.exceptionsLoading) content = '<p role="status">Memuat antrean selisih…</p>';
+  else if (data.exceptionsError || !Array.isArray(data.exceptions)) content = '<section class="panel"><p class="warning" role="alert">Antrean belum termuat. Ini bukan berarti semua transaksi sudah cocok.</p>' + button('Coba muat antrean', 'refresh') + '</section>';
+  else {
+    const rows = data.exceptions.filter(x => !state.exceptionFilter || x.status === state.exceptionFilter);
+    content = `<label for="exception-filter">Tampilkan<select id="exception-filter">${[['','Semua'],['unmatched','Belum cocok'],['partial','Masih ada sisa'],['ambiguous','Kandidat perlu dipilih']].map(([value,label])=>`<option value="${value}" ${state.exceptionFilter === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label><p class="muted">${rows.length} transaksi pada tampilan ini. Penjualan dan penerimaan dihitung terpisah.</p>` +
+      (rows.length ? '<div class="exception-list">' + rows.map(item => {
+        const match = uniqueSuggestion(item, data.suggestions);
+        const expectsSuggestion = item.suggestion_available && item.status !== 'partial' && item.status !== 'ambiguous';
+        const label = item.status === 'partial' ? 'Tambah alokasi' : match ? 'Konfirmasi usulan' : expectsSuggestion ? 'Periksa usulan terbaru' : item.status === 'ambiguous' ? 'Pilih kandidat' : 'Alokasikan manual';
+        return `<article class="panel exception-card"><header><span class="tag ${item.status === 'ambiguous' ? 'warn' : 'info'}">${e(({partial:'Masih ada sisa',ambiguous:'Perlu dipilih',unmatched:'Belum cocok'})[item.status] || item.status)}</span><small>${item.entry.kind === 'sale' ? 'Penjualan' : 'Penerimaan'}</small></header><h2>${e(item.entry.reference || item.entry.source_id)}</h2><p>${e(item.entry.name)} · ${e(item.entry.channel)}</p><strong>${item.entry.kind === 'sale' ? 'Sisa tagihan' : 'Sisa penerimaan'}: ${e(money(item.remaining))}</strong><p>${e(item.reason)}</p><p class="muted">${Number(item.candidate_count) || 0} kandidat${item.candidate_ids_truncated ? '; hanya sebagian ditampilkan. Gunakan pilihan manual untuk kandidat lain.' : ''}</p><div class="inline-actions">${button(label, expectsSuggestion ? 'exception-match' : 'exception-choose', item.entry.id, 'secondary')}${item.candidate_ids_truncated ? button('Cari secara manual', 'exception-manual', item.entry.id) : ''}</div></article>`;
+      }).join('') + '</div>' : empty('Tidak ada transaksi pada antrean ini', 'Tidak ada selisih pada filter yang dipilih.'));
+  }
+  return title('Perlu diperiksa', 'Telusuri sisa tagihan, penerimaan yang belum dialokasikan, dan kandidat yang belum unik.') + content;
+}
+
+function showAuditEntity(target) {
+  const [type, id] = target.split(':');
+  if (!auditTarget({entity_type:type,entity_id:id})) throw new Error('Tautan riwayat tidak valid.');
+  const data = state.data.state;
+  const entity = (type === 'import' ? data.imports : data.allocations).find(x => x.id === id);
+  if (!entity) throw new Error('Detail terkait tidak ada pada snapshot ini. Muat ulang data; catatan audit tetap tersimpan.');
+  const rows = type === 'import'
+    ? [['Jenis', entity.kind === 'sale' ? 'Penjualan' : 'Penerimaan'],['Baris baru',entity.rows],['Status',entity.canceled ? 'Dibatalkan' : 'Tersimpan']]
+    : [['Penjualan',data.entries.find(x=>x.id === entity.sale_id)?.reference || 'Tidak tersedia'],['Penerimaan',data.entries.find(x=>x.id === entity.receipt_id)?.reference || 'Tidak tersedia'],['Nominal',money(entity.amount)],['Biaya',money(entity.fee)],['Alasan',entity.reason || 'Tidak dicatat'],['Status',entity.reversed ? 'Dibatalkan' : 'Aktif']];
+  openModal(type === 'import' ? 'Detail impor terkait' : 'Detail keputusan terkait', '<dl class="details">' + rows.map(([label,value])=>`<dt>${e(label)}</dt><dd>${e(value)}</dd>`).join('') + '</dl>');
 }
 
 function settings() {
@@ -355,7 +413,7 @@ function settings() {
       "Pengaturan akun",
       "Informasi akun dan batas penggunaan ruang kerja.",
     ) +
-    `<section class="panel"><h2>${e(state.me.name)}</h2><div class="details"><dl><dt>Email</dt><dd>${e(state.me.email)}</dd><dt>Peran</dt><dd>${e(roles[state.me.role])}</dd><dt>Ruang kerja</dt><dd>${e(state.data.workspace.name)}</dd><dt>Penyimpanan</dt><dd>PostgreSQL, terpisah per aplikasi dan ruang kerja</dd></dl></div><div class="inline-actions">${button("Ganti kata sandi", "password", "", "primary")}${button("Keluar akun", "logout")}<button class="pwa-install" type="button" data-pwa-install>Pasang EFA ↗</button></div><p>Penggantian kata sandi mengakhiri seluruh sesi akun. Data awal adalah contoh sintetis. Jangan unggah data pelanggan nyata sebelum ada izin.</p></section>`
+    `<section class="panel"><h2>${e(state.me.name)}</h2><div class="details"><dl><dt>Email</dt><dd>${e(state.me.email)}</dd><dt>Peran</dt><dd>${e(roles[state.me.role])}</dd><dt>Ruang kerja</dt><dd>${e(state.data.workspace.name)}</dd><dt>Penyimpanan</dt><dd>PostgreSQL, terpisah per aplikasi dan ruang kerja</dd></dl></div><div class="inline-actions">${button("Ganti kata sandi", "password", "", "primary")}${button("Keluar akun", "logout")}<button class="pwa-install" type="button" data-pwa-install>Pasang EFA ↗</button></div><p>Penggantian kata sandi mengakhiri seluruh sesi akun. Data awal adalah contoh sintetis. Jangan unggah data pelanggan nyata sebelum ada izin. ${e(limitDescription())}</p></section>`
   );
 }
 
@@ -375,38 +433,43 @@ async function refresh(force = false) {
   const epoch = state.epoch || 0;
   state.refreshing = true;
   const task = (async () => {
+    const auxiliary = Promise.allSettled([
+      api("/api/v1/umkm/suggestions"), api("/api/v1/umkm/exceptions"),
+    ]);
     const data = await api("/api/v1/umkm/state");
     if (epoch !== (state.epoch || 0) || !state.me) return;
     data.suggestions = [];
     data.suggestionsLoading = true;
+    data.exceptions = null;
+    data.exceptionsLoading = true;
     state.data = data;
     rebuildBalances();
     if (!document.querySelector(".shell")) renderShell();
     else if (canReplacePage()) renderPage();
     else showRefreshNotice();
-    try {
-      const candidates = await api("/api/v1/umkm/suggestions");
-      if (epoch !== (state.epoch || 0) || state.data !== data) return;
-      data.suggestionsLoading = false;
-      const entries = new Map(data.state.entries.map(entry => [entry.id, entry]));
-      data.suggestions = candidates.filter(match => [match.sale,match.receipt].every(proposed => {
+    const [suggestionsResult, exceptionsResult] = await auxiliary;
+    if (epoch !== (state.epoch || 0) || state.data !== data || !state.me) return;
+    const entries = new Map(data.state.entries.map(entry => [entry.id, entry]));
+    data.suggestionsLoading = false;
+    if (suggestionsResult.status === 'fulfilled' && Array.isArray(suggestionsResult.value)) {
+      data.suggestions = suggestionsResult.value.filter(match => [match.sale,match.receipt].every(proposed => {
         const entry = entries.get(proposed.id);
         return entry && !entry.canceled && balance(entry) === entry.amount &&
           ["kind","amount","reference","channel","date"].every(field => entry[field] === proposed[field]);
       }));
-      if (canReplacePage()) renderPage();
-      else showRefreshNotice();
-      const button = document.querySelector('[data-action="refresh"]');
-      if (button && canReplacePage() && !state.pendingVersion) button.hidden = true;
-    } catch (error) {
-      if (epoch !== (state.epoch || 0) || !state.me) return;
-      if (error.status === 401) throw error;
-      data.suggestionsError = true;
-      data.suggestionsLoading = false;
-      if (canReplacePage()) renderPage();
-      showRefreshNotice();
-      toast("Catatan sudah dimuat. Usulan belum tersedia; muat ulang untuk mencoba lagi.");
-    }
+    } else data.suggestionsError = true;
+    data.exceptionsLoading = false;
+    if (exceptionsResult.status === 'fulfilled' && Array.isArray(exceptionsResult.value) &&
+      exceptionsResult.value.every(item => {
+        const entry = entries.get(item.entry?.id);
+        return entry && !entry.canceled && entry.kind === item.entry.kind && balance(entry) === item.remaining;
+      })) data.exceptions = exceptionsResult.value;
+    else data.exceptionsError = true;
+    if (canReplacePage()) renderPage();
+    else showRefreshNotice();
+    const button = document.querySelector('[data-action="refresh"]');
+    if (button && canReplacePage() && !state.pendingVersion && !data.suggestionsError && !data.exceptionsError) button.hidden = true;
+    if (data.suggestionsError || data.exceptionsError) showRefreshNotice();
   })();
   state.refreshTask = task;
   try { await task; }
@@ -445,6 +508,7 @@ function closeModal() {
 }
 
 function importModal() {
+  importLimits(state.config);
   state.preview = null;
   openModal(
     "Impor transaksi CSV",
@@ -455,11 +519,11 @@ function importModal() {
         ["sale", "Penjualan"],
         ["receipt", "Penerimaan"],
       ],
-    )}${field("File CSV", "file", "file", "", 'accept=".csv,text/csv" required')}<small>Maksimal 1 MB dan 500 baris. Simpan file sebagai CSV UTF-8.</small><div class="inline-actions"><a href="/assets/contoh-penjualan.csv" download class="button small">Contoh penjualan</a><a href="/assets/contoh-penerimaan.csv" download class="button small">Contoh penerimaan</a></div><button type="submit" class="primary">Periksa CSV</button></form><div id="import-preview" role="region" aria-label="Hasil pratinjau impor" aria-live="polite" tabindex="-1"></div>`,
+    )}${field("File CSV", "file", "file", "", 'accept=".csv,text/csv" required')}<small>${e(limitDescription())} Simpan file sebagai CSV UTF-8.</small><div class="inline-actions"><a href="/assets/contoh-penjualan.csv" download class="button small">Contoh penjualan</a><a href="/assets/contoh-penerimaan.csv" download class="button small">Contoh penerimaan</a></div><button type="submit" class="primary">Periksa CSV</button></form><div id="import-preview" role="region" aria-label="Hasil pratinjau impor" aria-live="polite" tabindex="-1"></div>`,
   );
 }
 
-function allocateModal(saleID = "", receiptID = "") {
+function allocateModal(saleID = "", receiptID = "", options = {}) {
   const entries = state.data.state.entries || [];
   const sales = entries.filter((x) => x.kind === "sale" && balance(x) > 0),
     receipts = entries.filter((x) => x.kind === "receipt" && balance(x) > 0);
@@ -472,7 +536,7 @@ function allocateModal(saleID = "", receiptID = "") {
   const { sale, receipt } = selectAllocation(entries, balance, saleID, receiptID);
   openModal(
     "Periksa dan simpan pasangan",
-    `<p>Nominal adalah uang penerimaan yang dialokasikan. Biaya mengurangi sisa tagihan, tetapi tidak menambah uang diterima.</p><form data-form="allocate">${formError}<input type="hidden" name="key" value="${key()}">${select(
+    `<p>${e(options.reason || "Periksa pilihan penjualan dan penerimaan sebelum menyimpan.")}</p><p>Nominal adalah uang penerimaan yang dialokasikan. Biaya mengurangi sisa tagihan, tetapi tidak menambah uang diterima.</p><form data-form="allocate">${formError}<input type="hidden" name="key" value="${key()}">${select(
       "Penjualan",
       "sale_id",
       sales.map((x) => [
@@ -490,6 +554,17 @@ function allocateModal(saleID = "", receiptID = "") {
       receipt.id,
     )}<div class="form-grid">${field("Nominal dialokasikan (Rp)", "amount", "number", Math.min(balance(sale), balance(receipt)), 'required min="1" max="1000000000000" step="1"')}${field("Biaya layanan (Rp)", "fee", "number", 0, 'required min="0" max="1000000000000" step="1"')}</div>${area("Catatan / alasan biaya", "reason", "", 'maxlength="400"')}${actions("Simpan pasangan")}</form>`,
   );
+  if (options.choose) {
+    const name = saleID ? "receipt_id" : "sale_id";
+    const selectNode = modal.querySelector(`[name="${name}"]`);
+    if (options.candidates) for (const option of [...selectNode.options]) {
+      if (!options.candidates.includes(option.value)) option.remove();
+    }
+    selectNode.prepend(new Option("Pilih transaksi terlebih dahulu", "", true, true));
+    selectNode.value = "";
+    selectNode.required = true;
+    modal.querySelector('[name="amount"]').value = "";
+  }
   updateAllocationLimits();
 }
 
@@ -544,6 +619,7 @@ function routes() {
     ["overview", "Ringkasan"],
     ["entries", "Transaksi"],
     ["reconcile", "Cocokkan kas"],
+    ["exceptions", "Perlu diperiksa"],
     ["imports", "Impor CSV"],
     ["history", "Riwayat"],
     ["reports", "Laporan"],
@@ -634,6 +710,7 @@ async function downloadExport(target) {
   }
 }
 function renderPage() {
+  if (!state.data) return;
   state.list = null;
   if (["#login", "#register"].includes(location.hash)) {
     history.replaceState(null, "", location.pathname + location.search + "#overview");
@@ -645,6 +722,7 @@ function renderPage() {
     overview,
     entries: entriesPage,
     reconcile: matches,
+    exceptions: exceptionsPage,
     imports: importsPage,
     history: historyPage,
     reports: reportsPage,
@@ -658,11 +736,13 @@ function renderPage() {
         "Kembali ke ringkasan untuk melanjutkan.",
       ) + '<a class="button" href="#overview">Ringkasan</a>';
   presentView(main, route);
+  if (route === "history" && !state.audit.loading && (!state.audit.loaded || (!state.audit.error && state.audit.version !== state.data.workspace.version))) void loadAudit(state.audit.loaded);
   document
     .querySelectorAll("nav")
     .forEach((nav) => (nav.innerHTML = navHTML()));
 }
 function auth(register = false) {
+  state.audit = { rows: [], loading: false, loaded: false, more: true, error: "", generation: (state.audit.generation || 0) + 1 };
   const route = location.hash.slice(1);
   if (routes().some(([id]) => id === route)) state.returnRoute = route;
   state.epoch = (state.epoch || 0) + 1;
@@ -943,8 +1023,8 @@ document.addEventListener("submit", async (event) => {
     }
     if (action === "preview-import") {
       const file = fd.get("file");
-      if (!(file instanceof File) || !file.size || file.size > 1048576)
-        throw new Error("Pilih CSV berisi data, maksimal 1 MB.");
+      if (!(file instanceof File)) throw new Error("Pilih file CSV terlebih dahulu.");
+      const limits = validateImportSize(file, state.config);
       let csv;
       try { csv = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer()); }
       catch { throw new Error("File bukan CSV UTF-8 yang valid. Simpan ulang sebagai CSV UTF-8 lalu coba lagi."); }
@@ -954,6 +1034,8 @@ document.addEventListener("submit", async (event) => {
         body: payload,
       });
       const preview = deduplicatePreview(rawPreview, state.data.state.entries || [], payload.kind);
+      if (preview.count + preview.skipped > limits.max_import_rows) throw new Error(`CSV melebihi batas ${limits.max_import_rows} baris data.`);
+      if (state.data.state.entries.length + preview.count > limits.max_entries) throw new Error("Baris baru melebihi batas transaksi ruang kerja dari server.");
       state.preview = payload;
       document.querySelector("#import-preview").innerHTML =
         '<div class="success">' +
@@ -980,6 +1062,8 @@ document.addEventListener("submit", async (event) => {
       return;
     }
     if (action === "allocate") {
+      if (!get("sale_id") || !get("receipt_id")) throw new Error("Pilih penjualan dan penerimaan terlebih dahulu.");
+      if (Number(get("fee")) > 0 && get("reason").trim().length < 5) throw new Error("Jelaskan alasan biaya, minimal 5 karakter.");
       updateAllocationLimits();
       const selected = selectAllocation(state.data.state.entries, balance, get("sale_id"), get("receipt_id"));
       if (Number(get("amount")) + Number(get("fee")) > balance(selected.sale) || Number(get("amount")) > balance(selected.receipt)) {
@@ -1016,6 +1100,7 @@ document.addEventListener("submit", async (event) => {
     await refresh(true);
     toast("Pasangan tersimpan");
   } catch (error) {
+    if (error.status === 409) await refresh(true).catch(() => {});
     showError(form, error);
   } finally {
     form.dataset.busy = "false";
@@ -1037,6 +1122,22 @@ document.addEventListener("click", async (event) => {
     id = target.dataset.id;
   let busyForm, controls;
   try {
+    if (action === "audit-more") return await loadAudit();
+    if (action === "audit-retry") return await loadAudit(state.audit.retryReset || !state.audit.rows.length);
+    if (action === "audit-entity") return showAuditEntity(id);
+    if (["exception-match", "exception-choose", "exception-manual"].includes(action)) {
+      const item = state.data.exceptions?.find(x => x.entry.id === id);
+      if (!item) throw new Error("Antrean berubah. Muat ulang data terlebih dahulu.");
+      if (action === "exception-match") {
+        const match = uniqueSuggestion(item, state.data.suggestions);
+        if (!match) { await refresh(true); throw new Error("Usulan berubah. Periksa antrean terbaru sebelum melanjutkan."); }
+        return allocateModal(match.sale.id, match.receipt.id, { reason: match.reason });
+      }
+      return allocateModal(item.entry.kind === "sale" ? id : "", item.entry.kind === "receipt" ? id : "", {
+        choose: true, reason: item.reason,
+        candidates: action === "exception-choose" && item.status === "ambiguous" ? item.candidate_ids || [] : null,
+      });
+    }
     if (action === "export") return await downloadExport(target);
     if (action === "close") return closeModal();
     if (action === "toggle-password") {
@@ -1077,7 +1178,7 @@ document.addEventListener("click", async (event) => {
     if (action === "match") {
       const match = state.data.suggestions.find((x) => x.sale.id === id);
       if (!match) return toast("Usulan berubah. Muat ulang data.");
-      return allocateModal(match.sale.id, match.receipt.id);
+      return allocateModal(match.sale.id, match.receipt.id, { reason: match.reason });
     }
     if (action === "password")
       return openModal(
@@ -1162,6 +1263,7 @@ document.addEventListener("click", async (event) => {
       toast("Impor dibatalkan");
     }
   } catch (error) {
+    if (error.status === 409) await refresh(true).catch(() => {});
     if (busyForm?.isConnected) showError(busyForm, error);
     else toast(error.message, true);
   } finally {
@@ -1179,6 +1281,7 @@ document.addEventListener("change", (event) => {
     state.preview = null;
     document.querySelector("#import-preview").replaceChildren();
   }
+  if (event.target.id === "exception-filter") { state.exceptionFilter = event.target.value; renderPage(); return; }
   if (event.target.id === "list-size" || event.target.id === "list-status") {
     state.pageSize = Number(document.querySelector("#list-size").value);
     state.status = document.querySelector("#list-status")?.value || "";

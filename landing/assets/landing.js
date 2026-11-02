@@ -1,5 +1,5 @@
 // older shared app links stay usable after the product page takes over the root.
-const oldRoutes = new Set(['login','register','overview','entries','reconcile','imports','history','reports','settings']);
+const oldRoutes = new Set(['login','register','overview','entries','reconcile','exceptions','imports','history','reports','settings']);
 if (oldRoutes.has(location.hash.slice(1))) location.replace('/app' + location.hash);
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
