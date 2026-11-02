@@ -286,7 +286,7 @@ function matches() {
       : state.data.suggestionsError
       ? '<p class="warning" role="status">Usulan belum bisa dimuat. Gunakan tombol muat ulang untuk mencoba lagi.</p>'
       : suggestions.length
-      ? `<div class="matches">${suggestions.map((x) => `<article class="match"><div><small>Penjualan ${e(x.sale.reference)}</small><strong>${e(money(x.sale.amount))}</strong><p>${e(x.sale.name)}</p></div><div><small>Penerimaan ${e(x.receipt.channel)}</small><strong>${e(money(x.receipt.amount))}</strong><p>${e(x.receipt.name)}</p></div><p class="match-reason">${e(x.reason)}</p>${button("Periksa pasangan", "match", x.sale.id, "secondary")}</article>`).join("")}</div>`
+      ? `<div class="matches">${suggestions.map((x) => `<article class="match"><div><small>Penjualan ${e(x.sale.reference)}</small><strong>${e(money(x.sale.amount))}</strong><p>${e(x.sale.name)}</p></div><div><small>Penerimaan ${e(x.receipt.channel)}</small><strong>${e(money(x.receipt.amount))}</strong><p>${e(x.receipt.name)}</p></div>${button("Periksa pasangan", "match", x.sale.id, "secondary")}<p class="match-reason">${e(x.reason)}</p></article>`).join("")}</div>`
       : empty(
           "Tidak ada pasangan unik yang tersisa",
           "Gunakan alokasi manual untuk biaya layanan, pembayaran sebagian, atau pencairan gabungan.",
