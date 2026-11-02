@@ -34,6 +34,24 @@ risiko sinkronisasi source frontend lokal dengan bundle Vercel.
 | P2 | Data demo memuat baris uji `INV-SSE-1` | Seed/demo data | Kebersihan demo |
 | P2 | Indikator koneksi perlu diuji saat SSE gagal | Frontend/observability | Perlu reproduksi |
 
+### 1.1 Verifikasi database VPS
+
+Pada 2 November 2026 saya menjalankan query read-only ke PostgreSQL VPS untuk
+workspace `Roti Sore (Demo)`. Hasilnya:
+
+- 10 baris: `P101`–`P105` penjualan, `R101`–`R104` penerimaan, dan `SSE-1`
+  penjualan yang sudah dibatalkan.
+- Duplikasi `source_id + kind`: **0**.
+- Duplikasi isi transaksi aktif: **0**.
+- Duplikasi checksum batch impor: **0**.
+- Duplikasi alokasi aktif: **0**.
+
+Tidak ada `source_id` bernama persis `P1`; yang ada adalah `P101` sampai `P105`,
+masing-masing satu baris. INV-102 juga bukan duplikasi: database berisi `P102`
+(sale) dan `R102` (receipt) dengan referensi dan nominal yang sama, karena
+keduanya adalah dua sisi transaksi. Yang terlihat sebagai dua kartu di UI adalah
+masalah presentasi, bukan duplicate row database.
+
 ## 2. Rincian temuan
 
 ### F-01 — Satu pasangan menghasilkan dua kartu
@@ -53,7 +71,8 @@ jumlah kandidat, bukan identitas transaksi lawan.*
 **Penyebab:** Backend sengaja mengembalikan satu item per entry/sisi transaksi
 (`umkm_service.go`/`exceptions`), bukan satu item per pasangan. Frontend
 menampilkan array tersebut apa adanya. Ini bukan bug perhitungan saldo dan bukan
-bug backend; endpoint memang kontrak per-entry. Dampaknya adalah beban kognitif
+bug backend; endpoint memang kontrak per-entry. Query database VPS pada bagian
+1.1 juga menunjukkan tidak ada duplicate row. Dampaknya adalah beban kognitif
 dan kemungkinan pengguna mengira ada dua keputusan.
 
 **Perbaikan yang disarankan:** Di frontend, kelompokkan item yang memiliki
@@ -227,6 +246,9 @@ Jangan menampilkan tombol hapus palsu hanya untuk memenuhi tampilan.
 
 **Apa yang saya lihat:** Tabel Transaksi memuat `INV-SSE-1` dengan status
 Dibatalkan. Baris ini tampak seperti data uji internal dan mengganggu cerita demo.
+
+**Bukti database:** `SSE-1` adalah satu baris `sale` dengan `canceled_at` terisi;
+bukan duplikasi dari transaksi demo utama.
 
 ![Anotasi data demo](images/ux-findings/f08-demo-noise.png)
 

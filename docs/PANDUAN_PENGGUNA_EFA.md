@@ -194,6 +194,9 @@ yang harus diselesaikan. Kenyataannya, keduanya adalah dua sisi dari satu
 pasangan. Sebaiknya antrean menjelaskan: "Pasangan ini muncul di kedua sisi;
 menyimpan sekali akan menyelesaikan keduanya."
 
+Catatan verifikasi: query database VPS menunjukkan INV-102 terdiri dari satu
+baris penjualan `P102` dan satu baris penerimaan `R102`; tidak ada duplicate row.
+
 **Langkah pengguna:**
 
 1. Buka **Perlu diperiksa**.
