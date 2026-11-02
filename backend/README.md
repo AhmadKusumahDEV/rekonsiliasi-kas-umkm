@@ -61,6 +61,7 @@ GET  /api/v1/umkm/state
 GET  /api/v1/umkm/suggestions
 GET  /api/v1/umkm/exceptions
 GET  /api/v1/umkm/audit
+DELETE /api/v1/umkm/data
 POST /api/v1/umkm/imports/preview
 POST /api/v1/umkm/imports
 POST /api/v1/umkm/imports/:id/cancel

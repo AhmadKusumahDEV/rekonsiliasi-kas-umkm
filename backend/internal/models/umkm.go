@@ -123,3 +123,8 @@ type AllocationRequest struct {
 	Reason    string `json:"reason" validate:"max=400"`
 	Key       string `json:"key" validate:"required,len=32,hexadecimal"`
 }
+
+type ClearWorkspaceDataRequest struct {
+	Password string `json:"password" validate:"required,max=72"`
+	Confirm  string `json:"confirm" validate:"required"`
+}

@@ -39,6 +39,7 @@ Pengguna aktif adalah pemilik UMKM. Registrasi membuat akun owner dan ruang kerj
 | P-12 | Dapat dilanjutkan tim | UI memakai API versi tim dan mendukung hosting satu domain HTTPS |
 | P-13 | Antrean selisih jelas | Entry belum lunas, parsial, atau ambigu tampil dengan sisa dan alasan |
 | P-14 | Jejak dapat ditelusuri | Audit menunjuk import/allocation yang berubah; data lama tetap terbaca tanpa menebak ID |
+| P-15 | Data dapat dikosongkan | Owner dapat menghapus transaksi dan batch impor dengan konfirmasi password + HAPUS; akun/workspace/audit tetap ada |
 
 ## Halaman
 

@@ -86,6 +86,7 @@ func NewEchoWithObservability(cfg config.Config, s *service.Service, stack *obse
 	umkm.GET("/suggestions", suggestions(s))
 	umkm.GET("/exceptions", exceptions(s))
 	umkm.GET("/audit", auditEvents(s))
+	umkm.DELETE("/data", clearData(s))
 	umkm.POST("/imports/preview", previewImport(s))
 	umkm.POST("/imports", commitImport(s))
 	umkm.POST("/imports/:id/cancel", cancelImport(s))

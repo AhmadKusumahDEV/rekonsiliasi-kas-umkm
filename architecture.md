@@ -512,7 +512,7 @@ SSE handshake bisa menggunakan respons penolakan dari package stream; jangan men
 
 ## 8. Daftar seluruh endpoint integrasi
 
-**19 endpoint utama.** OPTIONS untuk preflight/CORS bukan fitur bisnis tambahan.
+**22 endpoint utama.** OPTIONS untuk preflight/CORS bukan fitur bisnis tambahan.
 
 | ID | Method dan path | Sesi | CSRF | Fungsi |
 | --- | --- | --- | --- | --- |
@@ -535,6 +535,9 @@ SSE handshake bisa menggunakan respons penolakan dari package stream; jangan men
 | E17 | GET /api/v1/umkm/export | Ya | Tidak | Unduh laporan |
 | E18 | GET /api/v1/umkm/events | Ya | Tidak | Stream perubahan |
 | E19 | GET /api/v1/umkm/audit | Ya | Tidak | Halaman audit workspace |
+| E20 | POST /api/v1/auth/password/forgot | Tidak | Tidak | Kirim tautan reset |
+| E21 | POST /api/v1/auth/password/reset | Tidak | Tidak | Simpan password baru |
+| E22 | DELETE /api/v1/umkm/data | Ya | Ya | Kosongkan data workspace |
 
 ## 9. Penjelasan setiap endpoint
 
@@ -852,6 +855,15 @@ GET /api/v1/umkm/audit?before_id=42&limit=50
 tertua pada halaman sebelumnya untuk halaman berikutnya. Array kosong berarti
 sudah tidak ada data. Endpoint ini membaca workspace dari sesi dan tidak menerima
 workspace_id dari browser. Service: ListAuditEvents().
+
+### E20–E22 — Reset password dan kosongkan data
+
+Reset password memakai `POST /api/v1/auth/password/forgot` dan
+`POST /api/v1/auth/password/reset`; kontrak lengkap ada di
+[`backend/docs/API_ROUTES.md`](backend/docs/API_ROUTES.md). `DELETE
+/api/v1/umkm/data` mengosongkan alokasi, entri, batch impor, dan state UMKM
+legacy. Akun, workspace, dan audit tetap ada; endpoint hanya untuk owner dan
+membutuhkan password ulang serta frasa `HAPUS`.
 
 ## 10. Contoh mencoba API dari browser
 

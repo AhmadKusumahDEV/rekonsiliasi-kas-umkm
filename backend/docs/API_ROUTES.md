@@ -32,6 +32,7 @@ ini.
 | GET | `/api/v1/umkm/suggestions` | Cookie | — | 200 |
 | GET | `/api/v1/umkm/exceptions` | Cookie | — | 200 |
 | GET | `/api/v1/umkm/audit` | Cookie | — | 200 |
+| DELETE | `/api/v1/umkm/data` | Cookie | Ya | 200 |
 | POST | `/api/v1/umkm/imports/preview` | Cookie | Ya | 200 |
 | POST | `/api/v1/umkm/imports` | Cookie | Ya | 201 |
 | POST | `/api/v1/umkm/imports/{id}/cancel` | Cookie | Ya | 200 |
@@ -327,6 +328,26 @@ Response berupa array audit terbaru, maksimal 100 item per halaman (default
 untuk mengambil halaman berikutnya. Array kosong berarti tidak ada data lagi.
 State dashboard tetap hanya memuat 120 audit terbaru; endpoint ini dipakai oleh
 halaman Riwayat untuk menelusuri seluruh jejak workspace.
+
+### Kosongkan data workspace
+
+```http
+DELETE /api/v1/umkm/data
+Content-Type: application/json
+X-CSRF-Token: ...
+Cookie: rku_session=...
+```
+
+```json
+{ "password": "kata-sandi-saat-ini", "confirm": "HAPUS" }
+```
+
+Endpoint khusus owner. Verifikasi password dan frasa konfirmasi wajib berhasil
+sebelum transaksi dimulai. Response sukses `200 {"ok":true}`. Yang dihapus:
+`umkm_allocations`, `umkm_entries`, `umkm_imports`, dan state UMKM legacy.
+Akun, workspace, user, sesi, dan audit tetap ada; audit baru mencatat tindakan
+ini dan versi workspace bertambah. Tidak ada restore otomatis; backup database
+tetap tanggung jawab operator.
 
 ### Import preview
 

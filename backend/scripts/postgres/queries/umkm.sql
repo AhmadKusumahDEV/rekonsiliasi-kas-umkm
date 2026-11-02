@@ -16,6 +16,23 @@ FROM public.umkm_allocations
 WHERE workspace_id = @workspace_id
 ORDER BY created_at, id;
 
+-- name: DeleteUmkmAllocationsByWorkspace :execrows
+DELETE FROM public.umkm_allocations
+WHERE workspace_id = @workspace_id;
+
+-- name: DeleteUmkmEntriesByWorkspace :execrows
+DELETE FROM public.umkm_entries
+WHERE workspace_id = @workspace_id;
+
+-- name: DeleteUmkmImportsByWorkspace :execrows
+DELETE FROM public.umkm_imports
+WHERE workspace_id = @workspace_id;
+
+-- name: ClearWorkspaceState :execrows
+UPDATE public.pblg_workspaces
+SET state = '{}'::jsonb
+WHERE id = @workspace_id AND app = @app;
+
 -- name: ListUmkmUnallocatedEntries :many
 SELECT id, workspace_id, batch_id, source_id, kind, occurred_on, reference, name, amount, channel, note, created_at, canceled_at
 FROM public.umkm_entries e

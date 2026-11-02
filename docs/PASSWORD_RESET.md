@@ -54,6 +54,38 @@ Frontend perlu menambahkan:
 Jangan menaruh token di `localStorage` atau mengirimkannya ke analytics/log.
 Token tidak perlu disimpan setelah form dikirim.
 
+Contoh pemanggilan dari frontend:
+
+```js
+await fetch(apiURL("/api/v1/auth/password/forgot"), {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email }),
+});
+
+await fetch(apiURL("/api/v1/auth/password/reset"), {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ token, password: newPassword }),
+});
+```
+
+Kedua endpoint publik sehingga tidak membutuhkan CSRF. Tetap kirim
+`credentials: "include"` bila menggunakan helper fetch yang sama dengan request
+lain; server akan mengabaikan cookie untuk endpoint ini.
+
+Status error yang perlu ditangani:
+
+| Status | Tampilan |
+| --- | --- |
+| 400 | Token/password tidak valid; minta tautan baru atau tampilkan aturan password |
+| 429 | Terlalu banyak percobaan; tampilkan waktu tunggu |
+| 503 | Email/database belum siap; minta coba lagi nanti |
+
+Setelah `forgot` sukses, jangan mengubah pesan berdasarkan status akun. Setelah
+`reset` sukses, hapus fragment token dari address bar sebelum mengarahkan ke
+login.
+
 ## Environment
 
 Backend membutuhkan:

@@ -78,6 +78,12 @@ dipakai frontend, deployment VPS, restore backup, dan UAT dengan data UMKM nyata
 - Migration `000005_password_reset_tokens` sudah diterapkan oleh test harness;
   deployment VPS tetap harus menjalankan migration sebelum API baru dipakai.
 
+### Kosongkan data workspace
+
+- `TestClearWorkspaceDataKeepsAccountAndAudit` lulus: salah password/frasa
+  ditolak, allocations/entries/imports terhapus, akun dan audit tetap ada, dan
+  file yang sama dapat diimpor ulang setelah checksum lama ikut dihapus.
+
 ## Menjalankan ulang
 
 Backend:

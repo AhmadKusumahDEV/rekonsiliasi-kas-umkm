@@ -20,6 +20,7 @@ frontend/assets/app.js mengelola form, navigasi hash dan API; design.js menyusun
 | AUTH-08 | Semua objek dibatasi workspace sesi; 401 sesi tidak valid, 403 CSRF tidak cocok |
 | AUTH-09 | Forgot password selalu memberi respons generik untuk email valid; email hanya dikirim jika akun ditemukan |
 | AUTH-10 | Reset password memakai token sekali pakai ber-hash, expiry 15 menit default, dan mencabut seluruh sesi lama |
+| DATA-01 | Owner dapat mengosongkan seluruh data transaksi workspace dengan password ulang dan frasa HAPUS; akun, workspace, dan audit tetap ada |
 
 Limiter berada di memori per proses. Backend hanya boleh mempercayai forwarded header dari proxy yang dikelola.
 
@@ -83,6 +84,7 @@ Prefix **/api/v1** untuk semua path di tabel.
 | GET | /umkm/suggestions | Kandidat unik |
 | GET | /umkm/exceptions | Antrean entry yang masih perlu keputusan |
 | GET | /umkm/audit | Halaman audit workspace dengan cursor before_id |
+| DELETE | /umkm/data | Kosongkan transaksi dan batch impor tanpa menghapus workspace |
 | POST | /umkm/imports/preview | Validasi tanpa tulis |
 | POST | /umkm/imports | Commit batch |
 | POST | /umkm/imports/:id/cancel | Pembatalan batch |
