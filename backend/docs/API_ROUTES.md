@@ -23,6 +23,8 @@ ini.
 | GET | `/api/v1/config` | Publik | — | 200 |
 | POST | `/api/v1/auth/register` | Publik | — | 201 |
 | POST | `/api/v1/auth/login` | Publik | — | 200 |
+| POST | `/api/v1/auth/password/forgot` | Publik | — | 202 |
+| POST | `/api/v1/auth/password/reset` | Publik | — | 200 |
 | GET | `/api/v1/auth/me` | Cookie | — | 200 |
 | POST | `/api/v1/auth/logout` | Cookie | Ya | 200 |
 | PUT | `/api/v1/auth/password` | Cookie | Ya | 200 |
@@ -53,6 +55,62 @@ non-GET harus membawa header `X-CSRF-Token` dari response login/register atau
 5. Kirim `X-CSRF-Token` pada setiap request non-GET setelah login.
 6. `POST /api/v1/auth/logout` atau `PUT /api/v1/auth/password` akan
    membersihkan/menghapus session; frontend harus kembali ke login.
+
+## Reset kata sandi
+
+Endpoint reset sengaja publik karena pengguna belum memiliki sesi. Keduanya
+memakai rate limiter auth yang sama dan tidak memerlukan CSRF.
+
+### Lupa kata sandi
+
+```http
+POST /api/v1/auth/password/forgot
+Content-Type: application/json
+```
+
+```json
+{ "email": "owner@example.com" }
+```
+
+Response selalu `202 {"ok":true}` untuk email yang valid, baik akun ditemukan
+maupun tidak. Ini mencegah penebakan email terdaftar. Jika akun ditemukan,
+backend mengirim tautan `APP_PUBLIC_URL` + `/app#reset?token=...` melalui
+Resend. Token berlaku `PASSWORD_RESET_TTL` (default 15 menit), disimpan sebagai
+hash, dan token lama untuk user tersebut dibatalkan.
+
+### Reset kata sandi
+
+```http
+POST /api/v1/auth/password/reset
+Content-Type: application/json
+```
+
+```json
+{
+  "token": "64-hex-token-from-email",
+  "password": "kata-sandi-baru-minimal-12-karakter"
+}
+```
+
+Token hanya dapat dipakai sekali. Sukses `200 {"ok":true}`; token salah,
+kedaluwarsa, atau sudah dipakai menghasilkan `400`. Password baru harus lolos
+aturan password yang sama dengan register (minimal 12 karakter, maksimal 72
+byte UTF-8). Setelah reset, semua sesi lama dicabut.
+
+### Environment email
+
+Backend menerima konfigurasi melalui environment berikut:
+
+```text
+RESEND_API_KEY=...
+RESEND_FROM_EMAIL=noreply@madgo.my.id
+APP_PUBLIC_URL=https://efa.madgo.my.id
+PASSWORD_RESET_TTL=15m
+```
+
+Jangan menaruh API key di repository. Untuk Compose VPS yang memakai
+`otel.env` sebagai `env_file`, tambahkan empat key tersebut ke file environment
+container API, lalu rebuild.
 
 Cookie session bernama `rku_session`, dengan `HttpOnly`, `SameSite=Strict`,
 dan `Secure` saat HTTPS. Ketiga atribut telah diverifikasi dari login browser

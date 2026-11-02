@@ -30,3 +30,9 @@ database:
   max_conn_idle_time: 5m
   health_check_period: 30s
   connect_timeout: 10s
+
+email:
+  # Isi RESEND_API_KEY dari environment. Jangan commit API key.
+  from: noreply@madgo.my.id
+  app_url: http://localhost:3000
+  reset_ttl: 15m

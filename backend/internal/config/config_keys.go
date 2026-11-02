@@ -15,6 +15,10 @@ const (
 	EnvDatabasePassword   = "DATABASE_PASSWORD"
 	EnvDatabaseName       = "DATABASE_NAME"
 	EnvDatabaseSSLMode    = "DATABASE_SSLMODE"
+	EnvEmailAPIKey        = "RESEND_API_KEY"
+	EnvEmailFrom          = "RESEND_FROM_EMAIL"
+	EnvEmailAppURL        = "APP_PUBLIC_URL"
+	EnvEmailResetTTL      = "PASSWORD_RESET_TTL"
 )
 
 const (
@@ -41,4 +45,8 @@ const (
 	KeyDatabaseMaxConnIdleTime   = "database.max_conn_idle_time"
 	KeyDatabaseHealthCheckPeriod = "database.health_check_period"
 	KeyDatabaseConnectTimeout    = "database.connect_timeout"
+	KeyEmailAPIKey               = "email.api_key"
+	KeyEmailFrom                 = "email.from"
+	KeyEmailAppURL               = "email.app_url"
+	KeyEmailResetTTL             = "email.reset_ttl"
 )

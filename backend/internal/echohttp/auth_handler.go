@@ -92,6 +92,39 @@ func changePassword(s *service.Service) echo.HandlerFunc {
 	}
 }
 
+func forgotPassword(s *service.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req models.ForgotPasswordRequest
+		if err := c.Bind(&req); err != nil {
+			return err
+		}
+		if err := c.Validate(&req); err != nil {
+			return err
+		}
+		if err := s.ForgotPassword(c.Request().Context(), req); err != nil {
+			return err
+		}
+		// Keep the response identical for known and unknown email addresses.
+		return c.JSON(http.StatusAccepted, map[string]bool{"ok": true})
+	}
+}
+
+func resetPassword(s *service.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var req models.ResetPasswordRequest
+		if err := c.Bind(&req); err != nil {
+			return err
+		}
+		if err := c.Validate(&req); err != nil {
+			return err
+		}
+		if err := s.ResetPassword(c.Request().Context(), req); err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, map[string]bool{"ok": true})
+	}
+}
+
 func setSessionCookie(c echo.Context, token string, expiresAt int64) {
 	c.SetCookie(&http.Cookie{
 		Name:     config.SessionCookieName,

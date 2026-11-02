@@ -66,6 +66,18 @@ database pengguna.
 Yang belum diuji pada iterasi ini: E2E browser setelah endpoint exceptions/audit
 dipakai frontend, deployment VPS, restore backup, dan UAT dengan data UMKM nyata.
 
+## Reset kata sandi — 2 November 2026
+
+- `TestPasswordResetFlow` lulus dengan PostgreSQL test: register, forgot,
+  token dari URL email palsu, reset, pencabutan sesi lama, penolakan password
+  lama, dan penolakan token yang dipakai ulang.
+- Email adapter Resend diuji manual ke alamat penerima yang diminta; provider
+  menerima request dengan HTTP 200.
+- Frontend form `#forgot` dan `#reset` belum diimplementasikan; kontraknya ada
+  di [PASSWORD_RESET.md](PASSWORD_RESET.md).
+- Migration `000005_password_reset_tokens` sudah diterapkan oleh test harness;
+  deployment VPS tetap harus menjalankan migration sebelum API baru dipakai.
+
 ## Menjalankan ulang
 
 Backend:

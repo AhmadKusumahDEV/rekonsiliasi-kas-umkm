@@ -25,6 +25,22 @@ func (q *Queries) BumpWorkspaceVersion(ctx context.Context, workspaceID string) 
 	return version, err
 }
 
+const createPasswordResetToken = `-- name: CreatePasswordResetToken :exec
+INSERT INTO public.pblg_password_reset_tokens (token_hash, user_id, expires_at)
+VALUES ($1, $2, $3)
+`
+
+type CreatePasswordResetTokenParams struct {
+	TokenHash string             `json:"token_hash"`
+	UserID    string             `json:"user_id"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+}
+
+func (q *Queries) CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) error {
+	_, err := q.db.Exec(ctx, createPasswordResetToken, arg.TokenHash, arg.UserID, arg.ExpiresAt)
+	return err
+}
+
 const createSession = `-- name: CreateSession :exec
 INSERT INTO public.pblg_sessions (token_hash, user_id, csrf, expires_at)
 VALUES ($1, $2, $3, $4)
@@ -109,6 +125,26 @@ func (q *Queries) CreateWorkspace(ctx context.Context, arg CreateWorkspaceParams
 	return i, err
 }
 
+const deletePasswordResetTokenByHash = `-- name: DeletePasswordResetTokenByHash :exec
+DELETE FROM public.pblg_password_reset_tokens
+WHERE token_hash = $1
+`
+
+func (q *Queries) DeletePasswordResetTokenByHash(ctx context.Context, tokenHash string) error {
+	_, err := q.db.Exec(ctx, deletePasswordResetTokenByHash, tokenHash)
+	return err
+}
+
+const deletePasswordResetTokensByUser = `-- name: DeletePasswordResetTokensByUser :exec
+DELETE FROM public.pblg_password_reset_tokens
+WHERE user_id = $1
+`
+
+func (q *Queries) DeletePasswordResetTokensByUser(ctx context.Context, userID string) error {
+	_, err := q.db.Exec(ctx, deletePasswordResetTokensByUser, userID)
+	return err
+}
+
 const deleteSessionByTokenHash = `-- name: DeleteSessionByTokenHash :execrows
 DELETE FROM public.pblg_sessions
 WHERE token_hash = $1
@@ -133,6 +169,25 @@ func (q *Queries) DeleteSessionsByUserID(ctx context.Context, userID string) (in
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const getPasswordResetTokenForUpdate = `-- name: GetPasswordResetTokenForUpdate :one
+SELECT user_id, expires_at
+FROM public.pblg_password_reset_tokens
+WHERE token_hash = $1
+FOR UPDATE
+`
+
+type GetPasswordResetTokenForUpdateRow struct {
+	UserID    string             `json:"user_id"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+}
+
+func (q *Queries) GetPasswordResetTokenForUpdate(ctx context.Context, tokenHash string) (GetPasswordResetTokenForUpdateRow, error) {
+	row := q.db.QueryRow(ctx, getPasswordResetTokenForUpdate, tokenHash)
+	var i GetPasswordResetTokenForUpdateRow
+	err := row.Scan(&i.UserID, &i.ExpiresAt)
+	return i, err
 }
 
 const getSessionUser = `-- name: GetSessionUser :one
@@ -218,6 +273,24 @@ func (q *Queries) GetUserForLogin(ctx context.Context, arg GetUserForLoginParams
 		&i.PasswordHash,
 	)
 	return i, err
+}
+
+const getUserIDByEmail = `-- name: GetUserIDByEmail :one
+SELECT id
+FROM public.pblg_users
+WHERE app = $1 AND email = $2
+`
+
+type GetUserIDByEmailParams struct {
+	App   string `json:"app"`
+	Email string `json:"email"`
+}
+
+func (q *Queries) GetUserIDByEmail(ctx context.Context, arg GetUserIDByEmailParams) (string, error) {
+	row := q.db.QueryRow(ctx, getUserIDByEmail, arg.App, arg.Email)
+	var id string
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getUserPasswordHash = `-- name: GetUserPasswordHash :one

@@ -73,6 +73,8 @@ func NewEchoWithObservability(cfg config.Config, s *service.Service, stack *obse
 	authLimit := authRateLimiter()
 	v1.POST("/auth/register", register(s), authLimit)
 	v1.POST("/auth/login", login(s), authLimit)
+	v1.POST("/auth/password/forgot", forgotPassword(s), authLimit)
+	v1.POST("/auth/password/reset", resetPassword(s), authLimit)
 
 	protected := v1.Group("", sessionMiddleware(s))
 	protected.GET("/auth/me", me(s))

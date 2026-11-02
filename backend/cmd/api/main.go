@@ -14,6 +14,7 @@ import (
 
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/config"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/echohttp"
+	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/email"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/service"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/pkg/database"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/pkg/observability"
@@ -64,6 +65,9 @@ func run() error {
 
 	httpClient := stack.HTTPClient(&http.Client{Timeout: 30 * time.Second})
 	svc := service.NewService(cfg, db, httpClient)
+	if strings.TrimSpace(cfg.Email.APIKey) != "" {
+		svc.SetPasswordResetMailer(email.NewResend(cfg.Email.APIKey, cfg.Email.From, httpClient))
+	}
 	sseManager, err := echohttp.NewSSEManager(cfg, svc, logger)
 	if err != nil {
 		return fmt.Errorf("create sse manager: %w", err)

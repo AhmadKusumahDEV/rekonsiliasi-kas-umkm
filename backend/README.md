@@ -45,6 +45,8 @@ Endpoint publik:
 GET  /api/v1/config
 POST /api/v1/auth/register
 POST /api/v1/auth/login
+POST /api/v1/auth/password/forgot
+POST /api/v1/auth/password/reset
 GET  /health/live
 GET  /health/ready
 ```
@@ -72,6 +74,10 @@ Stream SSE memakai cookie sesi dan tidak memerlukan CSRF:
 ```text
 GET  /api/v1/umkm/events
 ```
+
+Reset kata sandi memakai Resend. Isi `RESEND_API_KEY`, `RESEND_FROM_EMAIL`,
+`APP_PUBLIC_URL`, dan `PASSWORD_RESET_TTL` pada environment container API.
+Detail kontrak ada di [`docs/API_ROUTES.md`](docs/API_ROUTES.md).
 
 ## Testing
 

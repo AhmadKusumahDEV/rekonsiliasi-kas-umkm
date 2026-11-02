@@ -42,6 +42,15 @@ type ChangePasswordRequest struct {
 	Password string `json:"password" validate:"required,min=12,max=72"`
 }
 
+type ForgotPasswordRequest struct {
+	Email string `json:"email" validate:"required,email,max=254"`
+}
+
+type ResetPasswordRequest struct {
+	Token    string `json:"token" validate:"required,max=128"`
+	Password string `json:"password" validate:"required,min=12,max=72"`
+}
+
 type AuthResponse struct {
 	User User   `json:"user"`
 	CSRF string `json:"csrf"`

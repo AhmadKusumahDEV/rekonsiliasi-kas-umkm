@@ -17,6 +17,7 @@
 - [PRD](PRD.md)
 - [FRD](FRD.md)
 - [Integrasi frontend/backend tim](INTEGRATION.md)
+- [Handoff reset kata sandi](PASSWORD_RESET.md)
 - [Handoff backend MVP ke frontend](MVP_FRONTEND_INTEGRATION.md)
 - [Tindak lanjut temuan UX dan pengujian](UX_IMPLEMENTATION.md)
 - [Verifikasi integrasi MVP dan kesesuaian scope PDF](MVP_FRONTEND_VERIFICATION.md)

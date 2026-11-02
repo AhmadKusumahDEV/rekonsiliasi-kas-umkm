@@ -64,7 +64,7 @@ atau antrean perubahan offline. Source dan panduan ada di [pwa/](../pwa/README.m
 - Input CSV manual; belum terhubung langsung ke bank, QRIS, atau marketplace.
 - Bukan saldo bank langsung, akuntansi lengkap, atau perhitungan laba.
 - Tidak memakai AI untuk memutuskan pasangan.
-- Belum ada reset password email, MFA, undangan staf, atau hapus akun mandiri.
+- Reset password email tersedia; MFA, undangan staf, dan hapus akun mandiri belum ada.
 - Penyegaran memakai SSE workspace milik tim, dengan pemeriksaan state saat reconnect dan polling fallback ketika tab terlihat.
 - Akun contoh sintetis; belum ada klaim validasi lapangan atau penghematan terukur.
 - Penggunaan finansial nyata memerlukan persetujuan pemilik data, kebijakan privasi, backup/restore dan penilaian keamanan.
