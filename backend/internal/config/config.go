@@ -19,6 +19,7 @@ type Config struct {
 	App      AppConfig      `mapstructure:"app"`
 	Server   ServerConfig   `mapstructure:"server"`
 	Database DatabaseConfig `mapstructure:"database"`
+	Email    EmailConfig    `mapstructure:"email"`
 }
 
 type AppConfig struct {
@@ -55,6 +56,13 @@ type DatabaseConfig struct {
 	MaxConnIdleTime   time.Duration `mapstructure:"max_conn_idle_time"`
 	HealthCheckPeriod time.Duration `mapstructure:"health_check_period"`
 	ConnectTimeout    time.Duration `mapstructure:"connect_timeout"`
+}
+
+type EmailConfig struct {
+	APIKey   string        `mapstructure:"api_key"`
+	From     string        `mapstructure:"from"`
+	AppURL   string        `mapstructure:"app_url"`
+	ResetTTL time.Duration `mapstructure:"reset_ttl"`
 }
 
 func (d DatabaseConfig) ToDatabaseConfig() database.Config {
@@ -103,6 +111,10 @@ func Load() (Config, error) {
 		KeyDatabasePass:    EnvDatabasePassword,
 		KeyDatabaseName:    EnvDatabaseName,
 		KeyDatabaseSSLMode: EnvDatabaseSSLMode,
+		KeyEmailAPIKey:     EnvEmailAPIKey,
+		KeyEmailFrom:       EnvEmailFrom,
+		KeyEmailAppURL:     EnvEmailAppURL,
+		KeyEmailResetTTL:   EnvEmailResetTTL,
 	} {
 		if err := v.BindEnv(key, env); err != nil {
 			return Config{}, fmt.Errorf("bind config %s: %w", key, err)
@@ -161,6 +173,9 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault(KeyDatabaseMaxConnIdleTime, "5m")
 	v.SetDefault(KeyDatabaseHealthCheckPeriod, "30s")
 	v.SetDefault(KeyDatabaseConnectTimeout, "10s")
+	v.SetDefault(KeyEmailFrom, "noreply@madgo.my.id")
+	v.SetDefault(KeyEmailAppURL, "http://localhost:3000")
+	v.SetDefault(KeyEmailResetTTL, "15m")
 }
 
 func (c *Config) applyDefaults() {
@@ -208,6 +223,15 @@ func (c *Config) applyDefaults() {
 	}
 	if c.Database.ConnectTimeout == 0 {
 		c.Database.ConnectTimeout = 10 * time.Second
+	}
+	if c.Email.From == "" {
+		c.Email.From = "noreply@madgo.my.id"
+	}
+	if c.Email.AppURL == "" {
+		c.Email.AppURL = "http://localhost:3000"
+	}
+	if c.Email.ResetTTL == 0 {
+		c.Email.ResetTTL = 15 * time.Minute
 	}
 }
 

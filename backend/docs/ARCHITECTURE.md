@@ -72,7 +72,8 @@ API domain memakai prefix `/api/v1`. Endpoint publik:
 
 - `GET /health/live`, `GET /health/ready`
 - `GET /api/v1/config`
-- `POST /api/v1/auth/register`, `POST /api/v1/auth/login`
+- `POST /api/v1/auth/register`, `POST /api/v1/auth/login`,
+  `POST /api/v1/auth/password/forgot`, `POST /api/v1/auth/password/reset`
 
 Group privat memakai `sessionMiddleware` (cookie + CSRF):
 
@@ -81,6 +82,7 @@ Group privat memakai `sessionMiddleware` (cookie + CSRF):
   `GET /api/v1/umkm/exceptions`, `GET /api/v1/umkm/audit`
 - `POST /api/v1/umkm/imports/preview`, `POST /api/v1/umkm/imports`, `POST /api/v1/umkm/imports/:id/cancel`
 - `POST /api/v1/umkm/allocations`, `POST /api/v1/umkm/allocations/:id/undo`, `GET /api/v1/umkm/export`
+- `DELETE /api/v1/umkm/data`
 
 Middleware sesi/CSRF ada di `auth_middleware.go`; handler mengambil session dari
 context, bukan dari payload klien.

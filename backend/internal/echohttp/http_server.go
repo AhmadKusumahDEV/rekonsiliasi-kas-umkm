@@ -73,6 +73,8 @@ func NewEchoWithObservability(cfg config.Config, s *service.Service, stack *obse
 	authLimit := authRateLimiter()
 	v1.POST("/auth/register", register(s), authLimit)
 	v1.POST("/auth/login", login(s), authLimit)
+	v1.POST("/auth/password/forgot", forgotPassword(s), authLimit)
+	v1.POST("/auth/password/reset", resetPassword(s), authLimit)
 
 	protected := v1.Group("", sessionMiddleware(s))
 	protected.GET("/auth/me", me(s))
@@ -84,6 +86,7 @@ func NewEchoWithObservability(cfg config.Config, s *service.Service, stack *obse
 	umkm.GET("/suggestions", suggestions(s))
 	umkm.GET("/exceptions", exceptions(s))
 	umkm.GET("/audit", auditEvents(s))
+	umkm.DELETE("/data", clearData(s))
 	umkm.POST("/imports/preview", previewImport(s))
 	umkm.POST("/imports", commitImport(s))
 	umkm.POST("/imports/:id/cancel", cancelImport(s))

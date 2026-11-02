@@ -59,3 +59,22 @@ func TestAllowedOriginsAreNormalized(t *testing.T) {
 		}
 	}
 }
+
+func TestEmailEnvironmentIsLoaded(t *testing.T) {
+	t.Setenv(config.EnvAppConfigFile, filepath.Join("..", "..", "configs", "local.yaml.example"))
+	t.Setenv(config.EnvEmailAPIKey, "test-api-key")
+	t.Setenv(config.EnvEmailFrom, "reset@example.test")
+	t.Setenv(config.EnvEmailAppURL, "https://efa.example.test")
+	t.Setenv(config.EnvEmailResetTTL, "20m")
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.Email.APIKey != "test-api-key" || cfg.Email.From != "reset@example.test" || cfg.Email.AppURL != "https://efa.example.test" {
+		t.Fatalf("unexpected email config: %+v", cfg.Email)
+	}
+	if cfg.Email.ResetTTL != 20*time.Minute {
+		t.Fatalf("email.reset_ttl = %s, want 20m", cfg.Email.ResetTTL)
+	}
+}

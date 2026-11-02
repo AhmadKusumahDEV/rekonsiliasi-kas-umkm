@@ -18,6 +18,9 @@ frontend/assets/app.js mengelola form, navigasi hash dan API; design.js menyusun
 | AUTH-06 | Logout menghapus sesi; ganti password memerlukan password lama dan mengakhiri seluruh sesi |
 | AUTH-07 | Register/login berbagi limiter per IP: burst 25, refill 25 token/600 detik, 429 saat habis |
 | AUTH-08 | Semua objek dibatasi workspace sesi; 401 sesi tidak valid, 403 CSRF tidak cocok |
+| AUTH-09 | Forgot password selalu memberi respons generik untuk email valid; email hanya dikirim jika akun ditemukan |
+| AUTH-10 | Reset password memakai token sekali pakai ber-hash, expiry 15 menit default, dan mencabut seluruh sesi lama |
+| DATA-01 | Owner dapat mengosongkan seluruh data transaksi workspace dengan password ulang dan frasa HAPUS; akun, workspace, dan audit tetap ada |
 
 Limiter berada di memori per proses. Backend hanya boleh mempercayai forwarded header dari proxy yang dikelola.
 
@@ -72,6 +75,8 @@ Prefix **/api/v1** untuk semua path di tabel.
 | GET | /config | kind, brand, tagline, roles, limits |
 | POST | /auth/register | 201 user + csrf dan cookie |
 | POST | /auth/login | 200 user + csrf dan cookie |
+| POST | /auth/password/forgot | 202 generik; tautan dikirim jika akun ada |
+| POST | /auth/password/reset | 200 setelah password diganti dan sesi dicabut |
 | GET | /auth/me | user + csrf |
 | POST | /auth/logout | Akhiri sesi |
 | PUT | /auth/password | Ganti password dan akhiri seluruh sesi |
@@ -79,6 +84,7 @@ Prefix **/api/v1** untuk semua path di tabel.
 | GET | /umkm/suggestions | Kandidat unik |
 | GET | /umkm/exceptions | Antrean entry yang masih perlu keputusan |
 | GET | /umkm/audit | Halaman audit workspace dengan cursor before_id |
+| DELETE | /umkm/data | Kosongkan transaksi dan batch impor tanpa menghapus workspace |
 | POST | /umkm/imports/preview | Validasi tanpa tulis |
 | POST | /umkm/imports | Commit batch |
 | POST | /umkm/imports/:id/cancel | Pembatalan batch |
@@ -98,6 +104,7 @@ Error JSON: {code,status,message,request_id}. 400 input; 401 sesi/kredensial; 40
 | pblg_workspaces | Usaha dan version mutasi |
 | pblg_users | Pemilik dan hash password |
 | pblg_sessions | Hash token, CSRF, expiry |
+| pblg_password_reset_tokens | Hash token reset, user, expiry |
 | pblg_audit | Aktor, aksi, detail, waktu, entity_type/entity_id, actor_user_id |
 | umkm_imports | Batch, checksum, jenis, waktu cancel |
 | umkm_entries | Penjualan/penerimaan, source ID |

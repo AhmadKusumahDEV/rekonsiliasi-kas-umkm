@@ -39,6 +39,7 @@ Pengguna aktif adalah pemilik UMKM. Registrasi membuat akun owner dan ruang kerj
 | P-12 | Dapat dilanjutkan tim | UI memakai API versi tim dan mendukung hosting satu domain HTTPS |
 | P-13 | Antrean selisih jelas | Entry belum lunas, parsial, atau ambigu tampil dengan sisa dan alasan |
 | P-14 | Jejak dapat ditelusuri | Audit menunjuk import/allocation yang berubah; data lama tetap terbaca tanpa menebak ID |
+| P-15 | Data dapat dikosongkan | Owner dapat menghapus transaksi dan batch impor dengan konfirmasi password + HAPUS; akun/workspace/audit tetap ada |
 
 ## Halaman
 
@@ -64,7 +65,7 @@ atau antrean perubahan offline. Source dan panduan ada di [pwa/](../pwa/README.m
 - Input CSV manual; belum terhubung langsung ke bank, QRIS, atau marketplace.
 - Bukan saldo bank langsung, akuntansi lengkap, atau perhitungan laba.
 - Tidak memakai AI untuk memutuskan pasangan.
-- Belum ada reset password email, MFA, undangan staf, atau hapus akun mandiri.
+- Reset password email tersedia; MFA, undangan staf, dan hapus akun mandiri belum ada.
 - Penyegaran memakai SSE workspace milik tim, dengan pemeriksaan state saat reconnect dan polling fallback ketika tab terlihat.
 - Akun contoh sintetis; belum ada klaim validasi lapangan atau penghematan terukur.
 - Penggunaan finansial nyata memerlukan persetujuan pemilik data, kebijakan privasi, backup/restore dan penilaian keamanan.
