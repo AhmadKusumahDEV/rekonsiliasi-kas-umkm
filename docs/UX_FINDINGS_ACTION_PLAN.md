@@ -1,5 +1,7 @@
 # Rincian Temuan UX dan Rencana Kerja Frontend/Backend
 
+> Dokumen ini mencatat audit sebelum perbaikan. Status implementasi frontend dan bagian yang masih menunggu backend/data ada pada [tindak lanjut UX](UX_IMPLEMENTATION.md). Screenshot di bawah tetap menjadi bukti kondisi saat audit.
+
 Tanggal: 2 November 2026
 Acuan pengujian: `https://efa.madgo.my.id/app` dengan workspace demo
 `Roti Sore (Demo)`. Pengujian UI dilakukan read-only: tidak ada alokasi, impor,

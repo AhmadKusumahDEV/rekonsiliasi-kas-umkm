@@ -15,6 +15,24 @@ export function uniqueSuggestion(item, suggestions) {
   if (!item?.suggestion_available || item.status === 'ambiguous' || item.status === 'partial') return null;
   return (suggestions || []).find(match => match.sale.id === item.entry.id || match.receipt.id === item.entry.id) || null;
 }
+// only group a verified, reciprocal pair; partial and ambiguous entries stay separate.
+export function exceptionGroups(items, suggestions) {
+  const grouped = new Map();
+  const byId = new Map(items.map(item => [item.entry.id, item]));
+  return items.reduce((rows, item) => {
+    const match = uniqueSuggestion(item, suggestions);
+    const counterpart = match && (item.entry.kind === 'sale' ? match.receipt.id : match.sale.id);
+    const reciprocal = match && uniqueSuggestion(byId.get(counterpart), suggestions) === match;
+    const pairKey = reciprocal ? `${match.sale.id}:${match.receipt.id}` : null;
+    if (pairKey && grouped.has(pairKey)) grouped.get(pairKey).items.push(item);
+    else {
+      const row = {item, match, items: [item], paired: Boolean(pairKey)};
+      rows.push(row);
+      if (pairKey) grouped.set(pairKey, row);
+    }
+    return rows;
+  }, []);
+}
 export function auditTarget(event) {
   return ['import','allocation'].includes(event.entity_type) && /^[a-f0-9]{32}$/.test(event.entity_id || '')
     ? `${event.entity_type}:${event.entity_id}` : null;

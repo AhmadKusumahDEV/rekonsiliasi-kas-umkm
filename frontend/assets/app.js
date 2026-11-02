@@ -1,4 +1,4 @@
-import { importLimits, validateImportSize, uniqueSuggestion, auditTarget, mergeAudit } from "./mvp.js?v=mvp1";
+import { importLimits, validateImportSize, uniqueSuggestion, exceptionGroups, auditTarget, mergeAudit } from "./mvp.js?v=ux1";
 import { apiURL } from "./api-config.js?v=team2";
 import { createAPIClient } from "./api-client.js?v=team2";
 import { validatePassword, deduplicatePreview, selectAllocation } from "./validation.js?v=audit1";
@@ -17,6 +17,7 @@ const toastElement = document.querySelector("#toast");
 
 const state = {
   config: null,
+  connection: "limited",
   audit: { rows: [], loading: false, loaded: false, more: true, error: "", generation: 0 },
   exceptionFilter: "",
   me: null,
@@ -153,7 +154,7 @@ function navHTML() {
 
 function renderShell() {
   const context = `<strong>${e(state.data.workspace.name)}</strong><small>${e(roles[state.me.role])}</small>`;
-  const account = `<div class="account"><span class="connection" data-online="true">Data terhubung</span>${button("Data baru · muat ulang", "refresh", "", "small")}<strong>${e(state.me.name)}</strong></div>`;
+  const account = `<div class="account"><span class="connection" role="status" data-online="${state.connection === 'live'}">${connectionLabel()}</span>${button("Data baru · muat ulang", "refresh", "", "small")}<strong>${e(state.me.name)}</strong></div>`;
   root.innerHTML = shell({
     kind: state.config.kind,
     brandName: state.config.brand,
@@ -243,6 +244,9 @@ function entriesPage() {
           : balance(x) === 0
             ? '<span class="tag good">Cocok</span>'
             : '<span class="tag warn">Ada sisa</span>',
+        x.canceled ? '<span class="muted">Dibatalkan</span>' : balance(x) > 0
+          ? button('Tindak lanjuti', 'entry-followup', x.id, 'small')
+          : '<span class="muted">Sudah cocok</span>',
       ],
     }));
   return (
@@ -252,7 +256,7 @@ function entriesPage() {
       button("Impor CSV", "import", "", "primary"),
     ) +
     listHTML(
-      ["Referensi", "Nama", "Jenis", "Nominal", "Sisa", "Status"],
+      ["Referensi", "Nama", "Jenis", "Nominal", "Sisa", "Status", "Tindakan"],
       rows,
       [
         ["sale", "Penjualan"],
@@ -338,7 +342,7 @@ function historyPage() {
     listHTML(["Waktu", "Pelaksana", "Aktivitas", "Keterangan", "Terkait"], audit.rows.map(x => ({
       search: `${x.actor} ${x.action} ${x.detail}`, status: "",
       cells: [e(date(x.created_at)), e(x.actor), `<strong>${e(x.action)}</strong>`, e(x.detail),
-        auditTarget(x) ? button("Lihat detail", "audit-entity", auditTarget(x)) : '<span class="muted">Catatan historis</span>'],
+        auditTarget(x) ? button("Lihat detail", "audit-entity", auditTarget(x)) : '<span class="muted">Catatan historis<small class="sub">Event lama belum menyimpan tautan ke impor atau alokasi.</small></span>'],
     }))) + (audit.loaded && audit.more && !audit.loading && !audit.error ? button("Muat aktivitas lebih lama", "audit-more") : '') +
     (audit.loaded && !audit.more && !audit.loading ? '<p class="muted">Seluruh riwayat sudah dimuat.</p>' : '');
 }
@@ -383,13 +387,21 @@ function exceptionsPage() {
   if (data.exceptionsLoading) content = '<p role="status">Memuat antrean selisih…</p>';
   else if (data.exceptionsError || !Array.isArray(data.exceptions)) content = '<section class="panel"><p class="warning" role="alert">Antrean belum termuat. Ini bukan berarti semua transaksi sudah cocok.</p>' + button('Coba muat antrean', 'refresh') + '</section>';
   else {
-    const rows = data.exceptions.filter(x => !state.exceptionFilter || x.status === state.exceptionFilter);
-    content = `<label for="exception-filter">Tampilkan<select id="exception-filter">${[['','Semua'],['unmatched','Belum cocok'],['partial','Masih ada sisa'],['ambiguous','Kandidat perlu dipilih']].map(([value,label])=>`<option value="${value}" ${state.exceptionFilter === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label><p class="muted">${rows.length} transaksi pada tampilan ini. Penjualan dan penerimaan dihitung terpisah.</p>` +
-      (rows.length ? '<div class="exception-list">' + rows.map(item => {
-        const match = uniqueSuggestion(item, data.suggestions);
+    const items = data.exceptions.filter(x => !state.exceptionFilter || x.status === state.exceptionFilter);
+    const rows = exceptionGroups(items, data.suggestions);
+    const entryById = new Map((data.state.entries || []).map(entry => [entry.id, entry]));
+    const entrySummary = (entry, label) => `<div class="exception-entry"><small>${e(label)}</small><strong>${e(entry.reference || entry.source_id)}</strong><span>${e(entry.name)} · ${e(entry.channel)}</span><span>${entry.kind === 'sale' ? 'Penjualan' : 'Penerimaan'} · ${e(money(entry.amount))}</span><span>Sisa ${e(money(balance(entry)))} · ${entry.canceled ? 'Dibatalkan' : balance(entry) === 0 ? 'Sudah cocok' : balance(entry) < entry.amount ? 'Sebagian dialokasikan' : 'Belum dialokasikan'}</span></div>`;
+    content = `<label for="exception-filter">Tampilkan<select id="exception-filter">${[['','Semua'],['unmatched','Belum cocok'],['partial','Masih ada sisa'],['ambiguous','Kandidat perlu dipilih']].map(([value,label])=>`<option value="${value}" ${state.exceptionFilter === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label><p class="muted">${rows.length} kartu dari ${items.length} sisi transaksi. Pasangan unik ditampilkan bersama; sisi lainnya tetap terpisah.</p>` +
+      (rows.length ? '<div class="exception-list">' + rows.map(({item, match, paired}) => {
         const expectsSuggestion = item.suggestion_available && item.status !== 'partial' && item.status !== 'ambiguous';
         const label = item.status === 'partial' ? 'Tambah alokasi' : match ? 'Konfirmasi usulan' : expectsSuggestion ? 'Periksa usulan terbaru' : item.status === 'ambiguous' ? 'Pilih kandidat' : 'Alokasikan manual';
-        return `<article class="panel exception-card"><header><span class="tag ${item.status === 'ambiguous' ? 'warn' : 'info'}">${e(({partial:'Masih ada sisa',ambiguous:'Perlu dipilih',unmatched:'Belum cocok'})[item.status] || item.status)}</span><small>${item.entry.kind === 'sale' ? 'Penjualan' : 'Penerimaan'}</small></header><h2>${e(item.entry.reference || item.entry.source_id)}</h2><p>${e(item.entry.name)} · ${e(item.entry.channel)}</p><strong>${item.entry.kind === 'sale' ? 'Sisa tagihan' : 'Sisa penerimaan'}: ${e(money(item.remaining))}</strong><p>${e(item.reason)}</p><p class="muted">${Number(item.candidate_count) || 0} kandidat${item.candidate_ids_truncated ? '; hanya sebagian ditampilkan. Gunakan pilihan manual untuk kandidat lain.' : ''}</p><div class="inline-actions">${button(label, expectsSuggestion ? 'exception-match' : 'exception-choose', item.entry.id, 'secondary')}${item.candidate_ids_truncated ? button('Cari secara manual', 'exception-manual', item.entry.id) : ''}</div></article>`;
+        const candidateIds = [...new Set(item.candidate_ids || [])];
+        const candidates = candidateIds.map(id => entryById.get(id)).filter(entry => entry && entry.kind !== item.entry.kind);
+        const missing = candidateIds.length - candidates.length;
+        const details = paired
+          ? `<div class="exception-pair">${entrySummary(entryById.get(match.sale.id) || match.sale, 'Penjualan')}${entrySummary(entryById.get(match.receipt.id) || match.receipt, 'Penerimaan')}</div>`
+          : `${entrySummary(item.entry, 'Sisi transaksi yang diperiksa')}<div class="exception-candidates"><h3>Kandidat pasangan</h3>${candidates.map(entry => entrySummary(entry, 'Sisi lawan')).join('')}${!candidateIds.length ? '<p class="muted">Belum ada kandidat. Pilih transaksi secara manual.</p>' : ''}${missing ? '<p class="muted">Sebagian kandidat tidak tersedia pada data saat ini. Muat ulang sebelum memilih.</p>' : ''}</div>`;
+        return `<article class="panel exception-card"><header><span class="tag ${item.status === 'ambiguous' ? 'warn' : 'info'}">${paired ? 'Usulan pasangan unik' : e(({partial:'Masih ada sisa',ambiguous:'Perlu dipilih',unmatched:'Belum cocok'})[item.status] || item.status)}</span><small>${paired ? 'Satu keputusan untuk dua sisi' : 'Satu sisi transaksi'}</small></header>${details}<p>${e(item.reason)}</p><p class="muted">${Number(item.candidate_count) || 0} kandidat${item.candidate_ids_truncated ? '; hanya sebagian ditampilkan. Gunakan pilihan manual untuk kandidat lain.' : ''}</p><div class="inline-actions">${button(label, expectsSuggestion ? 'exception-match' : 'exception-choose', item.entry.id, 'secondary')}${item.candidate_ids_truncated ? button('Cari secara manual', 'exception-manual', item.entry.id) : ''}</div></article>`;
       }).join('') + '</div>' : empty('Tidak ada transaksi pada antrean ini', 'Tidak ada selisih pada filter yang dipilih.'));
   }
   return title('Perlu diperiksa', 'Telusuri sisa tagihan, penerimaan yang belum dialokasikan, dan kandidat yang belum unik.') + content;
@@ -642,9 +654,9 @@ function metrics() {
       receipts.length + " transaksi",
     ],
     [
-      "Sisa tagihan",
+      "Penjualan belum teralokasi",
       money(sumMoney(sales, (x) => balance(x))),
-      "Perlu ditelusuri",
+      "Nilai penjualan yang belum punya pasangan",
     ],
     [
       "Sudah cocok",
@@ -671,7 +683,7 @@ function reportsPage() {
     allocations.length +
     " pasangan aktif. Biaya yang sudah dikonfirmasi: " +
     e(money(sumMoney(allocations, (x) => x.fee))) +
-    ".</p><p>Ekspor memuat transaksi aktif dan dibatalkan beserta sisa alokasinya. Angka ini bukan perhitungan laba.</p></section>"
+    ".</p><p>Penjualan yang belum teralokasi bukan kerugian; bisa berarti belum dibayar, dibayar sebagian, atau menunggu pencairan.</p><p>Ekspor memuat transaksi aktif dan dibatalkan beserta sisa alokasinya. Angka ini bukan perhitungan laba.</p></section>"
   );
 }
 function showWorkspaceError() {
@@ -820,8 +832,21 @@ function auth(register = false) {
     '</a></p><button class="pwa-install" type="button" data-pwa-install>Pasang EFA <span aria-hidden="true">↗</span></button></div></section>' + authScene(register) + "</main>";
   presentAuth(root, register);
 }
+function connectionLabel() {
+  return state.connection === 'live' ? 'Data terhubung' : state.connection === 'offline' ? 'Menyambung ulang…' : 'Koneksi terbatas';
+}
+function updateConnection(status) {
+  state.connection = status;
+  const indicator = document.querySelector('.connection');
+  if (indicator) {
+    indicator.dataset.online = String(status === 'live');
+    indicator.textContent = connectionLabel();
+    indicator.title = status === 'live' ? 'Pembaruan langsung aktif.' : 'Pembaruan langsung terputus. Aplikasi memeriksa data secara berkala.';
+  }
+}
 function startEvents() {
   stopEvents();
+  updateConnection('limited');
   let closed = false,
     timer,
     checking = false,
@@ -863,10 +888,16 @@ function startEvents() {
       if (Number.isSafeInteger(version)) applyVersion(version).catch(() => {});
     });
     // A new stream has no replay guarantee: fetch current state on every open.
-    stream.addEventListener("open", () => { void check(); });
-    stream.addEventListener("error", () => { void check(); });
+    stream.addEventListener("open", () => { if (current()) updateConnection('live'); void check(); });
+    stream.addEventListener("error", () => {
+      if (!current()) return;
+      updateConnection('limited');
+      void check();
+      clearTimeout(timer);
+      timer = setTimeout(poll, 15000);
+    });
     stream.addEventListener("resync", () => { void check(); });
-    stream.addEventListener("server_close", () => { void check(); });
+    stream.addEventListener("server_close", () => { if (current()) updateConnection('limited'); void check(); });
   }
   state.source = {
     close() {
@@ -882,11 +913,7 @@ function startEvents() {
       if (document.visibilityState === "visible" && !state.refreshing) {
         const next = await api("/api/v1/umkm/state");
         if (closed || epoch !== state.epoch) return;
-        const indicator = document.querySelector(".connection");
-        if (indicator) {
-          indicator.dataset.online = "true";
-          indicator.textContent = "Data terhubung";
-        }
+        updateConnection(stream?.readyState === 1 ? 'live' : 'limited');
         if (next.workspace.version !== state.data?.workspace.version) {
           if (
             modal.open ||
@@ -900,11 +927,7 @@ function startEvents() {
     } catch (err) {
       if (closed) return;
       delay = 30000;
-      const indicator = document.querySelector(".connection");
-      if (indicator) {
-        indicator.dataset.online = "false";
-        indicator.textContent = "Menyambung ulang…";
-      }
+      updateConnection('offline');
       if (err.status === 401) {
         stopEvents();
         state.me = null;
@@ -913,7 +936,7 @@ function startEvents() {
         return;
       }
     } finally {
-      if (!closed) timer = setTimeout(poll, delay);
+      if (!closed) { clearTimeout(timer); timer = setTimeout(poll, delay); }
     }
   };
   timer = setTimeout(poll, 15000);
@@ -1137,6 +1160,11 @@ document.addEventListener("click", async (event) => {
         choose: true, reason: item.reason,
         candidates: action === "exception-choose" && item.status === "ambiguous" ? item.candidate_ids || [] : null,
       });
+    }
+    if (action === "entry-followup") {
+      const entry = state.data.state.entries.find(x => x.id === id);
+      if (!entry || entry.canceled || balance(entry) <= 0) throw new Error("Transaksi sudah berubah. Muat ulang data sebelum melanjutkan.");
+      return allocateModal(entry.kind === 'sale' ? id : '', entry.kind === 'receipt' ? id : '', {choose: true});
     }
     if (action === "export") return await downloadExport(target);
     if (action === "close") return closeModal();

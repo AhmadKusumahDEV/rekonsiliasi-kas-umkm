@@ -1,6 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {importLimits, validateImportSize, uniqueSuggestion, auditTarget, mergeAudit} from '../assets/mvp.js';
+import {importLimits, validateImportSize, uniqueSuggestion, exceptionGroups, auditTarget, mergeAudit} from '../assets/mvp.js';
+
+test('reciprocal unique exceptions form one decision; ambiguous and partial sides never collapse', () => {
+  const match={sale:{id:'s',kind:'sale'},receipt:{id:'r',kind:'receipt'}};
+  const items=[match.sale,match.receipt].map(entry=>({entry,status:'unmatched',suggestion_available:true}));
+  const grouped=exceptionGroups(items,[match]);
+  assert.equal(grouped.length,1);
+  assert.equal(grouped[0].items.length,2);
+  assert.equal(grouped[0].paired,true);
+  for (const status of ['partial','ambiguous']) {
+    assert.equal(exceptionGroups(items.map(x=>({...x,status})),[match]).length,2);
+  }
+  assert.equal(exceptionGroups(items,[]).length,2);
+  assert.equal(exceptionGroups(items.slice(0,1),[match])[0].paired,false);
+});
 
 test('limits come from the server and missing limits never fall back silently', () => {
   const config={limits:{max_import_rows:2,max_csv_bytes:24,max_entries:5}};

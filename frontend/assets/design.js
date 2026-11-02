@@ -44,7 +44,7 @@ function cashDashboard(c) {
       .slice(0, 6)
       .map(
         (x) =>
-          `<div class="cash-transaction"><div><span class="transaction-ref">${e(x.reference || x.source_id)}</span><h3>${e(x.name)}</h3><p>${e(x.channel)} · ${e(x.date)}</p></div><div class="transaction-amount"><strong>${e(money(balance(x)))}</strong><small>Sisa tagihan</small></div>${button("Cocokkan", "allocate", x.id, "small")}</div>`,
+          `<div class="cash-transaction"><div><span class="transaction-ref">${e(x.reference || x.source_id)}</span><h3>${e(x.name)}</h3><p>${e(x.channel)} · ${e(x.date)}</p></div><div class="transaction-amount"><strong>${e(money(balance(x)))}</strong><small>Belum teralokasi</small></div>${button("Cocokkan", "allocate", x.id, "small")}</div>`,
       )
       .join("") ||
     empty(

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "reciprocal unique sides show one card and both candidates before opening",
+    "pass": true
+  },
+  {
+    "name": "transaction follow-up pins the selected side without choosing its counterpart",
+    "pass": true
+  },
+  {
+    "name": "legacy history and unallocated sales have a plain-language explanation",
+    "pass": true
+  },
+  {
+    "name": "SSE failure stays limited through REST success and route changes; reconnect refreshes version",
+    "pass": true
+  },
+  {
+    "name": "server byte and row limits are honored",
+    "pass": true
+  },
+  {
+    "name": "missing limits do not fall back to hardcoded policy",
+    "pass": true
+  },
+  {
+    "name": "missing unique suggestion refreshes rather than guessing a pair",
+    "pass": true
+  },
+  {
+    "name": "403 updates CSRF and requires a deliberate retry with the same key",
+    "pass": true
+  },
+  {
+    "name": "ambiguous candidates never default to a first match",
+    "pass": true
+  },
+  {
+    "name": "partial remains partial; unique reason is visible before saving",
+    "pass": true
+  },
+  {
+    "name": "failed exception request never claims an empty queue",
+    "pass": true
+  },
+  {
+    "name": "130 audit entries load by server cursor and linked entities open",
+    "pass": true
+  },
+  {
+    "name": "network retry retains the same allocation key and payload",
+    "pass": true
+  },
+  {
+    "name": "409 refreshes without discarding draft or resubmitting",
+    "pass": true
+  },
+  {
+    "name": "exceptions and audit stay responsive on phone tablet desktop",
+    "pass": true
+  }
+]

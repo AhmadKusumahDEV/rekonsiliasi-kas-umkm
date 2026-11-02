@@ -1,5 +1,7 @@
 # Panduan Pengguna EFA — Catatan dari Sudut Pandang Pemilik Usaha
 
+> Dokumen ini mencatat audit sebelum perbaikan. Status implementasi frontend dan bagian yang masih menunggu backend/data ada pada [tindak lanjut UX](UX_IMPLEMENTATION.md). Screenshot di bawah tetap menjadi bukti kondisi saat audit.
+
 Tanggal pengamatan: 2 November 2026
 
 Frontend: `https://efa.madgo.my.id/app`
