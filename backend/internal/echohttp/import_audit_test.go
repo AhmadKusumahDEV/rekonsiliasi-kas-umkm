@@ -39,6 +39,10 @@ func TestDuplicateImportDoesNotMutateAndPreviewUsesWorkspace(t *testing.T) {
 	if len(audit) != 1 || audit[0].ID != before.Events[0].ID {
 		t.Fatalf("audit page = %+v, want newest event %d", audit, before.Events[0].ID)
 	}
+	requireStatus(t, client.request(http.MethodGet, "/api/v1/umkm/audit", nil, false), http.StatusOK)
+	requireStatus(t, client.request(http.MethodGet, "/api/v1/umkm/audit?limit=100", nil, false), http.StatusOK)
+	requireStatus(t, client.request(http.MethodGet, "/api/v1/umkm/audit?limit=0", nil, false), http.StatusBadRequest)
+	requireStatus(t, client.request(http.MethodGet, "/api/v1/umkm/audit?before_id=abc", nil, false), http.StatusBadRequest)
 	var older []models.AuditEvent
 	decode(t, client.request(http.MethodGet, fmt.Sprintf("/api/v1/umkm/audit?before_id=%d&limit=1", audit[0].ID), nil, false), &older)
 	if len(older) != 0 {

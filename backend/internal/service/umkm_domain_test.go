@@ -81,11 +81,14 @@ func TestAllocationRemainingAndValidation(t *testing.T) {
 	if err := validateAllocation(sale, receipt, active, 1000, 1000, "x"); !errors.Is(err, pkgErr.ErrInvalidRequest) {
 		t.Fatalf("short fee reason error = %v, want invalid request", err)
 	}
-	if err := validateAllocation(sale, receipt, active, 150000, 0, ""); !errors.Is(err, pkgErr.ErrInvalidRequest) {
-		t.Fatalf("partial allocation without reason error = %v, want invalid request", err)
+	if err := validateAllocation(sale, receipt, active, 150000, 0, ""); err != nil {
+		t.Fatalf("partial allocation without reason rejected: %v", err)
 	}
 	if err := validateAllocation(sale, receipt, active, 150000, 0, "cicilan pertama"); err != nil {
 		t.Fatalf("partial allocation with reason rejected: %v", err)
+	}
+	if err := validateAllocation(sale, receipt, active, 1000, 1000, "😀😀"); !errors.Is(err, pkgErr.ErrInvalidRequest) {
+		t.Fatalf("unicode short fee reason error = %v, want invalid request", err)
 	}
 
 	allocated := []models.Allocation{{SaleID: sale.ID, ReceiptID: receipt.ID, Amount: 100000, Fee: 5000}}
@@ -199,8 +202,42 @@ func TestExceptionsClassify(t *testing.T) {
 	bigReceipt.ID = "receipt-3"
 	allocations := []models.Allocation{{SaleID: bigSale.ID, ReceiptID: bigReceipt.ID, Amount: 100000}}
 	items = exceptions([]models.Entry{bigSale, bigReceipt}, allocations)
-	if len(items) != 1 || items[0].Entry.ID != bigSale.ID || items[0].Status != "partial" || items[0].Remaining != 100000 || items[0].CandidateCount != 0 || items[0].SuggestionAvailable {
+	if len(items) != 1 || items[0].Entry.ID != bigSale.ID || items[0].Status != "partial" || items[0].Remaining != 100000 || items[0].CandidateCount != 0 || items[0].CandidateIDsTruncated || items[0].SuggestionAvailable {
 		t.Fatalf("partial exception = %+v", items)
+	}
+
+	partialSale := sale
+	partialSale.ID = "sale-partial"
+	partialSale.Amount = 200000
+	firstReceipt := receipt
+	firstReceipt.ID = "receipt-first"
+	secondReceipt := receipt
+	secondReceipt.ID = "receipt-second"
+	partialSecondReceipt := secondReceipt
+	partialSecondReceipt.Amount = 200000
+	partial := []models.Allocation{{SaleID: partialSale.ID, ReceiptID: firstReceipt.ID, Amount: 100000, Reason: "pembayaran pertama"}}
+	items = exceptions([]models.Entry{partialSale, firstReceipt, partialSecondReceipt}, partial)
+	var partialSaleItem *models.Exception
+	for i := range items {
+		if items[i].Entry.ID == partialSale.ID {
+			partialSaleItem = &items[i]
+		}
+	}
+	if partialSaleItem == nil || partialSaleItem.Status != "partial" || partialSaleItem.CandidateCount != 1 || len(partialSaleItem.CandidateIDs) != 1 || partialSaleItem.CandidateIDs[0] != partialSecondReceipt.ID {
+		t.Fatalf("partial exception did not expose second candidate: %+v", items)
+	}
+
+	manySale := sale
+	manySale.ID = "sale-many"
+	manyReceipts := make([]models.Entry, 0, MaxCandidateIDs+5)
+	for i := 0; i < MaxCandidateIDs+5; i++ {
+		r := secondReceipt
+		r.ID = fmt.Sprintf("receipt-many-%02d", i)
+		manyReceipts = append(manyReceipts, r)
+	}
+	items = exceptions(append([]models.Entry{manySale}, manyReceipts...), nil)
+	if len(items) != len(manyReceipts)+1 || items[0].Entry.ID != manySale.ID || items[0].CandidateCount != len(manyReceipts) || len(items[0].CandidateIDs) != MaxCandidateIDs || !items[0].CandidateIDsTruncated {
+		t.Fatalf("candidate cap not applied: %+v", items[0])
 	}
 
 	canceled := sale

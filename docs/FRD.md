@@ -52,13 +52,13 @@ id,tanggal,referensi,nama,nominal,kanal,catatan
 | REC-02 | Kandidat unik di kedua sisi; kandidat ambigu tidak dipilih otomatis |
 | REC-03 | Hanya konfirmasi pemilik menyimpan keputusan |
 | REC-04 | Amount > 0, fee >= 0; amount <= sisa penerimaan; amount + fee <= sisa penjualan |
-| REC-05 | Fee > 0 atau alokasi yang meninggalkan sisa pada salah satu sisi memerlukan alasan minimal 5 karakter; alasan maksimal 400 |
+| REC-05 | Fee > 0 memerlukan alasan minimal 5 karakter; pembayaran sebagian dianjurkan mengisi alasan, tetapi tidak diblokir untuk kompatibilitas frontend lama; alasan maksimal 400 |
 | REC-06 | Beberapa alokasi mendukung pembayaran sebagian dan penerimaan gabungan |
 | REC-07 | Key 32 hex untuk idempotensi; ulang identik mengembalikan allocation lama tanpa audit/version/SSE baru, isi berbeda ditolak |
 | REC-08 | Lock workspace dan transaksi mencegah pemakaian saldo berlebih saat dua penulis bersamaan |
 | REC-09 | Undo menandai reversed dan mengembalikan saldo tanpa menghapus riwayat |
 | REC-10 | `GET /umkm/exceptions` mengembalikan entry aktif yang belum lunas, dengan status `unmatched`, `partial`, atau `ambiguous` |
-| REC-11 | `candidate_ids`/`candidate_count` memuat kandidat satu sisi pada jendela 0–3 hari; `suggestion_available` hanya benar bila pasangan unik dua arah dan ada di suggestions |
+| REC-11 | `candidate_ids`/`candidate_count` memuat kandidat satu sisi pada jendela 0–3 hari; ID dibatasi 20 dengan flag truncation, `candidate_count` tetap penuh; `suggestion_available` hanya benar bila pasangan unik dua arah dan ada di suggestions |
 | REC-12 | `GET /umkm/audit` memakai cursor `before_id` dan limit 1–100; state tetap memuat 120 audit terbaru untuk dashboard |
 
 Sisa penjualan = nominal − amount aktif − fee aktif. Sisa penerimaan = nominal − amount aktif. Fee tidak menambah penerimaan. Penerimaan bukan laba.

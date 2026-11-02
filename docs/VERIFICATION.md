@@ -50,6 +50,14 @@ PostgreSQL 16 disposable dari Compose, dan image golangci-lint v2.15.0.
 | `golangci-lint run ./...` (image v2.15.0) | 0 issues |
 | `git diff --check` | Lulus |
 
+Smoke test HTTP lokal terhadap API di `127.0.0.1:18080` dan database test
+menjalankan 32 assertion: config limits, 401 tanpa sesi, register/CSRF,
+import penjualan/penerimaan, suggestions, exceptions untuk kandidat unik,
+ambigu, dan parsial, alasan fee/partial, idempotensi retry alokasi, cursor
+audit, validasi limit/cursor, dan isolasi workspace. Semua lulus. Pemeriksaan
+ini juga mengonfirmasi `candidate_ids` tetap tersedia untuk pembayaran parsial
+berikutnya, sementara `suggestion_available` hanya benar untuk pasangan unik.
+
 Integration test memakai container `rekonsiliasi-kas-umkm-db-test-1` dengan DSN
 `postgres://postgres:postgres@127.0.0.1:55432/rku_test?sslmode=disable`.
 Harness mereset schema test, sehingga container itu tidak boleh diarahkan ke

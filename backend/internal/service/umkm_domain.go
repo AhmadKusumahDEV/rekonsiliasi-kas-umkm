@@ -25,6 +25,10 @@ const (
 	MaxImportRows = 500
 	MaxCSVBytes   = 1 << 20
 	MaxEntries    = 10_000
+	// Keep exception responses bounded when many transactions share the same
+	// reference, date, channel, and amount. The UI can still show the full
+	// candidate_count and fall back to manual allocation.
+	MaxCandidateIDs = 20
 )
 
 func parseCSV(kind, raw string) ([]models.Entry, int64, string, error) {
@@ -279,7 +283,7 @@ func exceptions(entries []models.Entry, allocations []models.Allocation) []model
 	sales := make(map[candidateKey][]models.Entry)
 	receipts := make(map[candidateKey][]models.Entry)
 	for _, entry := range entries {
-		if entry.Canceled || strings.TrimSpace(entry.Reference) == "" || remainingByID[entry.ID] != entry.Amount {
+		if entry.Canceled || strings.TrimSpace(entry.Reference) == "" || remainingByID[entry.ID] <= 0 {
 			continue
 		}
 		switch entry.Kind {
@@ -312,14 +316,9 @@ func exceptions(entries []models.Entry, allocations []models.Allocation) []model
 		reason := ""
 		candidateIDs := make([]string, 0)
 		candidateCount := 0
+		candidateIDsTruncated := false
 		suggestionAvailable := false
-		switch {
-		case activeByID[entry.ID] > 0:
-			status = "partial"
-			reason = partialReason(entry, remainingAmount)
-		case strings.TrimSpace(entry.Reference) == "":
-			reason = "Referensi kosong; periksa dan alokasikan manual."
-		default:
+		if strings.TrimSpace(entry.Reference) != "" {
 			date, err := time.Parse("2006-01-02", entry.Date)
 			if err == nil {
 				seenCandidates := make(map[string]struct{})
@@ -328,7 +327,12 @@ func exceptions(entries []models.Entry, allocations []models.Allocation) []model
 						return
 					}
 					seenCandidates[candidate.ID] = struct{}{}
-					candidateIDs = append(candidateIDs, candidate.ID)
+					candidateCount++
+					if len(candidateIDs) < MaxCandidateIDs {
+						candidateIDs = append(candidateIDs, candidate.ID)
+					} else {
+						candidateIDsTruncated = true
+					}
 				}
 				for day := 0; day <= 3; day++ {
 					var dateKey string
@@ -348,8 +352,15 @@ func exceptions(entries []models.Entry, allocations []models.Allocation) []model
 						}
 					}
 				}
-				candidateCount = len(candidateIDs)
 			}
+		}
+		switch {
+		case activeByID[entry.ID] > 0:
+			status = "partial"
+			reason = partialReason(entry, remainingAmount)
+		case strings.TrimSpace(entry.Reference) == "":
+			reason = "Referensi kosong; periksa dan alokasikan manual."
+		default:
 			switch {
 			case candidateCount == 0:
 				reason = "Tidak ada kandidat otomatis; periksa manual."
@@ -366,13 +377,14 @@ func exceptions(entries []models.Entry, allocations []models.Allocation) []model
 		}
 
 		out = append(out, models.Exception{
-			Entry:               entry,
-			Status:              status,
-			Remaining:           remainingAmount,
-			CandidateIDs:        candidateIDs,
-			CandidateCount:      candidateCount,
-			SuggestionAvailable: suggestionAvailable,
-			Reason:              reason,
+			Entry:                 entry,
+			Status:                status,
+			Remaining:             remainingAmount,
+			CandidateIDs:          candidateIDs,
+			CandidateCount:        candidateCount,
+			CandidateIDsTruncated: candidateIDsTruncated,
+			SuggestionAvailable:   suggestionAvailable,
+			Reason:                reason,
 		})
 	}
 	sort.SliceStable(out, func(i, j int) bool {
@@ -403,9 +415,8 @@ func validateAllocation(sale, receipt models.Entry, active []models.Allocation, 
 	if amount+fee > remainingSale || amount > remainingReceipt {
 		return pkgErr.New(pkgErr.ErrConflict, "Alokasi melebihi sisa tagihan atau penerimaan. Muat ulang dan periksa sisa terbaru.")
 	}
-	isPartial := amount+fee < remainingSale || amount < remainingReceipt
-	if (fee > 0 || isPartial) && len(strings.TrimSpace(reason)) < 5 {
-		return pkgErr.New(pkgErr.ErrInvalidRequest, "Jelaskan biaya layanan atau pembayaran sebagian minimal 5 karakter.")
+	if fee > 0 && utf8.RuneCountInString(strings.TrimSpace(reason)) < 5 {
+		return pkgErr.New(pkgErr.ErrInvalidRequest, "Jelaskan biaya layanan minimal 5 karakter.")
 	}
 	if len([]rune(reason)) > 400 || strings.ContainsRune(reason, 0) {
 		return pkgErr.New(pkgErr.ErrInvalidRequest, "Catatan alokasi maksimal 400 karakter dan tidak boleh memuat karakter kosong.")
