@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-02",
+  "deployment": "dpl_F5k9WDqVjjaMZxNf2F3tqsnA3gKi",
+  "frontend_commit": "77939ccd3420563020b352fe882453882a6d5b55",
+  "url": "https://efa.madgo.my.id/app",
+  "assets_intercepted": false,
+  "responsive_views_checked": 24,
+  "page_errors": 0,
+  "horizontal_overflow": false,
+  "login": "passed",
+  "exceptions": "passed",
+  "audit": "passed",
+  "sse": "passed",
+  "csv_download": "passed",
+  "transaction_writes": 0
+}

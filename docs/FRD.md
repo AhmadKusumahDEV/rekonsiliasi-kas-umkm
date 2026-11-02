@@ -126,7 +126,9 @@ ditolak, tanpa berpindah diam-diam ke transaksi lain. CSRF 403 disinkronkan
 tanpa mengulang POST otomatis. Ekspor memakai fetch/blob agar 401 tetap
 ditangani di aplikasi. Password UTF-8 dan CSV non-UTF-8 diperiksa di UI;
 otoritas validasi akhir tetap server. Isian belum tersimpan tidak dipulihkan
-lintas sesi, tabel memakai pagination klien, audit masih 120 terbaru.
+lintas sesi, tabel transaksi memakai pagination klien. Snapshot dashboard
+tetap berisi 120 audit terbaru; halaman Riwayat sekarang memuat endpoint
+audit dengan cursor agar aktivitas lebih lama dapat dibaca.
 Status bukti dan batasan lengkap: [hasil audit](audit/README.md).
 
 ## Rujukan operasional
@@ -158,6 +160,10 @@ sebagai bagian landing. Detail edit dan pengujian: [panduan landing](../landing/
 
 [Demo](DEMO.md), [API](INTEGRATION.md), [hosting](HOSTING.md), [tes](VERIFICATION.md).
 SSE berasal dari main tim terbaru dan terhubung ke EventSource frontend.
-Working tree `feat/mvp-gap-backend` menambahkan migration `000004`, `limits`,
-`GET /umkm/exceptions`, dan field audit entity; perubahan itu baru aktif setelah
-branch di-merge, image dibangun ulang, dan migration dijalankan.
+Backend MVP sudah masuk main `6785d08`. Pada 2 November, endpoint limits,
+exceptions dan audit terverifikasi tersedia di API HTTPS tim. Frontend
+membaca limits dari config, menampilkan alasan usulan dan antrean selisih,
+serta memakai pagination cursor untuk audit dan tautan entitas terstruktur.
+Kandidat ambigu tidak dipilih otomatis; daftar terpotong tetap menampilkan
+jumlah kandidat penuh dan pilihan manual. Kegagalan antrean bukan nol selisih.
+Status scope PDF, uji dan deployment: [verifikasi MVP](MVP_FRONTEND_VERIFICATION.md).

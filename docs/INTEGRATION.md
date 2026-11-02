@@ -32,6 +32,14 @@
 
 Cookie tim: rku_session. Error tim memakai field message. Frontend tidak membaca database dan tidak membawa credential server.
 
+Integrasi MVP terbaru: frontend meminta state serta suggestions/exceptions
+secara independen, dengan status gagal/loading terpisah. `#exceptions`
+menggunakan status, remaining, candidate_ids/count/truncated dan
+suggestion_available dari backend. `#history` mengambil 50 event per
+halaman melalui before_id; target detail hanya memakai entity_type/entity_id
+terstruktur. Limits impor dibaca dari config tanpa fallback angka lokal.
+Lihat [hasil verifikasi dan kesesuaian PDF](MVP_FRONTEND_VERIFICATION.md).
+
 Preview impor kini membaca transaksi workspace untuk melewati baris identik.
 Respons menambahkan `skipped`; `rows`, `count`, dan `total` hanya menghitung
 baris baru. Commit tetap memvalidasi ulang dalam transaksi. Impor tanpa
