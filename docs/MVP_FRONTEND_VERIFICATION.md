@@ -64,6 +64,7 @@ tidak diedit dalam pekerjaan ini.
 | API HTTPS live tanpa cookie | Exceptions ditolak 401 |
 | Config, state, suggestions, exceptions, audit dengan sesi demo | 200, shape sesuai; tidak mengubah transaksi |
 | UI baru dengan API HTTPS nyata | 24 kombinasi halaman/ukuran, tanpa overflow atau pageerror; nol mutasi transaksi |
+| Frontend produksi setelah deployment 2 November | 24 kombinasi halaman/ukuran lulus tanpa intersepsi aset; login, antrean, audit, SSE dan ekspor berhasil; nol mutasi transaksi |
 
 **Batas bukti UI HTTPS:** kode frontend lokal disajikan hanya di browser uji
 terisolasi melalui intersepsi aset; API tetap server HTTPS sebenarnya.
@@ -107,7 +108,12 @@ dengan fixture, dan menulis hasil ke `test-results`/bukti audit lokal.
 ## Status pengiriman
 
 Hasil dikerjakan pada branch `feat/mvp-frontend-integration` setelah pull main.
-Deployment produksi belum dilakukan: permintaan pekerjaan ini adalah
-pull–integrasi–push, dan deployment memerlukan izin terpisah. Sebelum
-deployment tim, review PR dan periksa kembali bahwa backend/migration live
-masih sesuai kontrak. Status pilot data nyata tetap membutuhkan keputusan PO.
+Pengguna memberi izin deployment produksi secara terpisah pada 2 November.
+Frontend commit `77939cc` sudah dipasang di `https://efa.madgo.my.id/app`,
+deployment `dpl_F5k9WDqVjjaMZxNf2F3tqsnA3gKi`. Setelah deployment, pengujian
+memakai aset yang benar-benar dilayani Vercel, tanpa intersepsi browser:
+24 kombinasi halaman/ukuran, login, antrean, riwayat, SSE dan unduhan CSV
+berhasil. Tidak ada transaksi produksi yang ditulis. Status publik hanya
+memuat hasil pengujian teknis; screenshot akun live tidak dimasukkan repo.
+PR tetap untuk review tim; tidak di-merge otomatis. Status pilot data nyata
+tetap membutuhkan keputusan PO.

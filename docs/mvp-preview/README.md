@@ -11,5 +11,6 @@ dan isi respons dari akun tersebut tidak dipublikasikan dalam repository.
 - browser-fixtures.json: 11 skenario lokal sintetis, termasuk audit 130 event.
 - https-ui-readonly.json: hasil pemeriksaan layout tanpa data transaksi/akun.
 - live-api-readonly.json: status keberhasilan pemeriksaan endpoint, tanpa jumlah atau isi transaksi.
+- production-status.json: hasil teknis setelah deployment yang diizinkan, tanpa data akun atau transaksi.
 
 Analisis scope dan keterbatasan ada di [verifikasi MVP](../MVP_FRONTEND_VERIFICATION.md).
