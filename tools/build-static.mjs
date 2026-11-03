@@ -19,6 +19,10 @@ export async function buildSite() {
   await cp(join(root, 'frontend', 'index.html'), join(output, 'app.html'));
   await cp(join(root, 'landing', 'index.html'), join(output, 'index.html'));
   await cp(join(root, 'landing', 'assets'), join(output, 'landing', 'assets'), { recursive: true });
+  await mkdir(join(output, 'artikel'), { recursive: true });
+  for (const file of await readdir(join(root, 'landing', 'articles'))) {
+    if (/^[a-z0-9-]+\.html$/.test(file)) await cp(join(root, 'landing', 'articles', file), join(output, 'artikel', file));
+  }
   await mkdir(join(output, 'pwa'), { recursive: true });
   for (const file of ['manifest.webmanifest', 'register.js', 'pwa.css', 'offline.html', 'offline.js']) {
     await cp(join(root, 'pwa', file), join(output, 'pwa', file));

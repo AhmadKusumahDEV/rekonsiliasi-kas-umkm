@@ -6,8 +6,16 @@ import { join } from 'node:path';
 
 test('public build keeps landing and app routes separate without publishing source or private files', async () => {
   const output = await buildSite();
-  assert.deepEqual((await readdir(output)).sort(), ['app.html', 'assets', 'index.html', 'landing', 'pwa', 'sw.js']);
+  assert.deepEqual((await readdir(output)).sort(), ['app.html', 'artikel', 'assets', 'index.html', 'landing', 'pwa', 'sw.js']);
   const home = await readFile(join(output, 'index.html'), 'utf8');
+  const articles = await readdir(join(output, 'artikel'));
+  assert.equal(articles.length, 3);
+  for (const file of articles) {
+    const article = await readFile(join(output, 'artikel', file), 'utf8');
+    assert.match(article, /class="article-prose"/);
+    assert.match(article, /instagram.com\/easyfinancialaudit/);
+    assert.doesNotMatch(article, /id="pause-slider"|landing\.js/);
+  }
   const app = await readFile(join(output, 'app.html'), 'utf8');
   assert.match(home, /id="hero"/);
   assert.match(home, /href="\/app#register"/);

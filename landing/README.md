@@ -65,15 +65,10 @@ Jika port dipakai: `$env:PORT='3058'; node frontend/dev.mjs`.
   Keduanya tidak mengubah UI `/app`.
 - Contoh pencocokan berada pada objek `examples`. Nilainya ilustrasi,
   terpisah sepenuhnya dari transaksi pengguna dan tidak memanggil API.
-- Artikel belum diterbitkan. Jangan menambahkan tautan atau tanggal seolah
-  artikelnya sudah tersedia.
+- Artikel penuh ada di `articles/*.html`; build menerbitkannya pada `/artikel/<slug>`. Artikel ketiga menduplikasi artikel pertama sesuai permintaan pemilik, dengan canonical ke artikel pertama.
+- `enhance.css` dan `enhance.js` berisi peningkatan motion/visual; `articles.css` mengatur halaman baca. Sosmed resmi ada pada footer landing dan artikel.
 
-Carousel berganti setiap 6,5 detik, bisa dijeda, dipilih langsung, digeser
-di HP, atau dikendalikan dengan panah/Home/End. Autoplay berhenti saat
-hover, interaksi keyboard, tab tersembunyi, atau hero meninggalkan layar.
-Pengaturan reduced motion memakai mode manual. Scroll reveal hanya
-diaktifkan jika JavaScript dan IntersectionObserver tersedia; tanpa JS,
-isi dan tautan daftar tetap terlihat.
+Carousel manual tanpa tombol jeda/play. Gunakan pilihan slide, chevron, swipe, atau panah/Home/End. Tanpa autoplay, konten tidak berpindah sendiri saat dibaca. Scroll reveal dan gerak foto menghormati reduced motion. Tanpa JavaScript, isi tetap terlihat.
 
 Tinggi judul dan deskripsi diukur terhadap ketiga variasi teks pada lebar
 layar saat ini. Dengan begitu CTA, gambar dan bagian bawah hero tidak

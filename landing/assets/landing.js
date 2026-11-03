@@ -43,7 +43,7 @@ const hero = document.querySelector('#hero');
 const copy = document.querySelector('#hero-copy');
 const title = document.querySelector('#hero-title');
 const description = document.querySelector('#hero-description');
-const pause = document.querySelector('#pause-slider');
+
 const images = [...document.querySelectorAll('[data-slide-image]')];
 const tabs = [...document.querySelectorAll('[data-slide]')];
 const slides = [
@@ -96,18 +96,8 @@ function stopTimer() {
   clearTimeout(timer);
   hero.dataset.playing = 'false';
 }
-function controls() {
-  pause.disabled = reduced.matches;
-  pause.textContent = reduced.matches ? 'Manual' : paused ? 'Putar ▶' : 'Jeda Ⅱ';
-  pause.setAttribute('aria-label', reduced.matches ? 'Mode manual mengikuti pengaturan gerakan' : paused ? 'Putar slide otomatis' : 'Jeda pergantian slide');
-}
-function schedule() {
-  stopTimer();
-  controls();
-  if (paused || hovered || !visible || document.hidden || reduced.matches) return;
-  hero.dataset.playing = 'true';
-  timer = setTimeout(() => { void showSlide(index + 1, false); }, delay);
-}
+// manual carousel: no hidden autoplay when the pause control is removed.
+function schedule() { stopTimer(); }
 async function prepareImage(next) {
   const image = images[next];
   if (!image.src) {
@@ -142,10 +132,10 @@ async function showSlide(next, manual = true) {
 tabs.forEach((button, n) => button.addEventListener('click', () => { paused = true; void showSlide(n); }));
 document.querySelector('#next-slide').addEventListener('click', () => { paused = true; void showSlide(index + 1); });
 document.querySelector('#previous-slide').addEventListener('click', () => { paused = true; void showSlide(index - 1); });
-pause.addEventListener('click', () => { paused = !paused; schedule(); });
+
 hero.addEventListener('pointerenter', (event) => { if (event.pointerType === 'mouse') { hovered = true; schedule(); } });
 hero.addEventListener('pointerleave', () => { hovered = false; schedule(); });
-hero.addEventListener('focusin', (event) => { if (event.target !== pause) paused = true; stopTimer(); controls(); });
+hero.addEventListener('focusin', stopTimer);
 hero.addEventListener('focusout', () => { if (!paused) schedule(); });
 hero.addEventListener('keydown', (event) => {
   if (!['ArrowRight','ArrowLeft','Home','End'].includes(event.key)) return;
