@@ -65,7 +65,7 @@ Jika port dipakai: `$env:PORT='3058'; node frontend/dev.mjs`.
   Keduanya tidak mengubah UI `/app`.
 - Contoh pencocokan berada pada objek `examples`. Nilainya ilustrasi,
   terpisah sepenuhnya dari transaksi pengguna dan tidak memanggil API.
-- Artikel penuh ada di `articles/*.html`; build menerbitkannya pada `/artikel/<slug>`. Artikel ketiga menduplikasi artikel pertama sesuai permintaan pemilik, dengan canonical ke artikel pertama.
+- Artikel penuh ada di `articles/*.html`; build menerbitkannya pada `/artikel/<slug>`. Artikel ketiga kini membahas pencatatan untuk persiapan pembiayaan. URL lama dipertahankan agar tautan yang pernah dibagikan tetap berfungsi; canonical mengarah ke halaman itu sendiri.
 - `enhance.css` dan `enhance.js` berisi peningkatan motion/visual; `articles.css` mengatur halaman baca. Sosmed resmi ada pada footer landing dan artikel.
 
 Carousel manual tanpa tombol jeda/play. Gunakan pilihan slide, chevron, swipe, atau panah/Home/End. Tanpa autoplay, konten tidak berpindah sendiri saat dibaca. Scroll reveal dan gerak foto menghormati reduced motion. Tanpa JavaScript, isi tetap terlihat.

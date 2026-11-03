@@ -15,7 +15,7 @@ if(!reduced.matches&&'IntersectionObserver' in window){
   entry.target.animate([{opacity:.25,transform:'translateY(24px)'},{opacity:1,transform:'translateY(0)'}],{duration:750,easing:'cubic-bezier(.22,1,.36,1)'});
   observer.unobserve(entry.target);
  }),{threshold:.12});
- document.querySelectorAll('.section h2,.article-prose h2,.social-links,.article-heading h1').forEach(node=>observer.observe(node));
+ document.querySelectorAll('.section h2,.article-prose h2,.social-links,.article-heading h1,.strip-flow li').forEach(node=>observer.observe(node));
  reduced.addEventListener('change',()=>{if(reduced.matches){observer.disconnect();document.getAnimations().forEach(a=>a.cancel())}});
 }
 // article pages share navigation, but do not load the home carousel script.

@@ -12,6 +12,10 @@ for(const width of [375,768,1440])for(const route of ['/','/artikel/rekonsiliasi
  if(route==='/'){
  assert.equal(await p.locator('#pause-slider').count(),0);assert.equal(await p.locator('.article-grid a.article-read').count(),3);
  for(const n of [1,2,0]){await p.locator('[data-slide="'+n+'"]').click();await p.waitForTimeout(550);assert.equal(await p.locator('[data-slide="'+n+'"]').getAttribute('aria-pressed'),'true');}
+ for(const name of ['.capability-story','.closing-v2']){
+  await p.locator(name).scrollIntoViewIfNeeded();await p.waitForTimeout(800);
+  await p.locator(name).screenshot({path:'test-results/landing-nov3/'+name.slice(1)+'-'+width+'.png'});
+ }
  await p.evaluate(()=>scrollTo(0,0));await p.waitForTimeout(800);await p.screenshot({path:'test-results/landing-nov3/home-'+width+'.png'});
  if(width===375){await p.locator('.menu-toggle').click();assert.equal(await p.locator('#mobile-nav').isVisible(),true);await p.keyboard.press('Escape');assert.equal(await p.locator('#mobile-nav').isVisible(),false);}
  }else {await p.evaluate(()=>scrollTo(0,0));await p.screenshot({path:'test-results/landing-nov3/article-'+width+'.png'});}

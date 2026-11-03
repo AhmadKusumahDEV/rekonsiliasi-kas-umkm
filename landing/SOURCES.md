@@ -82,3 +82,6 @@ Prompt final:
 ## Artikel dan pembaruan 3 November 2026
 Foto editorial: images.unsplash.com/photo-1556742049-0cfed4f6a45d (usaha), photo-1450101499163-c8848c66ca85 (dokumen), photo-1554224155-6726b3ff858f (catatan), diambil pada lebar 2400 px. Foto hanya ilustrasi, bukan pengguna EFA. Tidak menyiratkan endorsement.
 Artikel disunting dari naskah pemilik produk. Artikel ketiga sengaja menduplikasi artikel pertama atas permintaan; canonical mengarah ke artikel pertama. Angka 65% dan 87% tanpa sumber primer tidak diterbitkan. Klaim laba bersih diganti dengan kemampuan rekonsiliasi yang tersedia. Referensi BI SI APIK, QRIS, dan FAQ OVO ditautkan pada halaman artikel. Contoh biaya bukan tarif MDR universal.
+
+## Pembaruan artikel ketiga
+Artikel pembiayaan menggantikan duplikat. Klaim 87% akses kredit dan penyebab penolakan nomor satu tidak diterbitkan karena belum terverifikasi. SAK EMKM dirujuk ke IAI: https://www.iaiglobal.or.id/v03/files/file_sak/emkm/files/basic-html/page20.html . EFA dijelaskan sebagai alat rekonsiliasi dan rekap pendukung, bukan laporan SAK EMKM, pengesahan bukti bank, atau jaminan persetujuan kredit. Strip dan penutup memakai ilustrasi, bukan metrik hasil pengguna.

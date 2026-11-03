@@ -16,6 +16,10 @@ test('public build keeps landing and app routes separate without publishing sour
     assert.match(article, /instagram.com\/easyfinancialaudit/);
     assert.doesNotMatch(article, /id="pause-slider"|landing\.js/);
   }
+  const funding = await readFile(join(output, 'artikel', 'rekonsiliasi-penjualan-umkm-2.html'), 'utf8');
+  assert.match(funding, /Sulit Dapat Pinjaman Modal Usaha/);
+  assert.match(funding, /canonical" href="https:\/\/efa.madgo.my.id\/artikel\/rekonsiliasi-penjualan-umkm-2"/);
+  assert.doesNotMatch(funding, /87%|alasan nomor satu|tanpa takut salah cocok/);
   const app = await readFile(join(output, 'app.html'), 'utf8');
   assert.match(home, /id="hero"/);
   assert.match(home, /href="\/app#register"/);
