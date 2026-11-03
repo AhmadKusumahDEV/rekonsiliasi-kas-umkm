@@ -6,9 +6,26 @@ import { join } from 'node:path';
 
 test('public build keeps landing and app routes separate without publishing source or private files', async () => {
   const output = await buildSite();
-  assert.deepEqual((await readdir(output)).sort(), ['app.html', 'assets', 'index.html', 'landing', 'pwa', 'sw.js']);
+  assert.deepEqual((await readdir(output)).sort(), ['app.html', 'artikel', 'assets', 'google191985305be39b7b.txt', 'index.html', 'landing', 'pwa', 'robots.txt', 'sitemap.xml', 'sw.js']);
   const home = await readFile(join(output, 'index.html'), 'utf8');
+  const articles = await readdir(join(output, 'artikel'));
+  assert.equal(articles.length, 3);
+  for (const file of articles) {
+    const article = await readFile(join(output, 'artikel', file), 'utf8');
+    assert.match(article, /class="article-prose"/);
+    assert.match(article, /instagram.com\/easyfinancialaudit/);
+    assert.doesNotMatch(article, /id="pause-slider"|landing\.js/);
+  }
+  const funding = await readFile(join(output, 'artikel', 'rekonsiliasi-penjualan-umkm-2.html'), 'utf8');
+  assert.match(funding, /Sulit Dapat Pinjaman Modal Usaha/);
+  assert.match(funding, /canonical" href="https:\/\/efa.madgo.my.id\/artikel\/rekonsiliasi-penjualan-umkm-2"/);
+  assert.doesNotMatch(funding, /87%|alasan nomor satu|tanpa takut salah cocok/);
   const app = await readFile(join(output, 'app.html'), 'utf8');
+  assert.equal((await readFile(join(output, 'google191985305be39b7b.txt'), 'utf8')).trim(), 'google-site-verification: google191985305be39b7b.html');
+  assert.match(home, /analytics\.js/);
+  assert.doesNotMatch(app, /analytics\.js|googletagmanager/);
+  assert.match(await readFile(join(output, 'sitemap.xml'), 'utf8'), /saldo-rekening-bukan-laba/);
+  assert.match(await readFile(join(output, 'robots.txt'), 'utf8'), /Disallow: \/app/);
   assert.match(home, /id="hero"/);
   assert.match(home, /href="\/app#register"/);
   assert.match(home, /href="\/app#login"/);

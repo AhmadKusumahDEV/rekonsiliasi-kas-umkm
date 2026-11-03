@@ -68,12 +68,12 @@ test("Vercel publishes only the static frontend and permits direct team API conn
   const config = JSON.parse(await readFile(new URL("../../vercel.json", import.meta.url), "utf8"));
   assert.equal(config.outputDirectory, "dist");
   assert.equal(config.buildCommand, "node tools/build-static.mjs");
-  assert.equal(config.cleanUrls, true);
+  assert.equal(config.cleanUrls, false);
   assert.equal(config.framework, null);
-  assert.equal(config.rewrites, undefined);
+  assert.deepEqual(config.rewrites, [{source:'/google191985305be39b7b.html', destination:'/google191985305be39b7b.txt'}, {source:'/app', destination:'/app.html'}, {source:'/artikel/:slug', destination:'/artikel/:slug.html'}]);
   assert.equal(config.functions, undefined);
   const csp = config.headers[0].headers.find((h) => h.key === "Content-Security-Policy").value;
-  assert.match(csp, /connect-src 'self' https:\/\/temukas\.madgo\.my\.id;/);
+  assert.match(csp, /connect-src 'self' https:\/\/temukas\.madgo\.my\.id(?: |;)/);
   const source = await readFile(new URL("../assets/app.js", import.meta.url), "utf8");
   assert.match(source, /new EventSource\(apiURL\("\/api\/v1\/umkm\/events"\), \{ withCredentials: true \}\)/);
   assert.match(source, /apiURL\("\/api\/v1\/umkm\/export"\)/);

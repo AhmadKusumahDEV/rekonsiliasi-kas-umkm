@@ -73,6 +73,8 @@ const server = http.createServer(async (req, res) => {
       ? { directory: landing, file: "index.html" }
       : ["/app", "/app/", "/app.html"].includes(pathname)
         ? { directory: root, file: "index.html" }
+      : /^\/artikel\/[a-z0-9-]+(?:\.html)?$/.test(pathname)
+        ? { directory: landing, file: "articles/" + pathname.slice('/artikel/'.length).replace(/\.html$/, '') + '.html' }
       : pathname === "/sw.js"
         ? { directory: pwa, file: "service-worker.js" }
       : ["/pwa/offline", "/pwa/offline.html"].includes(pathname)

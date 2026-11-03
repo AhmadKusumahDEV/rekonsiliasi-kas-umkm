@@ -1,0 +1,75 @@
+PANDUAN SINGKAT MENCOBA EFA
+https://efa.madgo.my.id/
+
+FILE YANG DIGUNAKAN
+- 01-penjualan.csv: catatan barang/pesanan yang terjual (5 transaksi).
+- 02-penerimaan.csv: uang yang sudah diterima (4 transaksi).
+- umkm-rekap.csv adalah HASIL EKSPOR, bukan format input impor.
+- PBL_WEEK2_POINTS.csv adalah daftar pekerjaan proyek, bukan data transaksi.
+
+1. MASUK ATAU DAFTAR
+Buka website, lalu pilih Daftar pengguna. Untuk mencoba dari nol, gunakan akun/ruang usaha baru agar tidak mengubah workspace demo bersama.
+Kalau sudah masuk, periksa nama usaha di bagian atas.
+
+2. IMPOR PENJUALAN
+Buka Impor CSV > Impor CSV.
+Pilih jenis Penjualan, lalu file 01-penjualan.csv.
+Tekan Periksa CSV, baca hasil pratinjaunya, lalu simpan jika sudah benar.
+Harapannya: 5 penjualan baru dengan total Rp650.000 di workspace kosong.
+
+3. IMPOR PENERIMAAN
+Ulangi langkah tadi, pilih jenis Penerimaan dan file 02-penerimaan.csv.
+Periksa pratinjau sebelum menyimpan.
+Harapannya: 4 penerimaan baru dengan total Rp590.000 di workspace kosong.
+Jika baris identik dilewati, data itu sudah pernah diimpor. Tidak perlu memaksakan impor ulang.
+
+4. COBA PASANGAN YANG LANGSUNG COCOK
+Buka Cocokkan kas atau Perlu diperiksa.
+Cari INV-102 / Rani: penjualan Rp100.000 dan penerimaan Rp100.000.
+Buka Periksa pasangan / Konfirmasi usulan, cek kedua transaksi, lalu Simpan pasangan.
+Harapannya: penjualan dan penerimaan tersebut tidak punya sisa.
+
+5. COBA PEMBAYARAN SEBAGIAN
+Buka Transaksi, cari INV-101 / Kedai Pagi, lalu Tindak lanjuti pada baris penjualan.
+Pilih penerimaan R101 yang sesuai.
+Isi nominal Rp100.000, biaya Rp0, lalu simpan setelah diperiksa.
+Harapannya: tagihan Rp150.000 masih menyisakan Rp50.000. Ini belum lunas.
+
+6. COBA BIAYA LAYANAN
+Cari INV-103 / Toko Melati, lalu buka pencocokan manual.
+Pilih penjualan P103 Rp200.000 dan penerimaan R103 Rp190.000.
+Isi nominal dialokasikan Rp190.000, biaya Rp10.000.
+Isi alasan, misalnya: Biaya layanan sesuai laporan marketplace.
+Simpan setelah memeriksa pilihan.
+Harapannya: sisa penjualan dan penerimaan nol. Biaya Rp10.000 menjelaskan selisih, bukan tambahan uang yang diterima.
+Nominal dan alasan ini hanya ilustrasi demo; data asli harus memiliki bukti biaya.
+
+7. COBA SATU TRANSFER UNTUK DUA PESANAN
+Kirana memiliki penerimaan R104 Rp200.000, untuk dua penjualan.
+Buat alokasi pertama: P104 + R104, nominal Rp80.000, biaya Rp0.
+Buat alokasi kedua: P105 + sisa R104, nominal Rp120.000, biaya Rp0.
+Harapannya: kedua penjualan dan penerimaan R104 tidak memiliki sisa.
+Jangan memasukkan Rp200.000 untuk masing-masing penjualan; satu penerimaan tidak boleh dihitung dua kali.
+
+8. LIHAT HASIL
+Buka Transaksi: INV-101 masih memiliki sisa Rp50.000; empat penjualan lainnya sudah cocok.
+Buka Laporan: penjualan Rp650.000, penerimaan Rp590.000, biaya terkonfirmasi Rp10.000, dan penjualan belum teralokasi Rp50.000.
+Nilai tersebut berlaku jika workspace awal kosong, semua langkah dilakukan sekali dan tidak ada perubahan dari pengguna lain.
+Laporan ini bukan perhitungan laba bersih.
+
+9. COBA KOREKSI
+Jika ingin menguji pembatalan, buka riwayat keputusan pencocokan di Cocokkan kas, pilih pasangan yang tadi dibuat, lalu batalkan setelah memeriksa konfirmasi.
+Harapannya: sisa transaksi terkait kembali dan riwayat pembatalan tercatat.
+Membatalkan pasangan berbeda dengan membatalkan seluruh batch impor.
+
+10. UNDUH REKAP
+Buka Laporan > Unduh rekap CSV.
+File seperti umkm-rekap.csv berisi hasil untuk diperiksa di spreadsheet, termasuk sisa dan status. Bukan file untuk diimpor ulang secara langsung.
+
+CATATAN
+- Nominal CSV ditulis angka saja: 100000, bukan Rp100.000.
+- Tanggal memakai YYYY-MM-DD.
+- Ikuti tujuh kolom pada file contoh; jangan ubah nama header.
+- Simpan CSV UTF-8 bila mengedit melalui spreadsheet.
+- Pembukaan modal tidak menyimpan transaksi; perubahan baru terjadi setelah menekan Simpan.
+- Baris INV-SSE-1 berstatus batal pada rekap lama adalah artefak uji, bukan bagian dari dua file latihan ini.

@@ -65,15 +65,10 @@ Jika port dipakai: `$env:PORT='3058'; node frontend/dev.mjs`.
   Keduanya tidak mengubah UI `/app`.
 - Contoh pencocokan berada pada objek `examples`. Nilainya ilustrasi,
   terpisah sepenuhnya dari transaksi pengguna dan tidak memanggil API.
-- Artikel belum diterbitkan. Jangan menambahkan tautan atau tanggal seolah
-  artikelnya sudah tersedia.
+- Artikel penuh ada di `articles/*.html`; build menerbitkannya pada `/artikel/<slug>`. Artikel ketiga kini membahas pencatatan untuk persiapan pembiayaan. URL lama dipertahankan agar tautan yang pernah dibagikan tetap berfungsi; canonical mengarah ke halaman itu sendiri.
+- `enhance.css` dan `enhance.js` berisi peningkatan motion/visual; `articles.css` mengatur halaman baca. Sosmed resmi ada pada footer landing dan artikel.
 
-Carousel berganti setiap 6,5 detik, bisa dijeda, dipilih langsung, digeser
-di HP, atau dikendalikan dengan panah/Home/End. Autoplay berhenti saat
-hover, interaksi keyboard, tab tersembunyi, atau hero meninggalkan layar.
-Pengaturan reduced motion memakai mode manual. Scroll reveal hanya
-diaktifkan jika JavaScript dan IntersectionObserver tersedia; tanpa JS,
-isi dan tautan daftar tetap terlihat.
+Carousel manual tanpa tombol jeda/play. Gunakan pilihan slide, chevron, swipe, atau panah/Home/End. Tanpa autoplay, konten tidak berpindah sendiri saat dibaca. Scroll reveal dan gerak foto menghormati reduced motion. Tanpa JavaScript, isi tetap terlihat.
 
 Tinggi judul dan deskripsi diukur terhadap ketiga variasi teks pada lebar
 layar saat ini. Dengan begitu CTA, gambar dan bagian bawah hero tidak
@@ -89,7 +84,7 @@ node --test frontend/tests/*.test.mjs
 ```
 
 Build menghasilkan `dist/index.html` untuk landing, `dist/app.html` untuk
-aplikasi, serta aset publik. Vercel `cleanUrls` membuat `/app` membuka
+aplikasi, serta aset publik. Rewrite statis Vercel membuat `/app` membuka
 `app.html`. Tidak ada fungsi API, konfigurasi privat, dokumentasi atau tes
 di output web. Folder `dist` adalah hasil build dan tidak masuk Git.
 
@@ -100,3 +95,6 @@ dan aturan cookie/CORS yang dijelaskan di `docs/VERCEL_TEAM_API.md`.
 Pilihan desain mengikuti panduan UI Design untuk marketing page,
 header, gambar, warna, responsive layout, dan UI Animation untuk
 transisi serta gesture. Tema tetap memakai identitas EFA yang sudah ada.
+
+## Section Kenapa EFA
+Bagian analisis kini memakai tiga tab ilustrasi (catatan, biaya, waktu cair). HTML menyimpan seluruh panel agar konten tetap terbaca tanpa JavaScript; enhance.js mengaktifkan tab dengan roving tabindex, Home/End, dan panah kiri/kanan. Data contoh tidak memanggil API. Label ilustrasi dan sumber BI/OVO dipertahankan. Penutup tidak lagi memakai watermark besar atau tulisan miring dekoratif. Tes: frontend/tests/browser/context.cjs.

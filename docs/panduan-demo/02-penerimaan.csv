@@ -1,0 +1,5 @@
+id,tanggal,referensi,nama,nominal,kanal,catatan
+R101,2026-10-25,INV-101,Kedai Pagi,100000,transfer,Baru bayar sebagian
+R102,2026-10-25,INV-102,Rani,100000,qris,Pasangan unik
+R103,2026-10-25,INV-103,Toko Melati,190000,marketplace,Biaya 10000 perlu dikonfirmasi
+R104,2026-10-25,,Kirana,200000,transfer,Untuk dua pesanan perlu dialokasikan

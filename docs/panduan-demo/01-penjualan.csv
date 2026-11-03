@@ -1,0 +1,6 @@
+id,tanggal,referensi,nama,nominal,kanal,catatan
+P101,2026-10-25,INV-101,Kedai Pagi,150000,transfer,Pesanan kue
+P102,2026-10-25,INV-102,Rani,100000,qris,Pesanan lunas
+P103,2026-10-25,INV-103,Toko Melati,200000,marketplace,Ada biaya layanan
+P104,2026-10-25,INV-104,Kirana,80000,transfer,Pembayaran gabungan
+P105,2026-10-25,INV-105,Kirana,120000,transfer,Pembayaran gabungan
