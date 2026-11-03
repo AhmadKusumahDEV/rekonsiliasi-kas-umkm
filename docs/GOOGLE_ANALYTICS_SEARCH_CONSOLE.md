@@ -14,6 +14,7 @@ https://efa.madgo.my.id/google191985305be39b7b.html
 Nama `google4ddef4208f435bda0.html` pada chat tidak sesuai lampiran dan tidak dibuat-buat.
 Source verifikasi disimpan di root repo. Build mempublikasikan payload sebagai `.txt`,
 lalu rewrite internal mempertahankan URL `.html` dengan HTTP 200 tanpa redirect cleanUrls.
+Clean URLs global dimatikan karena Vercel tetap meredirect URL HTML sebelum rewrite. Alamat /app dan /artikel/<slug> tetap tanpa ekstensi melalui rewrite statis eksplisit.
 Kode verifikasi publik ini memang harus dapat dibaca Google; bukan password/API secret.
 
 ## Yang dilakukan pemilik akun Google

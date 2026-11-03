@@ -84,7 +84,7 @@ node --test frontend/tests/*.test.mjs
 ```
 
 Build menghasilkan `dist/index.html` untuk landing, `dist/app.html` untuk
-aplikasi, serta aset publik. Vercel `cleanUrls` membuat `/app` membuka
+aplikasi, serta aset publik. Rewrite statis Vercel membuat `/app` membuka
 `app.html`. Tidak ada fungsi API, konfigurasi privat, dokumentasi atau tes
 di output web. Folder `dist` adalah hasil build dan tidak masuk Git.
 

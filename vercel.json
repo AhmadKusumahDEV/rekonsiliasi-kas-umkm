@@ -4,7 +4,7 @@
   "installCommand": "",
   "buildCommand": "node tools/build-static.mjs",
   "outputDirectory": "dist",
-  "cleanUrls": true,
+  "cleanUrls": false,
   "headers": [
     {
       "source": "/(.*)",
@@ -36,6 +36,14 @@
     {
       "source": "/google191985305be39b7b.html",
       "destination": "/google191985305be39b7b.txt"
+    },
+    {
+      "source": "/app",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/artikel/:slug",
+      "destination": "/artikel/:slug.html"
     }
   ]
 }
