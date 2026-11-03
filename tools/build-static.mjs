@@ -15,6 +15,8 @@ export async function buildSite() {
   if (existing?.isSymbolicLink()) throw new Error('Refusing to replace a linked output directory');
   await rm(output, { recursive: true, force: true });
   await mkdir(join(output, 'landing'), { recursive: true });
+  // Exact .html verification URL is rewritten to a non-HTML asset to avoid cleanUrls redirects.
+  await cp(join(root, 'google191985305be39b7b.html'), join(output, 'google191985305be39b7b.txt'));
   await cp(join(root, 'frontend', 'assets'), join(output, 'assets'), { recursive: true });
   await cp(join(root, 'frontend', 'index.html'), join(output, 'app.html'));
   await cp(join(root, 'landing', 'index.html'), join(output, 'index.html'));
@@ -28,6 +30,15 @@ export async function buildSite() {
     await cp(join(root, 'pwa', file), join(output, 'pwa', file));
   }
   await cp(join(root, 'pwa', 'icons'), join(output, 'pwa', 'icons'), { recursive: true });
+  // Analytics is public-page only; authenticated app content is never instrumented.
+  for (const file of ['index.html', ...((await readdir(join(output, 'artikel'))).map(name => 'artikel/' + name))]) {
+    const path = join(output, file);
+    const html = await readFile(path, 'utf8');
+    await writeFile(path, html.replace('</head>', '<script defer src="/landing/assets/analytics.js"></script></head>'));
+  }
+  await writeFile(join(output, 'robots.txt'), 'User-agent: *\nAllow: /\nDisallow: /app\nSitemap: https://efa.madgo.my.id/sitemap.xml\n');
+  const pages = ['', ...((await readdir(join(output, 'artikel'))).map(name => 'artikel/' + name.replace(/\.html$/, '')))];
+  await writeFile(join(output, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + pages.map(path => '<url><loc>https://efa.madgo.my.id/' + path + '</loc></url>').join('') + '</urlset>');
   // changing any published asset updates the worker, without a manual cache bump.
   const hash = createHash('sha256');
   async function fingerprint(directory) {
