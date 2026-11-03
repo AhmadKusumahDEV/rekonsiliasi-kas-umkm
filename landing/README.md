@@ -95,3 +95,6 @@ dan aturan cookie/CORS yang dijelaskan di `docs/VERCEL_TEAM_API.md`.
 Pilihan desain mengikuti panduan UI Design untuk marketing page,
 header, gambar, warna, responsive layout, dan UI Animation untuk
 transisi serta gesture. Tema tetap memakai identitas EFA yang sudah ada.
+
+## Section Kenapa EFA
+Bagian analisis kini memakai tiga tab ilustrasi (catatan, biaya, waktu cair). HTML menyimpan seluruh panel agar konten tetap terbaca tanpa JavaScript; enhance.js mengaktifkan tab dengan roving tabindex, Home/End, dan panah kiri/kanan. Data contoh tidak memanggil API. Label ilustrasi dan sumber BI/OVO dipertahankan. Penutup tidak lagi memakai watermark besar atau tulisan miring dekoratif. Tes: frontend/tests/browser/context.cjs.

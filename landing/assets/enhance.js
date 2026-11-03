@@ -28,3 +28,17 @@ if(document.body.classList.contains('article-page')){
  document.addEventListener('click',e=>{if(!header.contains(e.target))close()});
  matchMedia('(min-width:801px)').addEventListener('change',e=>{if(e.matches)close()});
 }
+// Tabs change only the public illustration; no financial API is called.
+const chapters=[...document.querySelectorAll('[data-chapter]')];
+if(chapters.length){
+ const panels=chapters.map(tab=>document.getElementById(tab.getAttribute('aria-controls')));
+ function selectChapter(index,keyboard=false){
+  chapters.forEach((tab,n)=>{tab.setAttribute('aria-selected',String(n===index));tab.tabIndex=n===index?0:-1;panels[n].hidden=n!==index});
+  if(!keyboard&&!reduced.matches)panels[index].animate([{opacity:.3,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],{duration:380,easing:'cubic-bezier(.22,1,.36,1)'});
+ }
+ chapters.forEach((tab,n)=>{
+  tab.addEventListener('click',e=>selectChapter(n,e.detail===0));
+  tab.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?2:(n+(e.key==='ArrowRight'?1:-1)+3)%3;selectChapter(next,true);chapters[next].focus()});
+ });
+ selectChapter(0,true);
+}
