@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/config"
+	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/email"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/models"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/pkg/database"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/pkg/utils"
@@ -17,11 +18,18 @@ import (
 var Version = "dev"
 
 type Service struct {
-	cfg           config.Config
-	db            *database.DB
-	httpClient    *http.Client
-	startedAt     time.Time
-	stateNotifier StateNotifier
+	cfg                 config.Config
+	db                  *database.DB
+	httpClient          *http.Client
+	startedAt           time.Time
+	stateNotifier       StateNotifier
+	passwordResetMailer email.Sender
+}
+
+// SetPasswordResetMailer injects the email transport after the composition
+// root has loaded configuration. Tests can inject a fake sender.
+func (s *Service) SetPasswordResetMailer(sender email.Sender) {
+	s.passwordResetMailer = sender
 }
 
 func NewService(cfg config.Config, db *database.DB, httpClient *http.Client) *Service {

@@ -88,6 +88,26 @@ func auditEvents(s *service.Service) echo.HandlerFunc {
 	}
 }
 
+func clearData(s *service.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		session, ok := currentSession(c)
+		if !ok {
+			return echo.ErrUnauthorized
+		}
+		var req models.ClearWorkspaceDataRequest
+		if err := c.Bind(&req); err != nil {
+			return err
+		}
+		if err := c.Validate(&req); err != nil {
+			return err
+		}
+		if err := s.ClearWorkspaceData(c.Request().Context(), session.User, req); err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, map[string]bool{"ok": true})
+	}
+}
+
 func previewImport(s *service.Service) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		session, ok := currentSession(c)

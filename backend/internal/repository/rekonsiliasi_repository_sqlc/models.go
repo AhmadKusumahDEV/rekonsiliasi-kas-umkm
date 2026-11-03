@@ -37,6 +37,13 @@ type PblgJob struct {
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
+type PblgPasswordResetToken struct {
+	TokenHash string             `json:"token_hash"`
+	UserID    string             `json:"user_id"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
 type PblgPhoto struct {
 	ID          string             `json:"id"`
 	WorkspaceID string             `json:"workspace_id"`

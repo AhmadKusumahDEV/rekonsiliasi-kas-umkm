@@ -49,6 +49,25 @@ func (q *Queries) CancelUmkmImportEntries(ctx context.Context, arg CancelUmkmImp
 	return result.RowsAffected(), nil
 }
 
+const clearWorkspaceState = `-- name: ClearWorkspaceState :execrows
+UPDATE public.pblg_workspaces
+SET state = '{}'::jsonb
+WHERE id = $1 AND app = $2
+`
+
+type ClearWorkspaceStateParams struct {
+	WorkspaceID string `json:"workspace_id"`
+	App         string `json:"app"`
+}
+
+func (q *Queries) ClearWorkspaceState(ctx context.Context, arg ClearWorkspaceStateParams) (int64, error) {
+	result, err := q.db.Exec(ctx, clearWorkspaceState, arg.WorkspaceID, arg.App)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const countUmkmActiveAllocationsForImport = `-- name: CountUmkmActiveAllocationsForImport :one
 SELECT count(DISTINCT a.id)::bigint
 FROM public.umkm_allocations a
@@ -212,6 +231,45 @@ func (q *Queries) CreateUmkmImport(ctx context.Context, arg CreateUmkmImportPara
 		&i.CanceledAt,
 	)
 	return i, err
+}
+
+const deleteUmkmAllocationsByWorkspace = `-- name: DeleteUmkmAllocationsByWorkspace :execrows
+DELETE FROM public.umkm_allocations
+WHERE workspace_id = $1
+`
+
+func (q *Queries) DeleteUmkmAllocationsByWorkspace(ctx context.Context, workspaceID string) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteUmkmAllocationsByWorkspace, workspaceID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const deleteUmkmEntriesByWorkspace = `-- name: DeleteUmkmEntriesByWorkspace :execrows
+DELETE FROM public.umkm_entries
+WHERE workspace_id = $1
+`
+
+func (q *Queries) DeleteUmkmEntriesByWorkspace(ctx context.Context, workspaceID string) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteUmkmEntriesByWorkspace, workspaceID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const deleteUmkmImportsByWorkspace = `-- name: DeleteUmkmImportsByWorkspace :execrows
+DELETE FROM public.umkm_imports
+WHERE workspace_id = $1
+`
+
+func (q *Queries) DeleteUmkmImportsByWorkspace(ctx context.Context, workspaceID string) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteUmkmImportsByWorkspace, workspaceID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const getUmkmAllocationByID = `-- name: GetUmkmAllocationByID :one

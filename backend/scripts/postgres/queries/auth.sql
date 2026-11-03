@@ -41,6 +41,29 @@ WHERE id = @user_id;
 DELETE FROM public.pblg_sessions
 WHERE user_id = @user_id;
 
+-- name: GetUserIDByEmail :one
+SELECT id
+FROM public.pblg_users
+WHERE app = @app AND email = @email;
+
+-- name: DeletePasswordResetTokensByUser :exec
+DELETE FROM public.pblg_password_reset_tokens
+WHERE user_id = @user_id;
+
+-- name: CreatePasswordResetToken :exec
+INSERT INTO public.pblg_password_reset_tokens (token_hash, user_id, expires_at)
+VALUES (@token_hash, @user_id, @expires_at);
+
+-- name: GetPasswordResetTokenForUpdate :one
+SELECT user_id, expires_at
+FROM public.pblg_password_reset_tokens
+WHERE token_hash = @token_hash
+FOR UPDATE;
+
+-- name: DeletePasswordResetTokenByHash :exec
+DELETE FROM public.pblg_password_reset_tokens
+WHERE token_hash = @token_hash;
+
 -- name: CreateWorkspace :one
 INSERT INTO public.pblg_workspaces (id, app, name, code)
 VALUES (@id, @app, @name, @code)
