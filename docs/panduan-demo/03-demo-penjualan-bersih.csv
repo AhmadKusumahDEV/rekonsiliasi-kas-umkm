@@ -1,0 +1,15 @@
+id,tanggal,referensi,nama,nominal,kanal,catatan
+S01,2026-11-01,INV-101,Budi,100000,transfer,Pesanan kue
+S02,2026-11-01,INV-102,Rani,150000,qris,Pesanan lunas
+S03,2026-11-02,INV-103,Sari,200000,transfer,Pesanan katering
+S04,2026-11-02,INV-104,Dedi,75000,transfer,Pesanan roti
+S05,2026-11-03,INV-105,Ayu,50000,qris,Pesanan minuman
+S06,2026-11-03,INV-106,Toko A,120000,transfer,Pesanan grosir
+S07,2026-11-04,INV-107,Budi,90000,transfer,Pesanan ulang
+S08,2026-11-04,INV-108,Citra,110000,transfer,Pesanan paket
+S09,2026-11-04,INV-109,Eka,60000,tunai,Pembayaran tunai
+S10,2026-11-05,INV-110,Fajar,300000,transfer,Pesanan besar
+S11,2026-11-05,INV-111,Gita,80000,transfer,Pesanan snack
+S12,2026-11-05,INV-112,Siti,175000,transfer,Nama bank berbeda
+S13,2026-11-05,INV-113,Hana,95000,qris,Pesanan minuman
+S14,2026-11-06,INV-114,Indra,400000,transfer,Belum ada pembayaran

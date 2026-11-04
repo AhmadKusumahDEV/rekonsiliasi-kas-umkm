@@ -18,7 +18,7 @@ const sleep=n=>new Promise(r=>setTimeout(r,n));
    const req=r.request(),path=new URL(req.url()).pathname,method=req.method();fixture.calls.push({path,method});
    const send=(body,status=200,type='application/json')=>r.fulfill({status,contentType:type,body:typeof body==='string'?body:JSON.stringify(body)});
    if(path.endsWith('/config'))return send({brand:'Easy Financial Audit',kind:'umkm',limits:{max_import_rows:500,max_csv_bytes:1048576,max_entries:10000}});
-   if(path.endsWith('/umkm/exceptions'))return send([]);
+   if(path.endsWith('/umkm/exceptions'))return send(data.state.allocations.length?[]:[sale,receipt].map(entry=>({entry,remaining:entry.amount,status:'unmatched',candidate_ids:[entry.id===sale.id?receipt.id:sale.id],candidate_count:1,suggestion_available:true,reason:'Fixture'})));
    if(path.endsWith('/auth/me'))return send(fixture.loggedIn?{user,csrf:'fake-csrf'}:{message:'Sesi berakhir'},fixture.loggedIn?200:401);
    if(path.endsWith('/auth/login')){fixture.loggedIn=true;return send({user,csrf:'fake-csrf'});}
    if(path.endsWith('/umkm/state')){
@@ -28,9 +28,9 @@ const sleep=n=>new Promise(r=>setTimeout(r,n));
     return send(snapshot);
    }
    if(path.endsWith('/umkm/suggestions'))return fixture.failSuggestions?send({message:'Fixture suggestions unavailable'},503):send(fixture.suggestionsOverride|| (data.state.allocations.length?[]:[{sale,receipt,reason:'Fixture'}]));
-   if(path.endsWith('/imports/preview')){
+   if(path.endsWith('/imports/flexible')){
     if(fixture.holdPreview){fixture.previewHeld=true;await new Promise(resolve=>fixture.previewRelease=resolve);}
-    return send({rows:[sale,{...sale,id:'c'.repeat(32),source_id:'S2',reference:'INV-2',amount:50000}],count:2,total:200000,checksum:'test'});
+    return send({csv:'CANONICAL',preview:[{...sale,id:'c'.repeat(32),source_id:'S2',reference:'INV-2',amount:50000}],count:1,total:50000,skipped:1,warnings:[],checksum:'test'});
    }
    if(path.endsWith('/umkm/allocations')&&method==='POST'){
     const body=req.postDataJSON();data.workspace.version=2;data.state.allocations.push({...body,id:body.key,reversed:false,created_at:'2026-10-28T10:00:00Z'});
@@ -46,18 +46,18 @@ const sleep=n=>new Promise(r=>setTimeout(r,n));
  }
  async function check(name,fn){let t;try{t=await setup();await fn(t);results.push({name,pass:true});}catch(error){results.push({name,pass:false,error:error.message.split('\n')[0]});}finally{t?.fixture.release?.();t?.fixture.previewRelease?.();await sleep(100);await t?.context.close();}}
  await check('active session auth route',async({page})=>{await page.goto(base+'/app#login');await page.locator('.content h1').waitFor();assert.doesNotMatch(await page.locator('.content h1').innerText(),/tidak tersedia/);});
- await check('dialog initial focus',async({page})=>{await page.goto(base+'/app#overview',{waitUntil:'domcontentloaded'});await page.locator('[data-action=import]').first().click();assert.notEqual(await page.evaluate(()=>document.activeElement.dataset.action),'close');});
- await check('dialog outside click',async({page})=>{await page.goto(base+'/app#overview',{waitUntil:'domcontentloaded'});await page.locator('[data-action=import]').first().click();await page.mouse.click(5,5);await page.locator('#modal').waitFor({state:'hidden'});});
- async function previewSetup(t){await t.page.goto(base+'/app#overview',{waitUntil:'domcontentloaded'});await t.page.locator('[data-action=import]').first().click();await t.page.locator('#modal input[type=file]').setInputFiles({name:'test.csv',mimeType:'text/csv',buffer:Buffer.from('id,tanggal,referensi,nama,nominal,kanal,catatan\nP101,2026-10-28,INV-1,Ayu,150000,transfer,\nS2,2026-10-28,INV-2,Ayu,50000,transfer,')});}
- await check('preview duplicate total',async t=>{await previewSetup(t);await t.page.locator('#modal button[type=submit]').click();await t.page.locator('#import-preview .success').waitFor();const text=await t.page.locator('#import-preview .success').innerText();assert.match(text,/50.000/);assert.doesNotMatch(text,/200.000/);});
- await check('preview action label',async t=>{await previewSetup(t);t.fixture.holdPreview=true;await t.page.locator('#modal button[type=submit]').click();await t.page.waitForFunction(()=>document.querySelector('#modal form').dataset.busy==='true');assert.match(await t.page.locator('#modal button[type=submit]').innerText(),/Memeriksa/);t.fixture.previewRelease?.();});
+ await check('dialog initial focus',async({page})=>{await page.goto(base+'/app#overview',{waitUntil:'domcontentloaded'});await page.locator('[data-action=allocate]').first().click();assert.notEqual(await page.evaluate(()=>document.activeElement.dataset.action),'close');});
+ await check('dialog outside click',async({page})=>{await page.goto(base+'/app#overview',{waitUntil:'domcontentloaded'});await page.locator('[data-action=allocate]').first().click();await page.mouse.click(5,5);await page.locator('#modal').waitFor({state:'hidden'});});
+ async function previewSetup(t){await t.page.goto(base+'/app#imports');await t.page.locator('#import-sale').setInputFiles({name:'test.csv',mimeType:'text/csv',buffer:Buffer.from('VALID')});}
+ await check('preview duplicate total',async t=>{await previewSetup(t);await t.page.locator('#flex-import button[type=submit]').click();await t.page.getByRole('button',{name:'Simpan file yang sudah diperiksa'}).waitFor();const text=await t.page.locator('#flow-preview').innerText();assert.match(text,/50.000/);assert.doesNotMatch(text,/200.000/);});
+ await check('preview action label',async t=>{await previewSetup(t);t.fixture.holdPreview=true;await t.page.locator('#flex-import button[type=submit]').click();await t.page.waitForFunction(()=>document.querySelector('#flex-import').dataset.busy==='true');assert.match(await t.page.locator('#flex-import button[type=submit]').innerText(),/Memeriksa/);t.fixture.previewRelease?.();});
  await check('missing allocation target',async({page})=>{await page.locator('[data-action=allocate]').first().evaluate(el=>el.dataset.id='missing');await page.locator('[data-action=allocate]').first().click();assert.equal(await page.locator('#modal').isVisible(),false);});
  await check('fresh state after save while another refresh runs',async t=>{
   t.fixture.holdNext=true;await t.page.evaluate(()=>window.__emit(2));
   for(let i=0;i<50&&!t.fixture.stateHeld;i++)await sleep(20);
   assert.equal(t.fixture.stateHeld,true);
   await t.page.locator('[data-action=allocate]').first().click();
-  await t.page.locator('#modal button[type=submit]').click();
+  await t.page.locator('[name=sale_id]').selectOption(t.fixture.sale.id);await t.page.locator('[name=receipt_id]').selectOption(t.fixture.receipt.id);await t.page.locator('[name=amount]').fill('150000');await t.page.locator('#modal button[type=submit]').click();
   await t.page.locator('#modal').waitFor({state:'hidden'});
   t.fixture.release();await t.page.getByRole('button',{name:'Batalkan pasangan'}).waitFor();
  });
@@ -81,11 +81,7 @@ const sleep=n=>new Promise(r=>setTimeout(r,n));
    assert.equal(await page.locator('[data-action=match]').count(),0);
   });
   await check('invalid UTF-8 CSV rejected before preview API',async t=>{
-   await previewSetup(t);
-   await t.page.locator('#modal input[type=file]').setInputFiles({name:'broken.csv',mimeType:'text/csv',buffer:Buffer.from([0xff,0xfe,0x41])});
-   await t.page.locator('#modal button[type=submit]').click();
-   await t.page.locator('[data-form-error]:visible').waitFor();
-   assert.equal(t.fixture.calls.filter(c=>c.path.endsWith('/imports/preview')).length,0);
+   await previewSetup(t);await t.page.locator('#import-sale').setInputFiles({name:'broken.csv',mimeType:'text/csv',buffer:Buffer.from([0xff,0xfe,0x41])});await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('#flow-preview [role=alert]').waitFor();assert.equal(t.fixture.calls.filter(c=>c.path.endsWith('/imports/flexible')).length,0);
   });
   await check('authenticated data failure offers recovery instead of login',async({page,fixture})=>{
    fixture.failState=true;await page.goto(base+'/app#overview');await page.reload();
@@ -95,5 +91,5 @@ const sleep=n=>new Promise(r=>setTimeout(r,n));
    await page.locator('.cash-header').waitFor();
   });
  }
- await browser.close();await fs.writeFile('docs/audit/browser-'+(process.env.AUDIT_BASELINE?'before':'after')+'.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));if(results.some(r=>!r.pass)&&!process.env.AUDIT_BASELINE)process.exitCode=1;
+ await browser.close();await fs.mkdir('test-results',{recursive:true});await fs.writeFile('test-results/browser-'+(process.env.AUDIT_BASELINE?'before':'after')+'.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));if(results.some(r=>!r.pass)&&!process.env.AUDIT_BASELINE)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exit(1)});

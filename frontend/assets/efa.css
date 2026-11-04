@@ -130,3 +130,13 @@ body[data-kind="umkm"] .toast { background: var(--efa-charcoal); color: #ffffff;
 .exception-candidates { display: grid; gap: 10px; margin-top: 16px; }
 .exception-candidates h3 { margin: 0; font-size: 1rem; }
 @media (max-width: 600px) { .exception-pair { grid-template-columns: 1fr; } }
+.import-slots { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:24px 0; }
+.import-slots label { padding:22px;border:1px solid #c7dbe7;border-radius:16px;display:grid;gap:12px;min-width:0; }
+.import-slots label>span { font-size:13px;color:#537080;font-weight:400; }
+.import-slots input { max-width:100%;min-width:0; }
+.import-preview { margin:24px 0;min-width:0; }
+.import-preview .warning { padding:16px;border-radius:10px; }
+.import-preview h3 { font-size:18px; }
+.danger-zone { margin-top:28px;border-color:#c87979!important; }
+.danger-zone h2 { color:#9a3030; }
+@media(max-width:650px){.import-slots{grid-template-columns:1fr}.import-flow{padding:18px!important}}

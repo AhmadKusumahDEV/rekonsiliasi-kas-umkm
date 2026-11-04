@@ -36,7 +36,7 @@ function cashDashboard(c) {
   const { state, e, money, sumMoney, balance, button, empty } = c;
   const entries = (state.data.state.entries || []).filter((x) => !x.canceled),
     sales = entries.filter((x) => x.kind === "sale"),
-    receipts = entries.filter((x) => x.kind === "receipt");
+    receipts = entries.filter((x) => x.kind === "receipt" && x.category !== "non_operational");
   const open = sales.filter((x) => balance(x) > 0),
     done = sales.length - open.length;
   const rows =
@@ -59,7 +59,7 @@ function cashDashboard(c) {
       "Lihat uang yang sudah diterima dan tagihan yang masih perlu dicocokkan.",
       button("Impor CSV", "import", "", "primary"),
     ) +
-    `<section class="cash-account"><div class="cash-balance"><span class="account-caption">Tagihan belum cocok</span><strong class="account-amount">${e(money(sumMoney(open, (x) => balance(x))))}</strong><p>${open.length} dari ${sales.length} penjualan masih memiliki sisa.</p><a href="#reconcile" class="button balance-link">Periksa pasangan <span aria-hidden="true">↗</span></a><div class="cash-account-foot"><span>${done} penjualan sudah cocok</span><span>Rupiah / IDR</span></div></div><figure class="cash-business-photo"><img src="/assets/efa-ledger-4k.jpg" width="4000" height="2670" alt="Kalkulator dan dokumen keuangan di atas meja"><figcaption><strong>Untuk usaha yang terus berjalan.</strong></figcaption></figure></section>
+    `<section class="cash-account"><div class="cash-balance"><span class="account-caption">Tagihan belum cocok</span><strong class="account-amount">${e(money(sumMoney(open, (x) => balance(x))))}</strong><p>${open.length} dari ${sales.length} penjualan masih memiliki sisa.</p><a href="#verifikasi" class="button balance-link">Buka Verifikasi <span aria-hidden="true">↗</span></a><div class="cash-account-foot"><span>${done} penjualan sudah cocok</span><span>Rupiah / IDR</span></div></div><figure class="cash-business-photo"><img src="/assets/efa-ledger-4k.jpg" width="4000" height="2670" alt="Kalkulator dan dokumen keuangan di atas meja"><figcaption><strong>Untuk usaha yang terus berjalan.</strong></figcaption></figure></section>
     <div class="cash-totals"><div><span>Penjualan tercatat</span><strong>${e(money(sumMoney(sales, (x) => x.amount)))}</strong><small>${sales.length} transaksi</small></div><div><span>Penerimaan tercatat</span><strong>${e(money(sumMoney(receipts, (x) => x.amount)))}</strong><small>${receipts.length} transaksi</small></div><div><span>Sudah cocok</span><strong>${done}<small> / ${sales.length}</small></strong><small>Penjualan tanpa sisa tagihan</small></div></div>
     <section class="cash-workspace"><div><div class="section-title"><h2>Perlu dicocokkan</h2><a href="#entries">Semua transaksi ↗</a></div><div class="cash-transactions">${rows}</div></div><aside class="cash-receipt"><div class="receipt-header"><span>${e(state.data.workspace.name)}</span><strong>Penerimaan per kanal</strong></div>${
       channels

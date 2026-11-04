@@ -1,5 +1,8 @@
 # Easy Financial Audit (EFA)
 
+
+Frontend terbaru memakai impor dua slot dan satu halaman Verifikasi. Lihat [alur, kontrak, dan hasil uji 4 November](docs/FRONTEND_HANDOFF_IMPLEMENTATION.md) serta [panduan latihan CSV](docs/panduan-demo/PANDUAN.txt).
+
 Nama tampilan baru Temu Kas. [Palet, logo dan favicon](docs/BRAND.md)
 mengikuti referensi terbaru; folder, data dan endpoint tetap kompatibel.
 

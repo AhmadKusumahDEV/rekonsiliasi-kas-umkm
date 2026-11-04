@@ -19,8 +19,8 @@ export function deduplicatePreview(preview, entries, kind) {
   return { ...preview, rows, skipped, count: rows.length, total: rows.reduce((sum,row) => sum + BigInt(row.amount), 0n) };
 }
 export function selectAllocation(entries, balance, saleID = "", receiptID = "") {
-  const sales = entries.filter(x => !x.canceled && x.kind === "sale" && balance(x) > 0);
-  const receipts = entries.filter(x => !x.canceled && x.kind === "receipt" && balance(x) > 0);
+  const sales = entries.filter(x => !x.canceled && !x.settled && x.category !== "cash" && x.category !== "non_operational" && x.kind === "sale" && balance(x) > 0);
+  const receipts = entries.filter(x => !x.canceled && !x.settled && x.category !== "cash" && x.category !== "non_operational" && x.kind === "receipt" && balance(x) > 0);
   const sale = saleID ? sales.find(x => x.id === saleID) : sales[0];
   const receipt = receiptID ? receipts.find(x => x.id === receiptID) : receipts[0];
   if (!sale || !receipt) throw new Error("Transaksi yang dipilih sudah berubah atau tidak tersedia. Muat ulang data dan pilih kembali.");
