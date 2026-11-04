@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/pkg/database"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -49,6 +50,32 @@ func Prepare(t *testing.T) *database.DB {
 	if err := admin.Ping(ctx); err != nil {
 		t.Fatalf("ping test database: %v", err)
 	}
+	// Hold a session-level lock for the whole test so two concurrent test runs
+	// cannot drop each other's schema.
+	lockConn, err := pgx.Connect(ctx, dsn)
+	if err != nil {
+		t.Fatalf("open advisory lock connection: %v", err)
+	}
+	const lockKey int64 = 0x524b5554455354
+	locked := false
+	deadline := time.Now().Add(60 * time.Second)
+	for !locked {
+		if err = lockConn.QueryRow(ctx, "SELECT pg_try_advisory_lock($1)", lockKey).Scan(&locked); err != nil {
+			t.Fatalf("acquire test database lock: %v", err)
+		}
+		if !locked {
+			if time.Now().After(deadline) {
+				t.Fatal("test database is busy: another test run holds the schema lock")
+			}
+			time.Sleep(200 * time.Millisecond)
+		}
+	}
+	t.Cleanup(func() {
+		unlockCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_, _ = lockConn.Exec(unlockCtx, "SELECT pg_advisory_unlock($1)", lockKey)
+		_ = lockConn.Close(unlockCtx)
+	})
 	if _, err := admin.Exec(ctx, "DROP SCHEMA IF EXISTS public CASCADE"); err != nil {
 		t.Fatalf("drop test schema: %v", err)
 	}

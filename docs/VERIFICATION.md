@@ -75,8 +75,21 @@ dipakai frontend, deployment VPS, restore backup, dan UAT dengan data UMKM nyata
   menerima request dengan HTTP 200.
 - Frontend form `#forgot` dan `#reset` belum diimplementasikan; kontraknya ada
   di [PASSWORD_RESET.md](PASSWORD_RESET.md).
-- Migration `000005_password_reset_tokens` sudah diterapkan oleh test harness;
-  deployment VPS tetap harus menjalankan migration sebelum API baru dipakai.
+- Migration `000005_password_reset_tokens` sudah diterapkan oleh test harness
+  dan oleh service `migrate` di VPS saat rebuild 3 November 2026.
+
+Status production 3 November 2026 di `https://temukas.madgo.my.id`:
+
+- container `api` dan `db` berjalan dari build terbaru;
+- `GET /health/live` → `200`;
+- `POST /api/v1/auth/password/forgot` email tak terdaftar → `202`;
+- `POST /api/v1/auth/password/reset` token palsu → `400`;
+- `DELETE /api/v1/umkm/data` tanpa cookie → `401`; frasa atau password salah →
+  `400`;
+- preflight `OPTIONS /api/v1/umkm/data` dari `https://efa.madgo.my.id` → `204`
+  dengan `DELETE` dan `X-CSRF-Token` diizinkan;
+- login akun demo → `200` (`role` = `owner`), lalu `state`, `suggestions`,
+  `exceptions`, `audit`, dan `export` → `200`.
 
 ### Kosongkan data workspace
 

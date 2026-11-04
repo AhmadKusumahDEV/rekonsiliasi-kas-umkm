@@ -13,6 +13,8 @@ type Entry struct {
 	Amount    int64     `json:"amount"`
 	Channel   string    `json:"channel"`
 	Note      string    `json:"note"`
+	Category  string    `json:"category,omitempty"`
+	Settled   bool      `json:"settled,omitempty"`
 	Canceled  bool      `json:"canceled"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -80,6 +82,17 @@ type Exception struct {
 	CandidateIDsTruncated bool     `json:"candidate_ids_truncated"`
 	SuggestionAvailable   bool     `json:"suggestion_available"`
 	Reason                string   `json:"reason"`
+	FeeHint               *FeeHint `json:"fee_hint,omitempty"`
+}
+
+// FeeHint explains a shortfall between a sale and a matching receipt. It is a
+// suggestion only: the user still confirms the allocation and the fee.
+type FeeHint struct {
+	Amount     int64  `json:"amount"`
+	Source     string `json:"source"`
+	Label      string `json:"label"`
+	Confidence string `json:"confidence"`
+	Reason     string `json:"reason"`
 }
 
 type UMKMState struct {
@@ -108,11 +121,27 @@ type PreviewResponse struct {
 	Skipped  int     `json:"skipped"`
 }
 
+type FlexibleImportRequest struct {
+	Kind string `json:"kind" validate:"required,oneof=sale receipt"`
+	CSV  string `json:"csv" validate:"required"`
+}
+
+type FlexibleImportResponse struct {
+	CSV      string   `json:"csv"`
+	Count    int      `json:"count"`
+	Total    int64    `json:"total"`
+	Checksum string   `json:"checksum"`
+	Preview  []Entry  `json:"preview"`
+	Skipped  int      `json:"skipped"`
+	Warnings []string `json:"warnings"`
+}
+
 type CommitImportResponse struct {
-	ID        string `json:"id"`
-	Imported  int    `json:"imported"`
-	Skipped   int    `json:"skipped"`
-	Duplicate bool   `json:"duplicate,omitempty"`
+	ID          string `json:"id"`
+	Imported    int    `json:"imported"`
+	Skipped     int    `json:"skipped"`
+	AutoMatched int    `json:"auto_matched"`
+	Duplicate   bool   `json:"duplicate,omitempty"`
 }
 
 type AllocationRequest struct {

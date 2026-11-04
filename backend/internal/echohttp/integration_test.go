@@ -31,6 +31,9 @@ type echohttpServer struct {
 }
 
 func TestUMKMIntegrationFlow(t *testing.T) {
+	// This test exercises the manual review and allocation path, so automatic
+	// pairing is disabled for the duration of the test.
+	t.Setenv("MATCH_AUTO_APPLY", "false")
 	db := testkit.Prepare(t)
 	cfg := config.Config{
 		App:    config.AppConfig{Name: "integration-test"},

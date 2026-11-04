@@ -336,7 +336,9 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 		return models.CommitImportResponse{}, pkgErr.ErrFailCommitTx
 	}
 	s.publishState(user.WorkspaceID, version)
-	return models.CommitImportResponse{ID: importID, Imported: len(newRows), Skipped: skipped}, nil
+	// Auto-match is a convenience layer: a failure here must not undo a valid import.
+	autoMatched, _ := s.autoMatchWorkspace(ctx, user, importID)
+	return models.CommitImportResponse{ID: importID, Imported: len(newRows), Skipped: skipped, AutoMatched: autoMatched}, nil
 }
 
 func (s *Service) Allocate(ctx context.Context, user models.User, req models.AllocationRequest) (models.Allocation, error) {

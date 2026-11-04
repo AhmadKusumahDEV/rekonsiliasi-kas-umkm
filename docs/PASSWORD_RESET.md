@@ -3,6 +3,10 @@
 Fitur ini menambahkan reset kata sandi melalui email Resend. Endpoint backend
 sudah tersedia; halaman frontend perlu menambahkan dua route.
 
+Status: aktif di production. Base URL `https://temukas.madgo.my.id`. Diuji
+langsung pada 3 November 2026: `forgot` dengan email tidak terdaftar
+menghasilkan `202`, dan `reset` dengan token palsu menghasilkan `400`.
+
 ## Kontrak backend
 
 ### Minta tautan
@@ -54,6 +58,25 @@ Frontend perlu menambahkan:
 Jangan menaruh token di `localStorage` atau mengirimkannya ke analytics/log.
 Token tidak perlu disimpan setelah form dikirim.
 
+### Validasi request
+
+| Field | Aturan |
+| --- | --- |
+| `email` | wajib, format email, maksimal 254 karakter |
+| `token` | wajib, 64 karakter hex |
+| `password` | wajib, 12 sampai 72 byte UTF-8 |
+
+Email dengan format tidak valid ditolak `400`; hanya email valid yang mendapat
+respons `202`. Body error mengikuti format global:
+
+```json
+{"code":400,"status":"bad request","message":"Tautan reset tidak valid atau sudah kedaluwarsa. Minta tautan baru.","request_id":"..."}
+```
+
+Pesan `400` untuk token: “Tautan reset tidak valid atau sudah kedaluwarsa.
+Minta tautan baru.” Password di bawah 12 karakter ditolak sebelum token dipakai,
+jadi frontend sebaiknya memvalidasi panjang password lebih dulu.
+
 Contoh pemanggilan dari frontend:
 
 ```js
@@ -81,6 +104,11 @@ Status error yang perlu ditangani:
 | 400 | Token/password tidak valid; minta tautan baru atau tampilkan aturan password |
 | 429 | Terlalu banyak percobaan; tampilkan waktu tunggu |
 | 503 | Email/database belum siap; minta coba lagi nanti |
+
+Rate limit auth berlaku per IP dengan burst 25 request dan isi ulang 25 request
+per 10 menit, dipakai bersama endpoint login/register. Frontend cukup
+menonaktifkan tombol kirim sementara setelah menerima `429` dan menampilkan
+ajakan mencoba lagi nanti.
 
 Setelah `forgot` sukses, jangan mengubah pesan berdasarkan status akun. Setelah
 `reset` sukses, hapus fragment token dari address bar sebelum mengarahkan ke
@@ -118,3 +146,6 @@ API (file `otel.env` yang dipakai Compose) lalu rebuild container API.
   tidak bisa dipakai ulang, dan email untuk akun tidak dikenal tidak dikirim.
 - Email adapter diuji secara manual melalui Resend ke alamat pengguna; provider
   menerima request dengan status 200.
+- Uji live 3 November 2026 di `https://temukas.madgo.my.id`:
+  `POST /api/v1/auth/password/forgot` dengan email tak terdaftar → `202`;
+  `POST /api/v1/auth/password/reset` dengan token `deadbeef` → `400`.
