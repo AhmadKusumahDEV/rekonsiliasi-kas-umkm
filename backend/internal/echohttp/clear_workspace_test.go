@@ -15,6 +15,7 @@ import (
 )
 
 func TestClearWorkspaceDataKeepsAccountAndAudit(t *testing.T) {
+	t.Setenv("MATCH_AUTO_APPLY", "false")
 	db := testkit.Prepare(t)
 	cfg := config.Config{
 		App:    config.AppConfig{Name: "clear-data-test"},

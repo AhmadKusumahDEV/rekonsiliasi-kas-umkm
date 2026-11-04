@@ -129,6 +129,35 @@ func previewImport(s *service.Service) echo.HandlerFunc {
 	}
 }
 
+func flexibleImport(s *service.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		session, ok := currentSession(c)
+		if !ok {
+			return echo.ErrUnauthorized
+		}
+		var req models.FlexibleImportRequest
+		if err := c.Bind(&req); err != nil {
+			return err
+		}
+		if err := c.Validate(&req); err != nil {
+			return err
+		}
+		preview, canonical, warnings, err := s.FlexibleImportForWorkspace(c.Request().Context(), session.User, req.Kind, req.CSV)
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, models.FlexibleImportResponse{
+			CSV:      canonical,
+			Count:    preview.Count,
+			Total:    preview.Total,
+			Checksum: preview.Checksum,
+			Preview:  preview.Rows,
+			Skipped:  preview.Skipped,
+			Warnings: warnings,
+		})
+	}
+}
+
 func commitImport(s *service.Service) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		session, ok := currentSession(c)

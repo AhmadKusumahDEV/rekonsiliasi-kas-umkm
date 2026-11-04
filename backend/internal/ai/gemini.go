@@ -1,0 +1,203 @@
+// Package ai contains a narrow Gemini client used only for ambiguous import
+// decisions. It never parses amounts or dates and never invents identifiers.
+package ai
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+)
+
+// Candidate is one ambiguous sale-receipt pair already produced by the
+// deterministic matcher.
+type Candidate struct {
+	SaleID        string  `json:"sale_id"`
+	ReceiptID     string  `json:"receipt_id"`
+	Score         float64 `json:"rule_score"`
+	SaleRef       string  `json:"sale_reference,omitempty"`
+	ReceiptRef    string  `json:"receipt_reference,omitempty"`
+	SaleDate      string  `json:"sale_date,omitempty"`
+	ReceiptDate   string  `json:"receipt_date,omitempty"`
+	SaleAmount    int64   `json:"sale_amount,omitempty"`
+	ReceiptAmount int64   `json:"receipt_amount,omitempty"`
+}
+
+// Verdict is the model answer for one candidate. Only IDs from the input are
+// accepted; anything else is discarded by Review.
+type Verdict struct {
+	SaleID    string `json:"sale_id"`
+	ReceiptID string `json:"receipt_id"`
+	Match     bool   `json:"match"`
+	Reason    string `json:"reason"`
+}
+
+// Client calls the Gemini generateContent endpoint.
+type Client struct {
+	APIKey  string
+	Model   string
+	BaseURL string
+	HTTP    *http.Client
+}
+
+// NewFromEnv returns a client only when GEMINI_API_KEY is present. Callers
+// should treat a nil client as "AI disabled" and continue deterministically.
+func NewFromEnv() *Client {
+	if strings.EqualFold(strings.TrimSpace(os.Getenv("AI_ENABLED")), "false") {
+		return nil
+	}
+	key := strings.TrimSpace(os.Getenv("GEMINI_API_KEY"))
+	if key == "" {
+		return nil
+	}
+	model := strings.TrimSpace(os.Getenv("GEMINI_MODEL"))
+	if model == "" {
+		model = "gemini-2.5-flash"
+	}
+	base := strings.TrimSpace(os.Getenv("GEMINI_BASE_URL"))
+	if base == "" {
+		base = "https://generativelanguage.googleapis.com/v1beta"
+	}
+	timeout := 8 * time.Second
+	if raw := strings.TrimSpace(os.Getenv("GEMINI_TIMEOUT")); raw != "" {
+		if parsed, err := time.ParseDuration(raw); err == nil && parsed > 0 && parsed <= 30*time.Second {
+			timeout = parsed
+		}
+	}
+	return &Client{
+		APIKey:  key,
+		Model:   model,
+		BaseURL: strings.TrimRight(base, "/"),
+		HTTP: &http.Client{
+			Timeout: timeout,
+			CheckRedirect: func(*http.Request, []*http.Request) error {
+				return errors.New("gemini: redirect tidak diizinkan")
+			},
+		},
+	}
+}
+
+func (c *Client) endpoint() string {
+	return fmt.Sprintf("%s/models/%s:generateContent", c.BaseURL, c.Model)
+}
+
+type part struct {
+	Text string `json:"text"`
+}
+
+type content struct {
+	Parts []part `json:"parts"`
+}
+
+type generationConfig struct {
+	Temperature      float64 `json:"temperature"`
+	ResponseMimeType string  `json:"responseMimeType"`
+}
+
+type generateRequest struct {
+	Contents         []content        `json:"contents"`
+	GenerationConfig generationConfig `json:"generationConfig"`
+}
+
+type generateResponse struct {
+	Candidates []struct {
+		Content content `json:"content"`
+	} `json:"candidates"`
+}
+
+const reviewPrompt = "Kamu membantu aplikasi kas UMKM memilih pasangan transaksi.\n" +
+	"Untuk setiap kandidat, putuskan apakah penjualan dan penerimaan adalah pembayaran yang sama.\n" +
+	"Aturan:\n" +
+	"- Gunakan hanya sale_id dan receipt_id yang ada di kandidat.\n" +
+	"- Jangan mengarang ID.\n" +
+	"- Pertimbangkan referensi, nominal, kanal, dan jarak tanggal.\n" +
+	"- Jika ragu, match=false.\n" +
+	"Jawab hanya JSON: {\"verdicts\":[{\"sale_id\":\"...\",\"receipt_id\":\"...\",\"match\":true,\"reason\":\"maksimal 120 karakter\"}]}"
+
+// Review asks the model to judge ambiguous pairs. The caller must still apply
+// its own confidence policy; a model verdict alone never auto-commits.
+func (c *Client) Review(ctx context.Context, candidates []Candidate) ([]Verdict, error) {
+	if c == nil || c.APIKey == "" {
+		return nil, errors.New("gemini: api key kosong")
+	}
+	if len(candidates) == 0 {
+		return nil, nil
+	}
+	if len(candidates) > 20 {
+		candidates = candidates[:20]
+	}
+	payload, err := json.Marshal(candidates)
+	if err != nil {
+		return nil, err
+	}
+	reqBody := generateRequest{
+		Contents:         []content{{Parts: []part{{Text: reviewPrompt + "\n\nKandidat:\n" + string(payload)}}}},
+		GenerationConfig: generationConfig{Temperature: 0, ResponseMimeType: "application/json"},
+	}
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, err
+	}
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint(), bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("x-goog-api-key", c.APIKey)
+	client := c.HTTP
+	if client == nil {
+		client = &http.Client{Timeout: 8 * time.Second}
+	}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
+		return nil, fmt.Errorf("gemini: status %d", resp.StatusCode)
+	}
+	var parsed generateResponse
+	if err = json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&parsed); err != nil {
+		return nil, err
+	}
+	if len(parsed.Candidates) == 0 || len(parsed.Candidates[0].Content.Parts) == 0 {
+		return nil, errors.New("gemini: jawaban kosong")
+	}
+	raw := parsed.Candidates[0].Content.Parts[0].Text
+	var verdicts struct {
+		Verdicts []Verdict `json:"verdicts"`
+	}
+	if err = json.Unmarshal([]byte(raw), &verdicts); err != nil {
+		return nil, fmt.Errorf("gemini: json tidak valid: %w", err)
+	}
+	return filterVerdicts(candidates, verdicts.Verdicts), nil
+}
+
+func filterVerdicts(candidates []Candidate, verdicts []Verdict) []Verdict {
+	allowed := make(map[string]bool, len(candidates))
+	for _, candidate := range candidates {
+		allowed[candidate.SaleID+"|"+candidate.ReceiptID] = true
+	}
+	out := make([]Verdict, 0, len(verdicts))
+	seen := make(map[string]bool, len(verdicts))
+	for _, verdict := range verdicts {
+		key := verdict.SaleID + "|" + verdict.ReceiptID
+		if !allowed[key] || seen[key] {
+			continue
+		}
+		seen[key] = true
+		verdict.Reason = strings.TrimSpace(verdict.Reason)
+		if len(verdict.Reason) > 200 {
+			verdict.Reason = verdict.Reason[:200]
+		}
+		out = append(out, verdict)
+	}
+	return out
+}

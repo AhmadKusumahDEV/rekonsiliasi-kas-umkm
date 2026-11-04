@@ -192,7 +192,7 @@ func suggestions(entries []models.Entry, allocations []models.Allocation) []mode
 	sales := map[key][]models.Entry{}
 	receipts := map[key][]models.Entry{}
 	for _, entry := range entries {
-		if entry.Canceled || allocated[entry.ID] != 0 || strings.TrimSpace(entry.Reference) == "" {
+		if entry.Canceled || allocated[entry.ID] != 0 || strings.TrimSpace(entry.Reference) == "" || isCashSale(entry) || isNonOperationalReceipt(entry) {
 			continue
 		}
 		candidate := keyFor(entry, entry.Date)
@@ -205,7 +205,7 @@ func suggestions(entries []models.Entry, allocations []models.Allocation) []mode
 	}
 
 	for _, sale := range entries {
-		if sale.Kind != "sale" || sale.Canceled || allocated[sale.ID] != 0 || strings.TrimSpace(sale.Reference) == "" {
+		if sale.Kind != "sale" || sale.Canceled || allocated[sale.ID] != 0 || strings.TrimSpace(sale.Reference) == "" || isCashSale(sale) {
 			continue
 		}
 		saleDate, err := time.Parse("2006-01-02", sale.Date)
@@ -283,7 +283,7 @@ func exceptions(entries []models.Entry, allocations []models.Allocation) []model
 	sales := make(map[candidateKey][]models.Entry)
 	receipts := make(map[candidateKey][]models.Entry)
 	for _, entry := range entries {
-		if entry.Canceled || strings.TrimSpace(entry.Reference) == "" || remainingByID[entry.ID] <= 0 {
+		if entry.Canceled || strings.TrimSpace(entry.Reference) == "" || remainingByID[entry.ID] <= 0 || isCashSale(entry) || isNonOperationalReceipt(entry) {
 			continue
 		}
 		switch entry.Kind {
@@ -304,7 +304,7 @@ func exceptions(entries []models.Entry, allocations []models.Allocation) []model
 
 	out := make([]models.Exception, 0)
 	for _, entry := range entries {
-		if entry.Canceled {
+		if entry.Canceled || isCashSale(entry) || isNonOperationalReceipt(entry) {
 			continue
 		}
 		remainingAmount := remainingByID[entry.ID]
@@ -385,6 +385,7 @@ func exceptions(entries []models.Entry, allocations []models.Allocation) []model
 			CandidateIDsTruncated: candidateIDsTruncated,
 			SuggestionAvailable:   suggestionAvailable,
 			Reason:                reason,
+			FeeHint:               feeHintFor(entry, entries),
 		})
 	}
 	sort.SliceStable(out, func(i, j int) bool {
@@ -409,6 +410,12 @@ func validateAllocation(sale, receipt models.Entry, active []models.Allocation, 
 	}
 	if sale.Kind != "sale" || receipt.Kind != "receipt" || sale.Canceled || receipt.Canceled {
 		return pkgErr.New(pkgErr.ErrNotFound, "Penjualan atau penerimaan tidak ditemukan.")
+	}
+	if isCashSale(sale) {
+		return pkgErr.New(pkgErr.ErrInvalidRequest, "Penjualan tunai sudah lunas dan tidak perlu dipasangkan.")
+	}
+	if isNonOperationalReceipt(receipt) {
+		return pkgErr.New(pkgErr.ErrInvalidRequest, "Penerimaan ini non-operasional, bukan pembayaran pelanggan.")
 	}
 	remainingSale := remaining(sale, active)
 	remainingReceipt := remaining(receipt, active)

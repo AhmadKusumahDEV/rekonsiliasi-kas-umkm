@@ -9,7 +9,7 @@ import (
 )
 
 func mapEntry(row sqlc.UmkmEntry) models.Entry {
-	return models.Entry{
+	entry := models.Entry{
 		ID:        row.ID,
 		SourceID:  row.SourceID,
 		BatchID:   row.BatchID,
@@ -23,6 +23,14 @@ func mapEntry(row sqlc.UmkmEntry) models.Entry {
 		Canceled:  row.CanceledAt.Valid,
 		CreatedAt: timeValue(row.CreatedAt),
 	}
+	if isCashSale(entry) {
+		entry.Category = "cash"
+		entry.Settled = true
+	}
+	if isNonOperationalReceipt(entry) {
+		entry.Category = "non_operational"
+	}
+	return entry
 }
 
 func mapImport(row sqlc.UmkmImport) models.Import {
