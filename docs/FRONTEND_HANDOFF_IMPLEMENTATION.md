@@ -34,7 +34,7 @@ Tanggal: 4 November 2026. Acuan implementasi: main `44d628a`, sembilan dokumen h
 ## Bukti pengujian
 
 - 25 tes Node frontend lulus.
-- 16 skenario browser handoff lulus: canonical payload dan urutan, satu slot, debit-saja, warnings, file biner/UTF-8, retry parsial, double submit, grouping/fee, alias, kegagalan antrean, 403/409, forgot/429, reset sampai login memakai password baru, invalid/mismatch token/password, clear data dan sesi habis.
+- 17 skenario browser handoff lulus: canonical payload dan urutan, satu slot, debit-saja, warnings, file biner/UTF-8, retry parsial, double submit, grouping/fee, alias, kegagalan antrean, 403/409, forgot/429, reset sampai login memakai password baru, invalid/mismatch token/password, clear data dan sesi habis.
 - 15 regresi browser MVP dan 13 regresi audit lama diperbarui ke kontrak baru dan lulus. Pengujian memakai fixture sintetis lokal.
 - Impor, Verifikasi dan Pengaturan diperiksa pada 375, 768, 1440 px tanpa overflow halaman atau JavaScript pageerror pada fixture.
 - `go test -short ./internal/service ./internal/echohttp` lulus; integrasi PostgreSQL sengaja dilewati mode short. Tidak ada perubahan kode backend pada branch ini.
@@ -62,3 +62,6 @@ Gunakan PORT/HANDOFF_URL/MVP_URL/AUDIT_URL bila port bukan 3058. File hasil bera
 Uji reset sampai login dan pengosongan data di browser memakai API fixture, bukan provider email atau database produksi. Backend telah memiliki test integrasi sendiri; test tersebut tidak dijalankan ulang pada database live. Uji pengiriman reset email end-to-end memerlukan akun uji yang dikuasai tim. Hindari tombol kosongkan pada workspace bersama untuk presentasi.
 
 Analytics hanya mengukur halaman publik. Respons endpoint collection sebelumnya 204 dan file Search Console 200 membuktikan pemasangan teknis; status ownership/indexing dan metrik pada property GA tetap perlu dilihat pemilik akun Google. Tidak menyamakan file verifikasi terpasang dengan sudah terindeks di pencarian.
+
+## Status rilis
+PR frontend siap ditinjau. Deployment frontend baru tertunda karena CLI Vercel logout; perlu login kembali ke akun yang memiliki workspace hash-a09b. Perubahan tidak diklaim sudah live. Setup publik Google yang sudah live dicek ulang: verifikasi 200 tanpa redirect, tag 200, collection Analytics 204.

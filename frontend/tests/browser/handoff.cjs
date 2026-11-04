@@ -92,6 +92,9 @@ const results=[];
   const card=t.page.locator('.exception-card').filter({hasText:'Alasan AMBIG'});await card.getByRole('button',{name:'Pilih kandidat'}).click();assert.equal(await t.page.locator('[name=receipt_id]').inputValue(),'');await t.page.locator('[data-action=close]').first().click();assert.match(await card.innerText(),/22 kandidat/);assert.equal(await card.getByRole('button',{name:'Cari secara manual'}).count(),1);
   await t.page.goto(base+'/app#exceptions');await t.page.getByRole('heading',{name:'Verifikasi',exact:true}).waitFor();assert.equal(new URL(t.page.url()).hash,'#verifikasi');
  });
+ await check('a cash-only workspace does not claim it is waiting for a bank receipt',async t=>{
+  t.flags.data.state.entries=[t.entries[4]];t.flags.exceptions=[];t.flags.suggestions=[];await t.open('verifikasi');assert.doesNotMatch(await t.page.locator('.content').innerText(),/Catatan belum lengkap|Belum ada bukti penerimaan/);assert.equal(await t.page.locator('.exception-card').count(),0);
+ });
  await check('failed queue never claims zero; cash and non-operational have no table actions',async t=>{
   t.flags.failExceptions=true;await t.open('verifikasi');await t.page.getByText('Antrean belum termuat.',{exact:false}).waitFor();await t.page.goto(base+'/app#entries');for(const reference of ['CASH','INTEREST']){const row=t.page.locator('tbody tr').filter({hasText:reference});assert.equal(await row.locator('[data-action=entry-followup]').count(),0);}
  });

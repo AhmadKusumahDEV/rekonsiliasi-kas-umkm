@@ -16,6 +16,7 @@ export function verificationRows(exceptions, suggestions, balance) {
   }
   for (const [saleId, receipt] of feeChoices) {
     if ([...feeChoices.values()].filter(x => x.entry.id === receipt.entry.id).length !== 1) continue;
+    if ([...pairs.values()].some(pair=>pair.receipt.id===receipt.entry.id||pair.sale.id===saleId)) continue;
     const sale = byId.get(saleId);
     if (!pairs.has(saleId)) pairs.set(saleId, {sale:sale.entry, receipt:receipt.entry, fee:sale.fee_hint.amount, reason:sale.fee_hint.reason});
   }
