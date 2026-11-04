@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/ai"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/config"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/email"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/models"
@@ -24,6 +25,13 @@ type Service struct {
 	startedAt           time.Time
 	stateNotifier       StateNotifier
 	passwordResetMailer email.Sender
+	aiReviewer          ai.Reviewer
+}
+
+// SetAIReviewer injects the optional Gemini reviewer. A nil reviewer keeps the
+// pipeline fully deterministic.
+func (s *Service) SetAIReviewer(reviewer ai.Reviewer) {
+	s.aiReviewer = reviewer
 }
 
 // SetPasswordResetMailer injects the email transport after the composition

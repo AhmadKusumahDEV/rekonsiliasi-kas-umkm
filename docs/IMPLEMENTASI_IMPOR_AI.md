@@ -385,7 +385,9 @@ Yang sudah masuk ke kode:
   delimiter koma, titik koma, atau tab; nominal `Rp1.250.000`; tanggal
   `dd/mm/yyyy`; dan nama kolom sehari-hari.
 - Klien Gemini di `internal/ai` dengan validasi ID kandidat dan pembatasan
-  panjang alasan. Belum dipanggil dari alur utama.
+  panjang alasan. Kini dipanggil untuk pasangan skor 0,60-0,95 dengan ambang
+  tambahan AI_MIN_SCORE (default 0,90); hasilnya tercatat sebagai
+  "Disarankan AI" dan dihitung di ai_matched.
 
 Konfigurasi baru:
 
