@@ -64,4 +64,6 @@ Uji reset sampai login dan pengosongan data di browser memakai API fixture, buka
 Analytics hanya mengukur halaman publik. Respons endpoint collection sebelumnya 204 dan file Search Console 200 membuktikan pemasangan teknis; status ownership/indexing dan metrik pada property GA tetap perlu dilihat pemilik akun Google. Tidak menyamakan file verifikasi terpasang dengan sudah terindeks di pencarian.
 
 ## Status rilis
-PR frontend siap ditinjau. Deployment frontend baru tertunda karena CLI Vercel logout; perlu login kembali ke akun yang memiliki workspace hash-a09b. Perubahan tidak diklaim sudah live. Setup publik Google yang sudah live dicek ulang: verifikasi 200 tanpa redirect, tag 200, collection Analytics 204.
+Frontend sudah di-deploy pada 4 November 2026 ke https://efa.madgo.my.id/app setelah login Vercel dipulihkan. Deployment `dpl_C4DcUiZWwMchnQuREtAcCbBHpnX2`, kode frontend `c2c66c24b12a1aa916dc445bc8dfa732e4cb5426`. PR #27 tetap terbuka, tidak di-merge otomatis.
+
+Pemeriksaan langsung pada aset produksi: 21 tampilan (7 route x 3 lebar) tanpa overflow atau JavaScript pageerror, dua alias ke Verifikasi, dua slot pratinjau CSV, halaman forgot/reset-invalid, serta dialog clear-data dengan tombol awal terkunci lulus. Tidak commit impor, reset password, atau hapus data produksi. Hasil teknis disimpan lokal pada test-results/handoff-production.json; tidak mempublikasikan isi akun atau transaksi. Uji pengiriman email reset dan perubahan data end-to-end produksi tetap belum diklaim.
