@@ -12,6 +12,7 @@ import (
 	"time"
 	_ "time/tzdata"
 
+	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/ai"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/config"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/echohttp"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/email"
@@ -65,6 +66,9 @@ func run() error {
 
 	httpClient := stack.HTTPClient(&http.Client{Timeout: 30 * time.Second})
 	svc := service.NewService(cfg, db, httpClient)
+	if reviewer := ai.NewFromEnv(); reviewer != nil {
+		svc.SetAIReviewer(reviewer)
+	}
 	if strings.TrimSpace(cfg.Email.APIKey) != "" {
 		svc.SetPasswordResetMailer(email.NewResend(cfg.Email.APIKey, cfg.Email.From, httpClient))
 	}

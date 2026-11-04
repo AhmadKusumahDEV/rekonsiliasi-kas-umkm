@@ -38,6 +38,12 @@ type Verdict struct {
 	Reason    string `json:"reason"`
 }
 
+// Reviewer is the narrow surface the import pipeline depends on. Tests can
+// supply a fake without network access.
+type Reviewer interface {
+	Review(ctx context.Context, candidates []Candidate) ([]Verdict, error)
+}
+
 // Client calls the Gemini generateContent endpoint.
 type Client struct {
 	APIKey  string

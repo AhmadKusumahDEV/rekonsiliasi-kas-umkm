@@ -37,11 +37,14 @@ Aturan:
 ## Commit
 
 ```json
-{"id":"...","imported":13,"skipped":0,"auto_matched":11}
+{"id":"...","imported":13,"skipped":0,"auto_matched":11,"ai_matched":0}
 ```
 
 `auto_matched` menghitung pasangan, bukan baris. Tampilkan terpisah dari
 `imported`.
+
+`ai_matched` menghitung pasangan yang disarankan AI pada zona 0,60-0,95.
+Nilainya 0 bila AI dimatikan, timeout, atau tidak ada kandidat ambigu.
 
 ## Data state
 

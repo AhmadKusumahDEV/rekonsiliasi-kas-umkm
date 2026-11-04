@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 
+	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/ai"
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/models"
 	sqlc "github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/repository/rekonsiliasi_repository_sqlc"
 	"github.com/jackc/pgx/v5"
@@ -222,24 +224,42 @@ func autoMatchPairs(entries []models.Entry, threshold float64) []autoPair {
 	return pairs
 }
 
-func (s *Service) autoMatchWorkspace(ctx context.Context, user models.User, importID string) (int, error) {
+type autoMatchResult struct {
+	Rule int
+	AI   int
+}
+
+func aiMinScore() float64 {
+	value := strings.TrimSpace(os.Getenv("AI_MIN_SCORE"))
+	if value == "" {
+		return 0.90
+	}
+	parsed, err := strconv.ParseFloat(value, 64)
+	if err != nil || math.IsNaN(parsed) || math.IsInf(parsed, 0) || parsed < reviewFloor || parsed > 1 {
+		return 0.90
+	}
+	return parsed
+}
+
+func (s *Service) autoMatchWorkspace(ctx context.Context, user models.User, importID string) (autoMatchResult, error) {
+	result := autoMatchResult{}
 	if !autoMatchEnabled() || s.db == nil {
-		return 0, nil
+		return result, nil
 	}
 	threshold := autoMatchThreshold()
 
 	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		return 0, err
+		return result, err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 	queries := sqlc.New(tx)
 	if err = lockWorkspace(ctx, queries, user.WorkspaceID); err != nil {
-		return 0, err
+		return result, err
 	}
 	rows, err := queries.ListUmkmUnallocatedEntries(ctx, user.WorkspaceID)
 	if err != nil {
-		return 0, fmt.Errorf("list unallocated entries: %w", err)
+		return result, fmt.Errorf("list unallocated entries: %w", err)
 	}
 	entries := make([]models.Entry, 0, len(rows))
 	for _, row := range rows {
@@ -255,11 +275,8 @@ func (s *Service) autoMatchWorkspace(ctx context.Context, user models.User, impo
 		}
 		pairs = relevant
 	}
-	if len(pairs) == 0 {
-		return 0, tx.Commit(ctx)
-	}
 
-	created := 0
+	used := make(map[string]bool)
 	for _, pair := range pairs {
 		if _, err = queries.CreateUmkmAllocation(ctx, sqlc.CreateUmkmAllocationParams{
 			ID:             newID(),
@@ -273,20 +290,135 @@ func (s *Service) autoMatchWorkspace(ctx context.Context, user models.User, impo
 			if errors.Is(err, pgx.ErrNoRows) {
 				continue
 			}
-			return 0, fmt.Errorf("create auto allocation: %w", err)
+			return autoMatchResult{}, fmt.Errorf("create auto allocation: %w", err)
 		}
-		created++
+		used[pair.sale.ID] = true
+		used[pair.receipt.ID] = true
+		result.Rule++
 	}
-	if created == 0 {
-		return 0, tx.Commit(ctx)
+
+	if s.aiReviewer != nil {
+		aiCount, aiErr := s.applyAIPairs(ctx, queries, user, entries, used, threshold)
+		if aiErr == nil {
+			result.AI = aiCount
+		}
 	}
-	version, err := insertAuditAndBump(ctx, queries, user, "Simpan otomatis", fmt.Sprintf("%d pasangan dicocokkan otomatis", created), "import", importID)
+	if result.Rule == 0 && result.AI == 0 {
+		return result, tx.Commit(ctx)
+	}
+	version, err := insertAuditAndBump(ctx, queries, user, "Simpan otomatis", fmt.Sprintf("%d pasangan aturan, %d disarankan AI", result.Rule, result.AI), "import", importID)
+	if err != nil {
+		return autoMatchResult{}, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return autoMatchResult{}, err
+	}
+	s.publishState(user.WorkspaceID, version)
+	return result, nil
+}
+
+func (s *Service) applyAIPairs(ctx context.Context, queries *sqlc.Queries, user models.User, entries []models.Entry, used map[string]bool, threshold float64) (int, error) {
+	type scored struct {
+		sale    models.Entry
+		receipt models.Entry
+		score   float64
+		reasons []string
+	}
+	candidates := make([]scored, 0)
+	for _, sale := range entries {
+		if sale.Kind != "sale" || used[sale.ID] || isCashSale(sale) {
+			continue
+		}
+		for _, receipt := range entries {
+			if receipt.Kind != "receipt" || used[receipt.ID] || isNonOperationalReceipt(receipt) {
+				continue
+			}
+			if sale.Amount != receipt.Amount || sale.Amount <= 0 {
+				continue
+			}
+			score, reasons := scorePair(sale, receipt)
+			if score < reviewFloor || score >= threshold {
+				continue
+			}
+			candidates = append(candidates, scored{sale: sale, receipt: receipt, score: score, reasons: reasons})
+		}
+	}
+	if len(candidates) == 0 {
+		return 0, nil
+	}
+	saleCounts := make(map[string]int, len(candidates))
+	receiptCounts := make(map[string]int, len(candidates))
+	for _, candidate := range candidates {
+		saleCounts[candidate.sale.ID]++
+		receiptCounts[candidate.receipt.ID]++
+	}
+	unique := make([]scored, 0, len(candidates))
+	for _, candidate := range candidates {
+		if saleCounts[candidate.sale.ID] == 1 && receiptCounts[candidate.receipt.ID] == 1 {
+			unique = append(unique, candidate)
+		}
+	}
+	if len(unique) == 0 {
+		return 0, nil
+	}
+	candidates = unique
+	sort.SliceStable(candidates, func(i, j int) bool { return candidates[i].score > candidates[j].score })
+	if len(candidates) > 20 {
+		candidates = candidates[:20]
+	}
+	payload := make([]ai.Candidate, 0, len(candidates))
+	index := make(map[string]scored, len(candidates))
+	for _, candidate := range candidates {
+		key := candidate.sale.ID + "|" + candidate.receipt.ID
+		index[key] = candidate
+		payload = append(payload, ai.Candidate{
+			SaleID:        candidate.sale.ID,
+			ReceiptID:     candidate.receipt.ID,
+			Score:         candidate.score,
+			SaleRef:       candidate.sale.Reference,
+			ReceiptRef:    candidate.receipt.Reference,
+			SaleDate:      candidate.sale.Date,
+			ReceiptDate:   candidate.receipt.Date,
+			SaleAmount:    candidate.sale.Amount,
+			ReceiptAmount: candidate.receipt.Amount,
+		})
+	}
+	verdicts, err := s.aiReviewer.Review(ctx, payload)
 	if err != nil {
 		return 0, err
 	}
-	if err = tx.Commit(ctx); err != nil {
-		return 0, err
+	minimum := aiMinScore()
+	created := 0
+	for _, verdict := range verdicts {
+		if !verdict.Match {
+			continue
+		}
+		key := verdict.SaleID + "|" + verdict.ReceiptID
+		candidate, ok := index[key]
+		if !ok || candidate.score < minimum || used[candidate.sale.ID] || used[candidate.receipt.ID] {
+			continue
+		}
+		reason := strings.TrimSpace(verdict.Reason)
+		if reason == "" {
+			reason = "kandidat paling sesuai"
+		}
+		if _, err = queries.CreateUmkmAllocation(ctx, sqlc.CreateUmkmAllocationParams{
+			ID:             newID(),
+			WorkspaceID:    user.WorkspaceID,
+			SaleEntryID:    candidate.sale.ID,
+			ReceiptEntryID: candidate.receipt.ID,
+			Amount:         candidate.sale.Amount,
+			Fee:            0,
+			Reason:         fmt.Sprintf("Disarankan AI (skor aturan %.2f): %s", candidate.score, reason),
+		}); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				continue
+			}
+			return created, err
+		}
+		used[candidate.sale.ID] = true
+		used[candidate.receipt.ID] = true
+		created++
 	}
-	s.publishState(user.WorkspaceID, version)
 	return created, nil
 }

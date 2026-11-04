@@ -141,6 +141,7 @@ type CommitImportResponse struct {
 	Imported    int    `json:"imported"`
 	Skipped     int    `json:"skipped"`
 	AutoMatched int    `json:"auto_matched"`
+	AIMatched   int    `json:"ai_matched"`
 	Duplicate   bool   `json:"duplicate,omitempty"`
 }
 
