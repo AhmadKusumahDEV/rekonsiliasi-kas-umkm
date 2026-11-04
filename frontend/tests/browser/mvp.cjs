@@ -28,7 +28,7 @@ const results=[];
    if(path.endsWith('/umkm/suggestions'))return send(flags.failSuggestions?{message:'Unavailable'}:suggestions,flags.failSuggestions?503:200);
    if(path.endsWith('/umkm/exceptions'))return send(flags.failExceptions?{message:'Unavailable'}:exceptions,flags.failExceptions?503:200);
    if(path.endsWith('/umkm/audit')){const before=Number(url.searchParams.get('before_id')||201);return send(events.filter(e=>e.id<before).slice(0,50));}
-   if(path.endsWith('/imports/preview'))return send({rows:[entry('3','sale',1,'NEW1'),entry('4','sale',1,'NEW2'),entry('5','sale',1,'NEW3')],count:3,skipped:0,total:3,checksum:'x'});
+   if(path.endsWith('/imports/flexible'))return send({csv:'CANONICAL',preview:[entry('3','sale',1,'NEW1'),entry('4','sale',1,'NEW2'),entry('5','sale',1,'NEW3')],count:3,skipped:0,total:3,checksum:'x'});
    if(path.endsWith('/umkm/allocations')){
     flags.writes.push({body:req.postDataJSON(),csrf:req.headers()['x-csrf-token']});
     if(flags.writeFailure==='network'){flags.writeFailure='';return r.abort('failed');}
@@ -44,12 +44,12 @@ const results=[];
  async function check(name,fn){const t=await setup();try{await fn(t);assert.deepEqual(t.errors,[]);results.push({name,pass:true})}catch(e){results.push({name,pass:false,error:e.message})}finally{await t.context.close()}}
  await check('reciprocal unique sides show one card and both candidates before opening',async t=>{
   await t.open();assert.equal(await t.page.locator('.exception-card').count(),4);
-  const pair=t.page.locator('.exception-card').filter({hasText:'Usulan pasangan unik'});
+  const pair=t.page.locator('.exception-card').filter({hasText:'Alasan fixture UNIQUE'});
   assert.equal(await pair.locator('.exception-entry').count(),2);
   assert.match(await pair.innerText(),/Penjualan/);assert.match(await pair.innerText(),/Penerimaan/);
   assert.match(await pair.innerText(),/150.000/);
-  assert.equal(await pair.getByRole('button',{name:'Konfirmasi usulan',exact:true}).count(),1);
-  await pair.getByRole('button',{name:'Konfirmasi usulan',exact:true}).click();
+  assert.equal(await pair.getByRole('button',{name:'Periksa dan setujui',exact:true}).count(),1);
+  await pair.getByRole('button',{name:'Periksa dan setujui',exact:true}).click();
   await t.page.locator('[data-action=close]').first().click();assert.equal(t.flags.writes.length,0);
  });
  await check('transaction follow-up pins the selected side without choosing its counterpart',async t=>{
@@ -85,26 +85,18 @@ const results=[];
   assert.ok(t.flags.calls.filter(x=>x.endsWith('/umkm/state')).length>before+2);
  });
  await check('server byte and row limits are honored',async t=>{
-  t.flags.limits.max_csv_bytes=24;await t.open('imports');assert.match(await t.page.locator('.content').innerText(),/24 byte/);
-  await t.page.locator('[data-action=import]').first().click();
-  await t.page.locator('input[type=file]').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.alloc(25,65)});
-  await t.page.locator('#modal button[type=submit]').click();await t.page.locator('[data-form-error]:visible').waitFor();
-  assert.equal(t.flags.calls.some(x=>x.includes('/imports/preview')),false);
-  await t.page.locator('input[type=file]').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.from('valid')});
-  await t.page.locator('#modal button[type=submit]').click();await t.page.getByText('CSV melebihi batas 2 baris data.').waitFor();
-  assert.equal(await t.page.locator('[data-action=commit-import]').count(),0);
+  t.flags.limits.max_csv_bytes=24;await t.open('imports');await t.page.locator('#import-sale').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.alloc(25,65)});await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('#flow-preview [role=alert]').waitFor();assert.equal(t.flags.calls.some(x=>x.includes('/imports/flexible')),false);
+  await t.page.locator('#import-sale').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.from('valid')});await t.page.locator('#flex-import button[type=submit]').click();await t.page.getByText('Baris CSV melebihi batas server.',{exact:true}).waitFor();assert.equal(await t.page.locator('[data-action=flow-save]').count(),0);
  });
  await check('missing limits do not fall back to hardcoded policy',async t=>{
-  t.flags.noLimits=true;await t.open('imports');await t.page.locator('[data-action=import]').first().click();
-  await t.page.locator('#toast[data-open=true]').waitFor();assert.equal(await t.page.locator('#modal').isVisible(),false);
-  assert.equal(t.flags.calls.some(x=>x.includes('/imports/preview')),false);
+  t.flags.noLimits=true;await t.open('imports');await t.page.locator('#import-sale').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.from('valid')});await t.page.locator('#flex-import button[type=submit]').click();await t.page.getByText(/Batas impor belum tersedia dari server/).first().waitFor();assert.equal(t.flags.calls.some(x=>x.includes('/imports/flexible')),false);
  });
  await check('missing unique suggestion refreshes rather than guessing a pair',async t=>{
   t.flags.failSuggestions=true;await t.open();await t.page.getByRole('button',{name:'Periksa usulan terbaru'}).first().click();
   await t.page.locator('#toast[data-open=true]').waitFor();assert.equal(await t.page.locator('#modal').isVisible(),false);assert.equal(t.flags.writes.length,0);
  });
  await check('403 updates CSRF and requires a deliberate retry with the same key',async t=>{
-  t.flags.writeFailure='csrf';await t.open('reconcile');await t.page.getByRole('button',{name:'Periksa pasangan',exact:true}).click();
+  t.flags.writeFailure='csrf';await t.open('reconcile');await t.page.getByRole('button',{name:'Periksa dan setujui',exact:true}).click();
   await t.page.locator('#modal button[type=submit]').click();await t.page.locator('[data-form-error]:visible').waitFor();assert.equal(t.flags.writes.length,1);
   await t.page.locator('#modal button[type=submit]').click();await t.page.locator('#modal').waitFor({state:'hidden'});
   assert.equal(t.flags.writes[0].csrf,'old-csrf');assert.equal(t.flags.writes[1].csrf,'new-csrf');assert.equal(t.flags.writes[0].body.key,t.flags.writes[1].body.key);
@@ -121,7 +113,7 @@ const results=[];
  await check('partial remains partial; unique reason is visible before saving',async t=>{
   await t.open();await t.page.getByText('Alasan fixture PARTIAL',{exact:true}).waitFor();
   const partial=t.page.locator('.exception-card').filter({hasText:'Alasan fixture PARTIAL'});assert.match(await partial.innerText(),/150.000/);
-  await t.page.getByRole('button',{name:'Konfirmasi usulan',exact:true}).click();await t.page.getByText('Unik dua arah dari fixture',{exact:true}).waitFor();assert.equal(t.flags.writes.length,0);
+  await t.page.getByRole('button',{name:'Periksa dan setujui',exact:true}).click();await t.page.getByText('Unik dua arah dari fixture',{exact:true}).waitFor();assert.equal(t.flags.writes.length,0);
  });
  await check('failed exception request never claims an empty queue',async t=>{
   t.flags.failExceptions=true;await t.open();await t.page.getByText('Antrean belum termuat.',{exact:false}).waitFor();assert.equal(await t.page.getByText('Tidak ada transaksi pada antrean ini',{exact:true}).count(),0);
@@ -136,13 +128,13 @@ const results=[];
   assert.equal(await t.page.locator('[data-action=audit-entity]').count(),2);
  });
  await check('network retry retains the same allocation key and payload',async t=>{
-  t.flags.writeFailure='network';await t.open('reconcile');await t.page.getByRole('button',{name:'Periksa pasangan',exact:true}).click();
+  t.flags.writeFailure='network';await t.open('reconcile');await t.page.getByRole('button',{name:'Periksa dan setujui',exact:true}).click();
   await t.page.locator('#modal button[type=submit]').click();await t.page.locator('[data-form-error]:visible').waitFor();
   await t.page.locator('#modal button[type=submit]').click();await t.page.locator('#modal').waitFor({state:'hidden'});
   assert.equal(t.flags.writes.length,2);assert.deepEqual(t.flags.writes[0].body,t.flags.writes[1].body);
  });
  await check('409 refreshes without discarding draft or resubmitting',async t=>{
-  t.flags.writeFailure='conflict';await t.open('reconcile');await t.page.getByRole('button',{name:'Periksa pasangan',exact:true}).click();
+  t.flags.writeFailure='conflict';await t.open('reconcile');await t.page.getByRole('button',{name:'Periksa dan setujui',exact:true}).click();
   await t.page.locator('[name=reason]').fill('Catatan yang harus tetap ada');await t.page.locator('#modal button[type=submit]').click();
   await t.page.getByText('Saldo berubah',{exact:true}).waitFor();assert.equal(await t.page.locator('[name=reason]').inputValue(),'Catatan yang harus tetap ada');assert.equal(t.flags.writes.length,1);
  });

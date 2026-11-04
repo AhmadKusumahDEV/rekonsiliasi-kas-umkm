@@ -1,75 +1,27 @@
-PANDUAN SINGKAT MENCOBA EFA
-https://efa.madgo.my.id/
+PANDUAN EFA — ALUR IMPOR TERBARU
 
-FILE YANG DIGUNAKAN
-- 01-penjualan.csv: catatan barang/pesanan yang terjual (5 transaksi).
-- 02-penerimaan.csv: uang yang sudah diterima (4 transaksi).
-- umkm-rekap.csv adalah HASIL EKSPOR, bukan format input impor.
-- PBL_WEEK2_POINTS.csv adalah daftar pekerjaan proyek, bukan data transaksi.
+1. Buka https://efa.madgo.my.id/app. Buat akun uji/ruang usaha baru agar tidak mengubah data demo bersama.
+2. Buka Impor CSV. Ada slot Penjualan dan Mutasi bank. Boleh mengisi salah satu, atau keduanya.
+3. Untuk skenario backend terbaru, pilih 03-demo-penjualan-bersih.csv pada Penjualan dan 04-demo-mutasi-bersih.csv pada Mutasi bank. Jangan mencampur pasangan file ini dengan 01/02 pada percobaan yang sama.
+4. Tekan Periksa file. Baca jumlah baris, nominal, duplikat dan warnings. Peringatan baris debit dilewati bukan berarti impor gagal.
+5. Setelah pratinjau sesuai, tekan Simpan file yang sudah diperiksa. Aplikasi menyimpan penjualan lebih dahulu, lalu mutasi bank. Lihat jumlah baris tersimpan, pasangan otomatis, pasangan AI dan baris dilewati. AI dapat bernilai 0; frontend tidak menghubungi AI.
+6. Buka Verifikasi. Pasangan yang sudah tersimpan otomatis tidak memerlukan persetujuan lagi. Tunai lunas dan penerimaan non-operasional tidak masuk antrean.
+7. Pilih kartu yang tersisa. Baca alasan, sisa, kategori dan saran biaya. Tekan Periksa dan setujui, periksa kedua sisi serta nominal, baru simpan. Saran biaya belum disetujui sampai kamu menekan Simpan pasangan.
+8. Untuk kandidat ambigu, pilih sendiri lawannya. Penerimaan gabungan bisa dialokasikan bertahap ke beberapa penjualan; jangan menghitung uang yang sama dua kali.
+9. Buka Riwayat untuk jejak keputusan dan Laporan untuk unduh rekap CSV. Rekap hasil bukan perhitungan laba bersih dan bukan format impor mentah.
+10. Jika lupa sandi, pilih Lupa kata sandi pada halaman masuk. Buka tautan email, buat sandi baru dan konfirmasi, lalu login ulang. Jangan membagikan tautan reset.
+11. Untuk memulai latihan kosong, pemilik membuka Pengaturan > Kosongkan data workspace. Unduh rekap dulu jika diperlukan. Isi password dan ketik HAPUS. Transaksi/impor/alokasi dihapus permanen; akun dan audit tetap ada. Jangan mencoba ini pada workspace bersama.
 
-1. MASUK ATAU DAFTAR
-Buka website, lalu pilih Daftar pengguna. Untuk mencoba dari nol, gunakan akun/ruang usaha baru agar tidak mengubah workspace demo bersama.
-Kalau sudah masuk, periksa nama usaha di bagian atas.
+FORMAT YANG DIPAKAI
+- Penjualan sederhana: tanggal,referensi,nama,nominal,kanal.
+- Tanggal, nama/keterangan, nominal dan kanal perlu tersedia. Referensi boleh kosong, tetapi referensi membantu pencocokan. ID dibuat server; tidak perlu diketik pada template sederhana.
+- Mutasi bank mengikuti header CSV bank yang didukung. Kredit adalah uang masuk, debit dilewati, saldo bukan nominal transaksi.
+- Hanya CSV UTF-8. Simpan ulang Excel sebagai CSV; unggahan XLSX/PDF/gambar belum didukung.
+- File 01-penjualan.csv dan 02-penerimaan.csv adalah latihan format kanonik lama yang tetap bisa diproses. INV-102 dapat langsung cocok otomatis setelah kedua file disimpan; jangan mencari kartu yang sudah selesai di antrean Verifikasi.
+- PBL_WEEK2_POINTS.csv adalah daftar pekerjaan, bukan transaksi. umkm-rekap.csv adalah hasil ekspor, bukan template impor.
 
-2. IMPOR PENJUALAN
-Buka Impor CSV > Impor CSV.
-Pilih jenis Penjualan, lalu file 01-penjualan.csv.
-Tekan Periksa CSV, baca hasil pratinjaunya, lalu simpan jika sudah benar.
-Harapannya: 5 penjualan baru dengan total Rp650.000 di workspace kosong.
-
-3. IMPOR PENERIMAAN
-Ulangi langkah tadi, pilih jenis Penerimaan dan file 02-penerimaan.csv.
-Periksa pratinjau sebelum menyimpan.
-Harapannya: 4 penerimaan baru dengan total Rp590.000 di workspace kosong.
-Jika baris identik dilewati, data itu sudah pernah diimpor. Tidak perlu memaksakan impor ulang.
-
-4. COBA PASANGAN YANG LANGSUNG COCOK
-Buka Cocokkan kas atau Perlu diperiksa.
-Cari INV-102 / Rani: penjualan Rp100.000 dan penerimaan Rp100.000.
-Buka Periksa pasangan / Konfirmasi usulan, cek kedua transaksi, lalu Simpan pasangan.
-Harapannya: penjualan dan penerimaan tersebut tidak punya sisa.
-
-5. COBA PEMBAYARAN SEBAGIAN
-Buka Transaksi, cari INV-101 / Kedai Pagi, lalu Tindak lanjuti pada baris penjualan.
-Pilih penerimaan R101 yang sesuai.
-Isi nominal Rp100.000, biaya Rp0, lalu simpan setelah diperiksa.
-Harapannya: tagihan Rp150.000 masih menyisakan Rp50.000. Ini belum lunas.
-
-6. COBA BIAYA LAYANAN
-Cari INV-103 / Toko Melati, lalu buka pencocokan manual.
-Pilih penjualan P103 Rp200.000 dan penerimaan R103 Rp190.000.
-Isi nominal dialokasikan Rp190.000, biaya Rp10.000.
-Isi alasan, misalnya: Biaya layanan sesuai laporan marketplace.
-Simpan setelah memeriksa pilihan.
-Harapannya: sisa penjualan dan penerimaan nol. Biaya Rp10.000 menjelaskan selisih, bukan tambahan uang yang diterima.
-Nominal dan alasan ini hanya ilustrasi demo; data asli harus memiliki bukti biaya.
-
-7. COBA SATU TRANSFER UNTUK DUA PESANAN
-Kirana memiliki penerimaan R104 Rp200.000, untuk dua penjualan.
-Buat alokasi pertama: P104 + R104, nominal Rp80.000, biaya Rp0.
-Buat alokasi kedua: P105 + sisa R104, nominal Rp120.000, biaya Rp0.
-Harapannya: kedua penjualan dan penerimaan R104 tidak memiliki sisa.
-Jangan memasukkan Rp200.000 untuk masing-masing penjualan; satu penerimaan tidak boleh dihitung dua kali.
-
-8. LIHAT HASIL
-Buka Transaksi: INV-101 masih memiliki sisa Rp50.000; empat penjualan lainnya sudah cocok.
-Buka Laporan: penjualan Rp650.000, penerimaan Rp590.000, biaya terkonfirmasi Rp10.000, dan penjualan belum teralokasi Rp50.000.
-Nilai tersebut berlaku jika workspace awal kosong, semua langkah dilakukan sekali dan tidak ada perubahan dari pengguna lain.
-Laporan ini bukan perhitungan laba bersih.
-
-9. COBA KOREKSI
-Jika ingin menguji pembatalan, buka riwayat keputusan pencocokan di Cocokkan kas, pilih pasangan yang tadi dibuat, lalu batalkan setelah memeriksa konfirmasi.
-Harapannya: sisa transaksi terkait kembali dan riwayat pembatalan tercatat.
-Membatalkan pasangan berbeda dengan membatalkan seluruh batch impor.
-
-10. UNDUH REKAP
-Buka Laporan > Unduh rekap CSV.
-File seperti umkm-rekap.csv berisi hasil untuk diperiksa di spreadsheet, termasuk sisa dan status. Bukan file untuk diimpor ulang secara langsung.
-
-CATATAN
-- Nominal CSV ditulis angka saja: 100000, bukan Rp100.000.
-- Tanggal memakai YYYY-MM-DD.
-- Ikuti tujuh kolom pada file contoh; jangan ubah nama header.
-- Simpan CSV UTF-8 bila mengedit melalui spreadsheet.
-- Pembukaan modal tidak menyimpan transaksi; perubahan baru terjadi setelah menekan Simpan.
-- Baris INV-SSE-1 berstatus batal pada rekap lama adalah artefak uji, bukan bagian dari dua file latihan ini.
+JIKA ADA KENDALA
+- Salah satu file gagal disimpan: baca hasilnya, file yang sudah sukses tidak perlu diulang; retry memproses file yang belum sukses.
+- Sesi berakhir: masuk kembali dan pilih ulang file; draft file tidak disimpan lintas sesi.
+- Antrean gagal dimuat: muat ulang. Itu tidak berarti semua transaksi cocok.
+- Hitungan demo mengikuti data awal workspace dan konfigurasi backend. Gunakan workspace kosong untuk membandingkan hasil yang bisa diulang.

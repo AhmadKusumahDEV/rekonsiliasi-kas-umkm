@@ -1,9 +1,11 @@
-import { importLimits, validateImportSize, uniqueSuggestion, exceptionGroups, auditTarget, mergeAudit } from "./mvp.js?v=ux1";
+import {createImportFlow} from "./import-flow.js?v=handoff1";
+import {allocatable,verificationRows,appRoute} from "./verification.js?v=handoff1";
+import { importLimits, validateImportSize, uniqueSuggestion, auditTarget, mergeAudit } from "./mvp.js?v=handoff1";
 import { apiURL } from "./api-config.js?v=team2";
 import { createAPIClient } from "./api-client.js?v=team2";
-import { validatePassword, deduplicatePreview, selectAllocation } from "./validation.js?v=audit1";
+import { validatePassword, selectAllocation } from "./validation.js?v=handoff1";
 import { authScene } from "./auth-scene.js?v=team2";
-import { dashboard, maxyBrand, shell } from "./design.js?v=team2";
+import { dashboard, maxyBrand, shell } from "./design.js?v=handoff1";
 
 import { presentView, presentAuth } from "./motion.js?v=team2";
 
@@ -101,6 +103,13 @@ const api = createAPIClient({
   },
 });
 
+const importFlow = createImportFlow({api,getState:()=>state,e,money,refresh});
+function normalizeRoute() {
+  const raw=location.hash.slice(1).split('?')[0];
+  if(['reconcile','exceptions'].includes(raw))history.replaceState(null,'',location.pathname+location.search+'#verifikasi');
+  return appRoute(location.hash);
+}
+
 function expireSession() {
   if (!state.me) return;
   const dirty = modal.open && modal.dataset.dirty === "true";
@@ -143,7 +152,7 @@ function stopEvents() {
 }
 
 function navHTML() {
-  const route = location.hash.slice(1) || "overview";
+  const route = normalizeRoute();
   return routes()
     .map(
       ([id, label]) =>
@@ -181,7 +190,7 @@ function rebuildBalances() {
   state.balances = new Map(
     (state.data.state.entries || []).map((x) => [
       x.id,
-      x.canceled ? 0 : x.amount,
+      x.canceled || x.settled || x.category === "cash" ? 0 : x.amount,
     ]),
   );
   for (const al of state.data.state.allocations || []) {
@@ -200,7 +209,7 @@ function rebuildBalances() {
 }
 
 function balance(entry) {
-  return entry.canceled ? 0 : (state.balances?.get(entry.id) ?? entry.amount);
+  return entry.canceled || entry.settled || entry.category === "cash" ? 0 : (state.balances?.get(entry.id) ?? entry.amount);
 }
 
 function listHTML(columns, rows, statusOptions = []) {
@@ -232,19 +241,19 @@ function entriesPage() {
     .reverse()
     .map((x) => ({
       search: `${x.name} ${x.reference} ${x.source_id} ${x.channel}`,
-      status: x.canceled ? "canceled" : x.kind,
+      status: x.canceled ? "canceled" : x.category === "non_operational" ? "non_operational" : x.kind,
       cells: [
         `<strong>${e(x.reference || x.source_id)}</strong><span class="sub">${e(x.date)}</span>`,
         e(x.name),
         x.kind === "sale" ? "Penjualan" : "Penerimaan",
         `<span class="money">${e(money(x.amount))}</span>`,
-        `<span class="money">${e(money(balance(x)))}</span>`,
+        `<span class="money">${x.category==='non_operational'?'—':e(money(balance(x)))}</span>`,
         x.canceled
           ? '<span class="tag">Dibatalkan</span>'
-          : balance(x) === 0
+          : x.category === 'non_operational' ? '<span class="tag info">Non-operasional</span>' : x.settled ? '<span class="tag good">Tunai lunas</span>' : balance(x) === 0
             ? '<span class="tag good">Cocok</span>'
             : '<span class="tag warn">Ada sisa</span>',
-        x.canceled ? '<span class="muted">Dibatalkan</span>' : balance(x) > 0
+        x.canceled ? '<span class="muted">Dibatalkan</span>' : x.category === 'non_operational' ? '<span class="muted">Non-operasional</span>' : allocatable(x) && balance(x) > 0
           ? button('Tindak lanjuti', 'entry-followup', x.id, 'small')
           : '<span class="muted">Sudah cocok</span>',
       ],
@@ -262,6 +271,7 @@ function entriesPage() {
         ["sale", "Penjualan"],
         ["receipt", "Penerimaan"],
         ["canceled", "Dibatalkan"],
+        ["non_operational", "Non-operasional"],
       ],
     )
   );
@@ -275,29 +285,6 @@ function allocationHistory() {
     return x ? x.reference || x.source_id : "Transaksi";
   };
   return `<section class="allocation-history"><div class="section-title"><h2>Keputusan pencocokan</h2></div>${allocations.length ? `<div class="table-scroll" role="region" aria-label="Tabel data, geser untuk melihat kolom lain" tabindex="0"><table><thead><tr><th>Penjualan / penerimaan</th><th>Dialokasikan</th><th>Biaya</th><th>Catatan</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${allocations.map((x) => `<tr><td>${e(ref(x.sale_id))}<span class="sub">${e(ref(x.receipt_id))}</span></td><td>${e(money(x.amount))}</td><td>${e(money(x.fee))}</td><td>${e(x.reason || "Tanpa catatan")}</td><td>${x.reversed ? "Dibatalkan" : "Aktif"}</td><td>${x.reversed ? "" : button("Batalkan pasangan", "undo", x.id, "small danger")}</td></tr>`).join("")}</tbody></table></div>` : empty("Belum ada keputusan", "Pasangan yang kamu simpan akan muncul di sini dan dapat dibatalkan.")}</section>`;
-}
-
-function matches() {
-  const suggestions = state.data.suggestions || [];
-  return (
-    title(
-      "Cocokkan kas",
-      "Pasangan unik dari referensi, kanal, nominal, dan rentang tanggal.",
-      button("Alokasi manual", "allocate", "", "primary"),
-    ) +
-    (state.data.suggestionsLoading
-      ? '<p class="muted" role="status">Memuat usulan pencocokan…</p>'
-      : state.data.suggestionsError
-      ? '<p class="warning" role="status">Usulan belum bisa dimuat. Gunakan tombol muat ulang untuk mencoba lagi.</p>'
-      : suggestions.length
-      ? `<div class="matches">${suggestions.map((x) => `<article class="match"><div><small>Penjualan ${e(x.sale.reference)}</small><strong>${e(money(x.sale.amount))}</strong><p>${e(x.sale.name)}</p></div><div><small>Penerimaan ${e(x.receipt.channel)}</small><strong>${e(money(x.receipt.amount))}</strong><p>${e(x.receipt.name)}</p></div>${button("Periksa pasangan", "match", x.sale.id, "secondary")}<p class="match-reason">${e(x.reason)}</p></article>`).join("")}</div>`
-      : empty(
-          "Tidak ada pasangan unik yang tersisa",
-          "Gunakan alokasi manual untuk biaya layanan, pembayaran sebagian, atau pencairan gabungan.",
-        )) +
-    '<p class="muted">Usulan tidak langsung mengubah saldo. Periksa lalu simpan keputusanmu.</p>' +
-    allocationHistory()
-  );
 }
 
 function importsPage() {
@@ -327,9 +314,9 @@ function importsPage() {
     title(
       "Impor CSV",
       "Pratinjau sebelum menyimpan. " + limitDescription(),
-      button("Impor CSV", "import", "", "primary"),
+      "",
     ) +
-    `<div class="intro-note"><p>Gunakan satu file penjualan dan satu file penerimaan. Nominal berupa bilangan Rupiah tanpa pemisah ribuan.</p><div class="inline-actions"><a class="button small" href="/assets/contoh-penjualan.csv" download>Contoh penjualan</a><a class="button small" href="/assets/contoh-penerimaan.csv" download>Contoh penerimaan</a></div></div>` +
+    importFlow.html() +
     listHTML(["Waktu impor", "Jenis", "Baris baru", "Status", "Tindakan"], rows)
   );
 }
@@ -382,29 +369,27 @@ function limitDescription() {
 }
 
 function exceptionsPage() {
-  const data = state.data;
-  let content;
-  if (data.exceptionsLoading) content = '<p role="status">Memuat antrean selisih…</p>';
-  else if (data.exceptionsError || !Array.isArray(data.exceptions)) content = '<section class="panel"><p class="warning" role="alert">Antrean belum termuat. Ini bukan berarti semua transaksi sudah cocok.</p>' + button('Coba muat antrean', 'refresh') + '</section>';
-  else {
-    const items = data.exceptions.filter(x => !state.exceptionFilter || x.status === state.exceptionFilter);
-    const rows = exceptionGroups(items, data.suggestions);
-    const entryById = new Map((data.state.entries || []).map(entry => [entry.id, entry]));
-    const entrySummary = (entry, label) => `<div class="exception-entry"><small>${e(label)}</small><strong>${e(entry.reference || entry.source_id)}</strong><span>${e(entry.name)} · ${e(entry.channel)}</span><span>${entry.kind === 'sale' ? 'Penjualan' : 'Penerimaan'} · ${e(money(entry.amount))}</span><span>Sisa ${e(money(balance(entry)))} · ${entry.canceled ? 'Dibatalkan' : balance(entry) === 0 ? 'Sudah cocok' : balance(entry) < entry.amount ? 'Sebagian dialokasikan' : 'Belum dialokasikan'}</span></div>`;
-    content = `<label for="exception-filter">Tampilkan<select id="exception-filter">${[['','Semua'],['unmatched','Belum cocok'],['partial','Masih ada sisa'],['ambiguous','Kandidat perlu dipilih']].map(([value,label])=>`<option value="${value}" ${state.exceptionFilter === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label><p class="muted">${rows.length} kartu dari ${items.length} sisi transaksi. Pasangan unik ditampilkan bersama; sisi lainnya tetap terpisah.</p>` +
-      (rows.length ? '<div class="exception-list">' + rows.map(({item, match, paired}) => {
-        const expectsSuggestion = item.suggestion_available && item.status !== 'partial' && item.status !== 'ambiguous';
-        const label = item.status === 'partial' ? 'Tambah alokasi' : match ? 'Konfirmasi usulan' : expectsSuggestion ? 'Periksa usulan terbaru' : item.status === 'ambiguous' ? 'Pilih kandidat' : 'Alokasikan manual';
-        const candidateIds = [...new Set(item.candidate_ids || [])];
-        const candidates = candidateIds.map(id => entryById.get(id)).filter(entry => entry && entry.kind !== item.entry.kind);
-        const missing = candidateIds.length - candidates.length;
-        const details = paired
-          ? `<div class="exception-pair">${entrySummary(entryById.get(match.sale.id) || match.sale, 'Penjualan')}${entrySummary(entryById.get(match.receipt.id) || match.receipt, 'Penerimaan')}</div>`
-          : `${entrySummary(item.entry, 'Sisi transaksi yang diperiksa')}<div class="exception-candidates"><h3>Kandidat pasangan</h3>${candidates.map(entry => entrySummary(entry, 'Sisi lawan')).join('')}${!candidateIds.length ? '<p class="muted">Belum ada kandidat. Pilih transaksi secara manual.</p>' : ''}${missing ? '<p class="muted">Sebagian kandidat tidak tersedia pada data saat ini. Muat ulang sebelum memilih.</p>' : ''}</div>`;
-        return `<article class="panel exception-card"><header><span class="tag ${item.status === 'ambiguous' ? 'warn' : 'info'}">${paired ? 'Usulan pasangan unik' : e(({partial:'Masih ada sisa',ambiguous:'Perlu dipilih',unmatched:'Belum cocok'})[item.status] || item.status)}</span><small>${paired ? 'Satu keputusan untuk dua sisi' : 'Satu sisi transaksi'}</small></header>${details}<p>${e(item.reason)}</p><p class="muted">${Number(item.candidate_count) || 0} kandidat${item.candidate_ids_truncated ? '; hanya sebagian ditampilkan. Gunakan pilihan manual untuk kandidat lain.' : ''}</p><div class="inline-actions">${button(label, expectsSuggestion ? 'exception-match' : 'exception-choose', item.entry.id, 'secondary')}${item.candidate_ids_truncated ? button('Cari secara manual', 'exception-manual', item.entry.id) : ''}</div></article>`;
-      }).join('') + '</div>' : empty('Tidak ada transaksi pada antrean ini', 'Tidak ada selisih pada filter yang dipilih.'));
-  }
-  return title('Perlu diperiksa', 'Telusuri sisa tagihan, penerimaan yang belum dialokasikan, dan kandidat yang belum unik.') + content;
+ const data=state.data;let content;
+ if(data.exceptionsLoading)content='<p role="status">Memuat keputusan yang perlu diperiksa…</p>';
+ else if(data.exceptionsError||!Array.isArray(data.exceptions))content='<section class="panel"><p class="warning" role="alert">Antrean belum termuat. Ini bukan berarti semua transaksi sudah cocok.</p>'+button('Coba muat antrean','refresh')+'</section>';
+ else{
+  const all=verificationRows(data.exceptions,data.suggestions,balance);
+  const rows=all.filter(row=>!state.exceptionFilter||row.category===state.exceptionFilter);
+  const entries=new Map(data.state.entries.map(x=>[x.id,x]));
+  const hasSales=data.state.entries.some(x=>!x.canceled&&x.kind==='sale');
+  const hasReceipts=data.state.entries.some(x=>!x.canceled&&x.kind==='receipt'&&x.category!=='non_operational');
+  const remaining=new Map(data.exceptions.map(x=>[x.entry.id,x.remaining]));
+  const entryHTML=(entry,label)=>`<div class="exception-entry"><small>${e(label)} · ${e(entry.category||'operasional')}</small><strong>${e(entry.reference||entry.source_id)}</strong><span>${e(entry.name)} · ${e(entry.channel)}</span><span>${e(money(entry.amount))} · sisa ${e(money(remaining.get(entry.id)??balance(entry)))}</span></div>`;
+  content=(!hasSales||!hasReceipts?'<p class="intro-note">Catatan belum lengkap. '+(!hasSales?'Belum ada penjualan.':'Belum ada bukti penerimaan operasional.')+' Data yang diimpor tetap tersimpan; tambahkan sisi lainnya untuk mencocokkan.</p>':'')+`<label for="exception-filter">Tampilkan<select id="exception-filter">${[['','Semua keputusan'],['ready','Siap disetujui'],['ambiguous','Ambigu'],['unmatched','Tanpa kandidat / manual'],['partial','Sisa sebagian']].map(([v,label])=>`<option value="${v}" ${state.exceptionFilter===v?'selected':''}>${label}</option>`).join('')}</select></label><p class="muted">${rows.length} kartu keputusan dari ${all.reduce((n,row)=>n+row.items.length,0)} sisi transaksi. Tunai lunas dan non-operasional tidak memerlukan alokasi.</p>`;
+  content+=rows.length?'<div class="exception-list">'+rows.map(row=>{
+   const item=row.item, match=row.match;
+   const candidates=[...new Set(item.candidate_ids||[])].map(id=>entries.get(id)).filter(allocatable);
+   const title=({ready:'Siap diperiksa dan disetujui',ambiguous:'Kandidat perlu dipilih',partial:'Masih ada sisa',unmatched:'Periksa manual'})[row.category];
+   return `<article class="panel exception-card"><header><span class="tag ${row.category==='ambiguous'?'warn':'info'}">${title}</span><small>${row.items.length===2?'Satu pasangan':'Satu sisi transaksi'}</small></header><div class="${row.items.length===2?'exception-pair':''}">${row.items.map(x=>entryHTML(x.entry,x.entry.kind==='sale'?'Penjualan':'Penerimaan')).join('')}</div><p>${e(item.reason)}</p>${item.fee_hint?`<div class="intro-note"><strong>Saran biaya ${e(money(item.fee_hint.amount))}</strong><p>${e(item.fee_hint.label)} · ${e(item.fee_hint.source)} · keyakinan ${e(item.fee_hint.confidence)}</p><p>${e(item.fee_hint.reason)}</p><small>Saran perlu diperiksa, belum disetujui.</small></div>`:''}${!match&&candidates.length?'<div class="exception-candidates"><h3>Kandidat pasangan</h3>'+candidates.map(x=>entryHTML(x,'Sisi lawan')).join('')+'</div>':''}<p class="muted">${match?.fee>0?'Pasangan di atas mengikuti saran biaya. ':''}${Number(item.candidate_count)||0} kandidat nominal sama${item.candidate_ids_truncated?'; hanya sebagian ditampilkan. Gunakan pencarian manual untuk kandidat lain.':''}</p><div class="inline-actions">${match?button('Periksa dan setujui','verification-pair',match.sale.id,'secondary'):item.suggestion_available?button('Periksa usulan terbaru','exception-match',item.entry.id,'secondary'):button(item.status==='partial'?'Tambah alokasi':item.status==='ambiguous'?'Pilih kandidat':'Alokasikan manual','exception-choose',item.entry.id,'secondary')}${item.candidate_ids_truncated?button('Cari secara manual','exception-manual',item.entry.id):''}</div></article>`;
+  }).join('')+'</div>':empty('Tidak ada keputusan pada tampilan ini','Pasangan yang sudah tersimpan tidak muncul lagi. Periksa filter atau tambahkan catatan yang belum lengkap.');
+ }
+ const nonop=data.state.entries.filter(x=>!x.canceled&&x.category==='non_operational');
+ return title('Verifikasi','Tinjau alasan dan sisa transaksi. Simpan hanya setelah pasangan dan biaya diperiksa.',button('Alokasi manual','allocate','','primary'))+content+`<details class="panel"><summary>Penerimaan non-operasional (${nonop.length})</summary><p>Bunga, administrasi, atau perpindahan dana bukan pembayaran pelanggan. Data tetap tercatat tanpa tombol alokasi.</p>${nonop.map(x=>`<p><strong>${e(x.name)}</strong> · ${e(x.reference||x.source_id)} · ${e(money(x.amount))}</p>`).join('')}</details>`+allocationHistory();
 }
 
 function showAuditEntity(target) {
@@ -426,6 +411,7 @@ function settings() {
       "Informasi akun dan batas penggunaan ruang kerja.",
     ) +
     `<section class="panel"><h2>${e(state.me.name)}</h2><div class="details"><dl><dt>Email</dt><dd>${e(state.me.email)}</dd><dt>Peran</dt><dd>${e(roles[state.me.role])}</dd><dt>Ruang kerja</dt><dd>${e(state.data.workspace.name)}</dd><dt>Penyimpanan</dt><dd>PostgreSQL, terpisah per aplikasi dan ruang kerja</dd></dl></div><div class="inline-actions">${button("Ganti kata sandi", "password", "", "primary")}${button("Keluar akun", "logout")}<button class="pwa-install" type="button" data-pwa-install>Pasang EFA ↗</button></div><p>Penggantian kata sandi mengakhiri seluruh sesi akun. Data awal adalah contoh sintetis. Jangan unggah data pelanggan nyata sebelum ada izin. ${e(limitDescription())}</p></section>`
+    + (state.me.role==='owner'?`<section class="panel danger-zone"><h2>Kosongkan data workspace</h2><p>Hapus transaksi, impor dan alokasi untuk memulai catatan baru. Akun serta audit tetap tersedia. Tindakan ini tidak memiliki pemulihan otomatis.</p>${button('Kosongkan data workspace','clear-data','','danger')}</section>`:'')
   );
 }
 
@@ -434,7 +420,7 @@ function showRefreshNotice() {
   if (button) button.hidden = false;
 }
 function canReplacePage() {
-  return !modal.open && !document.activeElement?.matches("input,textarea,select");
+  return !modal.open && !importFlow.busy && !document.activeElement?.matches("input,textarea,select");
 }
 async function refresh(force = false) {
   if (state.refreshTask) {
@@ -475,7 +461,10 @@ async function refresh(force = false) {
       exceptionsResult.value.every(item => {
         const entry = entries.get(item.entry?.id);
         return entry && !entry.canceled && entry.kind === item.entry.kind && balance(entry) === item.remaining;
-      })) data.exceptions = exceptionsResult.value;
+      })) {
+        data.exceptions = exceptionsResult.value.filter(x=>allocatable(x.entry)&&x.remaining>0);
+        for(const item of data.exceptions)state.balances.set(item.entry.id,item.remaining);
+      }
     else data.exceptionsError = true;
     if (canReplacePage()) renderPage();
     else showRefreshNotice();
@@ -519,33 +508,19 @@ function closeModal() {
   modal.close();
 }
 
-function importModal() {
-  importLimits(state.config);
-  state.preview = null;
-  openModal(
-    "Impor transaksi CSV",
-    `<p>Pratinjau tidak mengubah saldo. Gunakan ID sumber yang stabil agar impor berulang dapat dikenali.</p><form data-form="preview-import">${formError}${select(
-      "Jenis transaksi",
-      "kind",
-      [
-        ["sale", "Penjualan"],
-        ["receipt", "Penerimaan"],
-      ],
-    )}${field("File CSV", "file", "file", "", 'accept=".csv,text/csv" required')}<small>${e(limitDescription())} Simpan file sebagai CSV UTF-8.</small><div class="inline-actions"><a href="/assets/contoh-penjualan.csv" download class="button small">Contoh penjualan</a><a href="/assets/contoh-penerimaan.csv" download class="button small">Contoh penerimaan</a></div><button type="submit" class="primary">Periksa CSV</button></form><div id="import-preview" role="region" aria-label="Hasil pratinjau impor" aria-live="polite" tabindex="-1"></div>`,
-  );
-}
+function importModal() { location.hash = "imports"; }
 
 function allocateModal(saleID = "", receiptID = "", options = {}) {
   const entries = state.data.state.entries || [];
-  const sales = entries.filter((x) => x.kind === "sale" && balance(x) > 0),
-    receipts = entries.filter((x) => x.kind === "receipt" && balance(x) > 0);
+  const sales = entries.filter((x) => allocatable(x) && x.kind === "sale" && balance(x) > 0),
+    receipts = entries.filter((x) => allocatable(x) && x.kind === "receipt" && balance(x) > 0);
   if (!sales.length || !receipts.length) {
     toast(
       "Tambahkan penjualan dan penerimaan yang masih memiliki sisa terlebih dahulu",
     );
     return;
   }
-  const { sale, receipt } = selectAllocation(entries, balance, saleID, receiptID);
+  const { sale, receipt } = selectAllocation(entries.filter(allocatable), balance, saleID, receiptID);
   openModal(
     "Periksa dan simpan pasangan",
     `<p>${e(options.reason || "Periksa pilihan penjualan dan penerimaan sebelum menyimpan.")}</p><p>Nominal adalah uang penerimaan yang dialokasikan. Biaya mengurangi sisa tagihan, tetapi tidak menambah uang diterima.</p><form data-form="allocate">${formError}<input type="hidden" name="key" value="${key()}">${select(
@@ -566,16 +541,20 @@ function allocateModal(saleID = "", receiptID = "", options = {}) {
       receipt.id,
     )}<div class="form-grid">${field("Nominal dialokasikan (Rp)", "amount", "number", Math.min(balance(sale), balance(receipt)), 'required min="1" max="1000000000000" step="1"')}${field("Biaya layanan (Rp)", "fee", "number", 0, 'required min="0" max="1000000000000" step="1"')}</div>${area("Catatan / alasan biaya", "reason", "", 'maxlength="400"')}${actions("Simpan pasangan")}</form>`,
   );
-  if (options.choose) {
-    const name = saleID ? "receipt_id" : "sale_id";
-    const selectNode = modal.querySelector(`[name="${name}"]`);
-    if (options.candidates) for (const option of [...selectNode.options]) {
-      if (!options.candidates.includes(option.value)) option.remove();
+  if (options.choose || !saleID || !receiptID) {
+    const names = saleID ? ['receipt_id'] : receiptID ? ['sale_id'] : ['sale_id','receipt_id'];
+    for(const name of names){
+      const node=modal.querySelector(`[name="${name}"]`);
+      if(options.candidates)for(const option of [...node.options])if(!options.candidates.includes(option.value))option.remove();
+      node.prepend(new Option('Pilih transaksi terlebih dahulu','',true,true));node.value='';node.required=true;
     }
-    selectNode.prepend(new Option("Pilih transaksi terlebih dahulu", "", true, true));
-    selectNode.value = "";
-    selectNode.required = true;
-    modal.querySelector('[name="amount"]').value = "";
+    modal.querySelector('[name="amount"]').value='';
+  }
+  if(options.fee>0){
+    modal.querySelector('[name="amount"]').value=String(balance(receipt));
+    modal.querySelector('[name="fee"]').value=String(options.fee);
+    modal.querySelector('[name="reason"]').value=options.reason||'Biaya sesuai saran server; perlu persetujuan';
+    const form=modal.querySelector('form');form.dataset.feeSale=sale.id;form.dataset.feeReceipt=receipt.id;
   }
   updateAllocationLimits();
 }
@@ -616,11 +595,11 @@ async function init() {
     } catch (err) {
       if (err.status !== 401) throw err;
     }
-    if (state.me) {
+    if (state.me && !["forgot","reset"].includes(normalizeRoute())) {
       startEvents();
       try { await refresh(); }
       catch { showWorkspaceError(); }
-    } else auth(location.hash === "#register");
+    } else { state.me=null; auth(location.hash === "#register"); }
   } catch (err) {
     root.innerHTML = `<main id="main" class="starting"><section class="panel"><h1>Aplikasi belum tersambung</h1><p>${e(err.message)}</p><a class="button primary" href="/app${location.hash === '#register' ? '#register' : '#login'}">Coba sambungkan lagi</a></section></main>`;
   }
@@ -630,8 +609,7 @@ function routes() {
   return [
     ["overview", "Ringkasan"],
     ["entries", "Transaksi"],
-    ["reconcile", "Cocokkan kas"],
-    ["exceptions", "Perlu diperiksa"],
+    ["verifikasi", "Verifikasi"],
     ["imports", "Impor CSV"],
     ["history", "Riwayat"],
     ["reports", "Laporan"],
@@ -641,7 +619,7 @@ function routes() {
 function metrics() {
   const entries = (state.data.state.entries || []).filter((x) => !x.canceled),
     sales = entries.filter((x) => x.kind === "sale"),
-    receipts = entries.filter((x) => x.kind === "receipt");
+    receipts = entries.filter((x) => x.kind === "receipt" && x.category!=="non_operational");
   return metricStrip([
     [
       "Penjualan tercatat",
@@ -727,14 +705,13 @@ function renderPage() {
   if (["#login", "#register"].includes(location.hash)) {
     history.replaceState(null, "", location.pathname + location.search + "#overview");
   }
-  const route = location.hash.slice(1) || "overview",
+  const route = normalizeRoute(),
     main = document.querySelector("#main");
   if (!main) return;
   const pages = {
     overview,
     entries: entriesPage,
-    reconcile: matches,
-    exceptions: exceptionsPage,
+    verifikasi: exceptionsPage,
     imports: importsPage,
     history: historyPage,
     reports: reportsPage,
@@ -755,13 +732,13 @@ function renderPage() {
 }
 function auth(register = false) {
   state.audit = { rows: [], loading: false, loaded: false, more: true, error: "", generation: (state.audit.generation || 0) + 1 };
-  const route = location.hash.slice(1);
+  const route = normalizeRoute();
   if (routes().some(([id]) => id === route)) state.returnRoute = route;
   state.epoch = (state.epoch || 0) + 1;
   state.refreshing = false;
   state.refreshTask = null;
   state.pendingVersion = 0;
-  state.preview = null;
+  importFlow.reset();
   state.data = null;
   state.csrf = "";
   stopEvents();
@@ -769,6 +746,8 @@ function auth(register = false) {
   modal.close();
   modal.replaceChildren();
   mobileMenu.close();
+  if (["forgot","reset"].includes(route)) return passwordHelp(route);
+  state.resetToken = "";
   document.title = (register ? "Daftar" : "Masuk") + " · Easy Financial Audit";
   root.innerHTML =
     '<main id="main" class="auth auth-umkm ' +
@@ -823,7 +802,7 @@ function auth(register = false) {
       : "") +
     '<button class="primary" type="submit">' +
     (register ? "Daftar akun" : "Masuk") +
-    '</button></form><p class="auth-switch">' +
+    '</button></form>' + (!register ? '<p class="auth-switch"><a href="#forgot">Lupa kata sandi?</a></p>' : '') + '<p class="auth-switch">' +
     (register ? "Sudah punya akun?" : "Belum punya akun?") +
     ' <a href="' +
     (register ? "#login" : "#register") +
@@ -944,6 +923,7 @@ function startEvents() {
 
 document.addEventListener("input", (event) => {
   if (modal.contains(event.target)) modal.dataset.dirty = "true";
+  if(event.target.closest('form[data-form="clear-data"]'))updateClearButton();
   if (event.target.closest('form[data-form="allocate"]')) updateAllocationLimits();
   if (event.target.id === "list-search") {
     state.query = event.target.value;
@@ -975,7 +955,8 @@ window.addEventListener("hashchange", () => {
   state.page = 1;
   state.query = "";
   state.status = "";
-  if (state.me) renderPage();
+  if (["forgot","reset"].includes(normalizeRoute())) {state.me=null;auth();}
+  else if (state.me) renderPage();
   else auth(location.hash === "#register");
   const main = document.querySelector("#main");
   if (main) {
@@ -996,7 +977,7 @@ document.querySelector(".skip").addEventListener("click", (event) => {
 });
 
 window.addEventListener("beforeunload", (event) => {
-  if (modal.open && modal.dataset.dirty === "true") {
+  if ((modal.open && modal.dataset.dirty === "true") || importFlow.dirty) {
     event.preventDefault();
     event.returnValue = "";
   }
@@ -1016,7 +997,7 @@ document.addEventListener("submit", async (event) => {
   form.dataset.busy = "true";
   form.setAttribute("aria-busy", "true");
   controls.forEach(([node]) => (node.disabled = true));
-  if (button) button.textContent = ({login:"Memproses…",register:"Mendaftarkan…","preview-import":"Memeriksa…",allocate:"Menyimpan…",password:"Mengganti…"})[action] || "Memproses…";
+  if (button) button.textContent = ({login:"Memproses…",register:"Mendaftarkan…","preview-import":"Memeriksa…","flex-import":"Memeriksa…",allocate:"Menyimpan…",password:"Mengganti…"})[action] || "Memproses…";
   try {
     if (action === "login" || action === "register") {
       if (action === "register") validatePassword(get("password"));
@@ -1044,51 +1025,28 @@ document.addEventListener("submit", async (event) => {
       document.title = state.config.brand;
       return;
     }
-    if (action === "preview-import") {
-      const file = fd.get("file");
-      if (!(file instanceof File)) throw new Error("Pilih file CSV terlebih dahulu.");
-      const limits = validateImportSize(file, state.config);
-      let csv;
-      try { csv = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer()); }
-      catch { throw new Error("File bukan CSV UTF-8 yang valid. Simpan ulang sebagai CSV UTF-8 lalu coba lagi."); }
-      const payload = { kind: get("kind"), csv };
-      const rawPreview = await api("/api/v1/umkm/imports/preview", {
-        method: "POST",
-        body: payload,
-      });
-      const preview = deduplicatePreview(rawPreview, state.data.state.entries || [], payload.kind);
-      if (preview.count + preview.skipped > limits.max_import_rows) throw new Error(`CSV melebihi batas ${limits.max_import_rows} baris data.`);
-      if (state.data.state.entries.length + preview.count > limits.max_entries) throw new Error("Baris baru melebihi batas transaksi ruang kerja dari server.");
-      state.preview = payload;
-      document.querySelector("#import-preview").innerHTML =
-        '<div class="success">' +
-        preview.count +
-        " baris baru / total " +
-        e(money(preview.total)) +
-        ". " + preview.skipped + ' baris identik dilewati. Belum disimpan.</div><div class="table-scroll" role="region" aria-label="Tabel data, geser untuk melihat kolom lain" tabindex="0"><table><thead><tr><th>ID</th><th>Nama</th><th>Nominal</th></tr></thead><tbody>' +
-        preview.rows
-          .slice(0, 5)
-          .map(
-            (x) =>
-              "<tr><td>" +
-              e(x.source_id) +
-              "</td><td>" +
-              e(x.name) +
-              "</td><td>" +
-              e(money(x.amount)) +
-              "</td></tr>",
-          )
-          .join("") +
-        "</tbody></table></div>" +
-        (preview.count ? buttonHTML("Simpan impor ini", "commit-import", "", "primary") : '<p>Semua baris sudah tercatat. Tidak ada data baru untuk disimpan.</p>');
-      document.querySelector("#import-preview").focus({ preventScroll: true });
-      return;
+    if (action === 'flex-import') { await importFlow.preview(); return; }
+    if (action === 'forgot') {
+      await api('/api/v1/auth/password/forgot',{method:'POST',body:{email:get('email')}});
+      form.innerHTML='<p class="success" role="status">Jika email terdaftar, tautan reset akan dikirim. Periksa inbox dan folder spam.</p><a href="#login">Kembali masuk</a>';return;
+    }
+    if (action === 'reset') {
+      validatePassword(get('password'));
+      if(get('password')!==get('confirm_password'))throw Error('Konfirmasi kata sandi belum sama.');
+      if(!/^[a-f0-9]{64}$/i.test(state.resetToken||''))throw Error('Tautan reset tidak valid. Minta tautan baru.');
+      await api('/api/v1/auth/password/reset',{method:'POST',body:{token:state.resetToken,password:get('password')}});
+      state.resetToken='';state.me=null;state.csrf='';history.replaceState(null,'',location.pathname+'#login');auth();toast('Kata sandi berubah. Masuk dengan kata sandi baru.');return;
+    }
+    if(action==='clear-data'){
+      if(get('confirm')!=='HAPUS'||!get('clear_password'))throw Error('Isi kata sandi dan ketik HAPUS.');
+      await api('/api/v1/umkm/data',{method:'DELETE',body:{password:get('clear_password'),confirm:get('confirm')}});
+      importFlow.reset();state.audit.loaded=false;modal.dataset.dirty='false';modal.close();history.replaceState(null,'',location.pathname+'#overview');await refresh(true);toast('Data dikosongkan. Akun dan riwayat tetap tersedia.');return;
     }
     if (action === "allocate") {
       if (!get("sale_id") || !get("receipt_id")) throw new Error("Pilih penjualan dan penerimaan terlebih dahulu.");
       if (Number(get("fee")) > 0 && get("reason").trim().length < 5) throw new Error("Jelaskan alasan biaya, minimal 5 karakter.");
       updateAllocationLimits();
-      const selected = selectAllocation(state.data.state.entries, balance, get("sale_id"), get("receipt_id"));
+      const selected = selectAllocation(state.data.state.entries.filter(allocatable), balance, get("sale_id"), get("receipt_id"));
       if (Number(get("amount")) + Number(get("fee")) > balance(selected.sale) || Number(get("amount")) > balance(selected.receipt)) {
         throw new Error("Nominal melebihi sisa terbaru. Periksa kembali pasangan dan biayanya.");
       }
@@ -1124,15 +1082,18 @@ document.addEventListener("submit", async (event) => {
     toast("Pasangan tersimpan");
   } catch (error) {
     if (error.status === 409) await refresh(true).catch(() => {});
+    if(action==='clear-data'){form.elements.confirm.value='';form.dataset.confirmAgain='true';}
+    if(error.status===429){form.dataset.cooldown='true';setTimeout(()=>{if(form.isConnected){delete form.dataset.cooldown;form.querySelector('button[type=submit]').disabled=false}},60000);}
     showError(form, error);
   } finally {
     form.dataset.busy = "false";
     form.removeAttribute("aria-busy");
     controls.forEach(([node, disabled]) => (node.disabled = disabled));
     if (button?.isConnected) button.textContent = label;
+    if(form.dataset.cooldown==='true'&&button?.isConnected)button.disabled=true;
+    if(action==='clear-data')updateClearButton();
   }
 });
-const buttonHTML = button;
 document.addEventListener("click", async (event) => {
   if (event.target.closest("#mobile-menu a")) {
     mobileMenu.close();
@@ -1145,6 +1106,16 @@ document.addEventListener("click", async (event) => {
     id = target.dataset.id;
   let busyForm, controls;
   try {
+    if(action==='flow-save'){await importFlow.commit();return;}
+    if(action==='verification-pair'){
+      const row=verificationRows(state.data.exceptions||[],state.data.suggestions,balance).find(x=>x.match?.sale.id===id);
+      if(!row?.match)throw Error('Usulan berubah. Muat ulang dan periksa kembali.');
+      return allocateModal(row.match.sale.id,row.match.receipt.id,{reason:row.match.reason,fee:row.match.fee});
+    }
+    if(action==='clear-data'){
+      if(state.me.role!=='owner')throw Error('Hanya pemilik usaha yang dapat mengosongkan data.');
+      openModal('Kosongkan data workspace',`<p class="warning">Transaksi, batch impor, dan alokasi akan dihapus permanen. Akun, workspace dan audit tetap ada. Tidak ada pemulihan otomatis.</p><p>Unduh rekap CSV dari Laporan terlebih dahulu jika diperlukan.</p><form data-form="clear-data">${formError}${field('Kata sandi saat ini','clear_password','password','', 'required autocomplete="current-password"')}${field('Ketik HAPUS untuk mengonfirmasi','confirm','text','', 'required autocomplete="off" pattern="HAPUS"')}<button class="danger" type="submit" disabled>Kosongkan data sekarang</button></form>`);return;
+    }
     if (action === "audit-more") return await loadAudit();
     if (action === "audit-retry") return await loadAudit(state.audit.retryReset || !state.audit.rows.length);
     if (action === "audit-entity") return showAuditEntity(id);
@@ -1163,7 +1134,7 @@ document.addEventListener("click", async (event) => {
     }
     if (action === "entry-followup") {
       const entry = state.data.state.entries.find(x => x.id === id);
-      if (!entry || entry.canceled || balance(entry) <= 0) throw new Error("Transaksi sudah berubah. Muat ulang data sebelum melanjutkan.");
+      if (!allocatable(entry) || balance(entry) <= 0) throw new Error("Transaksi sudah berubah. Muat ulang data sebelum melanjutkan.");
       return allocateModal(entry.kind === 'sale' ? id : '', entry.kind === 'receipt' ? id : '', {choose: true});
     }
     if (action === "export") return await downloadExport(target);
@@ -1203,11 +1174,6 @@ document.addEventListener("click", async (event) => {
     }
     if (action === "import") return importModal();
     if (action === "allocate") return allocateModal(id);
-    if (action === "match") {
-      const match = state.data.suggestions.find((x) => x.sale.id === id);
-      if (!match) return toast("Usulan berubah. Muat ulang data.");
-      return allocateModal(match.sale.id, match.receipt.id, { reason: match.reason });
-    }
     if (action === "password")
       return openModal(
         "Ganti kata sandi",
@@ -1237,31 +1203,6 @@ document.addEventListener("click", async (event) => {
       return;
     }
     target.disabled = true;
-    if (action === "commit-import") {
-      if (!state.preview) throw new Error("Periksa CSV terlebih dahulu.");
-      busyForm = modal.querySelector("form");
-      if (busyForm.dataset.busy === "true") return;
-      controls = [...busyForm.elements].map((node) => [node, node.disabled]);
-      controls.forEach(([node]) => (node.disabled = true));
-      busyForm.dataset.busy = "true";
-      busyForm.setAttribute("aria-busy", "true");
-      const result = await api("/api/v1/umkm/imports", {
-        method: "POST",
-        body: state.preview,
-      });
-      state.preview = null;
-      modal.dataset.dirty = "false";
-      modal.close();
-      await refresh(true);
-      toast(
-        result.duplicate
-          ? "File sudah pernah diimpor. Tidak ada data ganda"
-          : result.imported +
-              " baris baru tersimpan, " +
-              result.skipped +
-              " baris identik dilewati",
-      );
-    }
     if (action === "undo") {
       if (
         !confirm(
@@ -1304,10 +1245,13 @@ document.addEventListener("click", async (event) => {
   }
 });
 document.addEventListener("change", (event) => {
-  if (event.target.closest('form[data-form="allocate"]')) updateAllocationLimits();
-  if (event.target.closest('[data-form="preview-import"]')) {
-    state.preview = null;
-    document.querySelector("#import-preview").replaceChildren();
+  if(event.target.dataset.importKind)importFlow.setFile(event.target.dataset.importKind,event.target.files[0]);
+  const allocationForm=event.target.closest('form[data-form="allocate"]');
+  if(allocationForm){
+    if(allocationForm.dataset.feeSale&&['sale_id','receipt_id'].includes(event.target.name)){
+      allocationForm.elements.fee.value='0';allocationForm.elements.amount.value='';delete allocationForm.dataset.feeSale;
+    }
+    updateAllocationLimits();
   }
   if (event.target.id === "exception-filter") { state.exceptionFilter = event.target.value; renderPage(); return; }
   if (event.target.id === "list-size" || event.target.id === "list-status") {
@@ -1317,4 +1261,18 @@ document.addEventListener("change", (event) => {
     document.querySelector("#list-results").innerHTML = listResults();
   }
 });
+function updateClearButton(){
+ const form=modal.querySelector('[data-form="clear-data"]');if(!form)return;
+ form.querySelector('button[type=submit]').disabled=form.dataset.busy==='true'||form.dataset.cooldown==='true'||!state.me||!form.elements.clear_password.value||form.elements.confirm.value!=='HAPUS';
+}
+function passwordHelp(route){
+ if(route==='reset'){
+  const token=new URLSearchParams(location.hash.split('?')[1]||'').get('token');
+  if(token!==null){state.resetToken=token;history.replaceState(null,'',location.pathname+'#reset');}
+ }else state.resetToken='';
+ const valid=/^[a-f0-9]{64}$/i.test(state.resetToken||'');
+ document.title=(route==='forgot'?'Lupa kata sandi':'Reset kata sandi')+' · EFA';
+ root.innerHTML=`<main id="main" class="auth auth-umkm"><section class="auth-form">${maxyBrand('Easy Financial Audit','#login')}<div class="auth-inner"><a class="auth-home" href="/">Kembali ke beranda</a><h1>${route==='forgot'?'Lupa kata sandi?':'Buat kata sandi baru'}</h1><p>${route==='forgot'?'Masukkan email akunmu. Jika terdaftar, tautan reset akan dikirim.':'Simpan kata sandi baru, lalu masuk kembali.'}</p>${route==='reset'&&!valid?'<p class="error" role="alert">Tautan reset tidak valid atau tidak lengkap. <a href="#forgot">Minta tautan baru</a>.</p>':`<form data-form="${route}">${formError}${route==='forgot'?field('Email','email','email','','required maxlength="254" autocomplete="email"'):field('Kata sandi baru','password','password','','required minlength="12" maxlength="72" autocomplete="new-password"')+field('Ulangi kata sandi baru','confirm_password','password','','required minlength="12" maxlength="72" autocomplete="new-password"')}<button type="submit" class="primary">${route==='forgot'?'Kirim tautan reset':'Simpan kata sandi baru'}</button></form>`}<p class="auth-switch"><a href="#login">Kembali masuk</a>${route==='reset'?' · <a href="#forgot">Minta tautan baru</a>':''}</p></div></section>${authScene(false)}</main>`;
+ presentAuth(root,false);
+}
 init();

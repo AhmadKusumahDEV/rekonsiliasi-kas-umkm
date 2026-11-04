@@ -1,5 +1,8 @@
 # Arsitektur Easy Financial Audit (EFA)
 
+
+Pembaruan frontend 4 November: `frontend/assets/import-flow.js` mengelola dua slot CSV dan commit kanonik; `verification.js` mengelompokkan keputusan serta kategori backend. `#verifikasi` menggantikan `#reconcile`/`#exceptions` (alias tetap aktif), dan `#forgot`/`#reset` menghubungkan reset password. Detail alur dan batas pengujian: [handoff frontend](docs/FRONTEND_HANDOFF_IMPLEMENTATION.md). Bagian prototipe historis di bawah tetap dipertahankan sebagai referensi.
+
 Nama tampilan baru: Easy Financial Audit, sebelumnya Temu Kas.
 Folder temukas, ID aplikasi umkm, akun, data dan endpoint tidak diganti.
 Pembaruan logo/palet dijelaskan di [BRAND.md](docs/BRAND.md).

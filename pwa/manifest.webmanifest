@@ -18,7 +18,7 @@
   ],
   "shortcuts": [
     { "name": "Ringkasan usaha", "short_name": "Ringkasan", "url": "/app#overview" },
-    { "name": "Cocokkan kas", "short_name": "Cocokkan", "url": "/app#reconcile" },
+    { "name": "Verifikasi transaksi", "short_name": "Verifikasi", "url": "/app#verifikasi" },
     { "name": "Impor catatan CSV", "short_name": "Impor CSV", "url": "/app#imports" }
   ]
 }

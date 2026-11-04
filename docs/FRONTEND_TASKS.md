@@ -1,5 +1,7 @@
 # Tugas Frontend: Yang Harus Dibaca dan Dibangun
 
+Status pengerjaan frontend dan bukti verifikasi tersedia di [implementasi handoff](FRONTEND_HANDOFF_IMPLEMENTATION.md).
+
 Dokumen ini adalah pintu masuk untuk frontend. Backend sudah tersedia;
 beberapa layar belum ada.
 
