@@ -25,6 +25,43 @@ var headerAliases = map[string][]string{
 	"note":    {"catatan", "note", "notes", "keterangan tambahan", "memo"},
 }
 
+func duplicateHeaderField(header []string) string {
+	seen := make(map[string]int)
+	for index, raw := range header {
+		name := normalizeHeader(raw)
+		for field, aliases := range headerAliases {
+			for _, alias := range aliases {
+				if name != alias {
+					continue
+				}
+				if previous, exists := seen[field]; exists && previous != index {
+					return field
+				}
+				seen[field] = index
+			}
+		}
+	}
+	return ""
+}
+
+func isSummaryRow(text string) bool {
+	value := normalizePhrase(text)
+	for _, word := range []string{"TOTAL", "SUBTOTAL", "JUMLAH", "GRAND TOTAL"} {
+		if strings.Contains(" "+value+" ", " "+word+" ") {
+			return true
+		}
+	}
+	return false
+}
+
+func knownChannel(value string) bool {
+	switch value {
+	case "tunai", "qris", "transfer", "marketplace", "e-wallet", "lainnya":
+		return true
+	}
+	return false
+}
+
 func normalizeHeader(value string) string {
 	value = strings.ToLower(strings.TrimSpace(strings.TrimPrefix(value, "\ufeff")))
 	return strings.Join(strings.Fields(value), " ")
@@ -230,6 +267,9 @@ func normalizeFlexibleCSV(kind, raw string) (string, []string, error) {
 	if headerIndex < 0 {
 		return "", nil, pkgErr.New(pkgErr.ErrInvalidRequest, "Header tidak ditemukan dalam 30 baris pertama. Gunakan kolom tanggal, nominal, dan nama atau keterangan.")
 	}
+	if duplicate := duplicateHeaderField(records[headerIndex]); duplicate != "" {
+		return "", nil, pkgErr.New(pkgErr.ErrInvalidRequest, "Header duplikat untuk kolom "+duplicate+". Sisakan satu kolom.")
+	}
 
 	var builder strings.Builder
 	writer := csv.NewWriter(&builder)
@@ -249,6 +289,12 @@ func normalizeFlexibleCSV(kind, raw string) (string, []string, error) {
 			}
 			return strings.TrimSpace(record[index])
 		}
+		name := get("name")
+		note := get("note")
+		if isSummaryRow(name + " " + note) {
+			warnings = append(warnings, fmt.Sprintf("Baris %d adalah baris total dan dilewati.", line))
+			continue
+		}
 		date, dateErr := parseDate(get("date"))
 		if dateErr != nil {
 			return "", nil, pkgErr.New(pkgErr.ErrInvalidRequest, fmt.Sprintf("Baris %d: %s", line, dateErr.Error()))
@@ -264,18 +310,21 @@ func normalizeFlexibleCSV(kind, raw string) (string, []string, error) {
 		if kind == "sale" && amount <= 0 {
 			return "", nil, pkgErr.New(pkgErr.ErrInvalidRequest, fmt.Sprintf("Baris %d: nominal penjualan harus lebih dari nol.", line))
 		}
-		name := get("name")
 		if name == "" {
 			name = "Transaksi"
 		}
 		ref := get("ref")
-		note := get("note")
 		if ref == "" {
 			ref = extractReference(name + " " + note)
 		}
 		channel := get("channel")
 		if channel == "" {
-			channel = normalizeChannel(name + " " + note)
+			inferred := normalizeChannel(name + " " + note)
+			if knownChannel(inferred) {
+				channel = inferred
+			} else {
+				channel = "lainnya"
+			}
 		} else {
 			channel = normalizeChannel(channel)
 		}

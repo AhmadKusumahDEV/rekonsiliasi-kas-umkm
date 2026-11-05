@@ -259,7 +259,7 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 		if existingImport.CanceledAt.Valid {
 			return models.CommitImportResponse{}, pkgErr.New(pkgErr.ErrConflict, "Impor ini sudah dibatalkan. Gunakan ID sumber baru jika ingin mencatat ulang.")
 		}
-		return models.CommitImportResponse{ID: existingImport.ID, Duplicate: true, Skipped: len(entries)}, nil
+		return models.CommitImportResponse{ID: existingImport.ID, Duplicate: true, Skipped: len(entries), AIStatus: "skipped"}, nil
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return models.CommitImportResponse{}, fmt.Errorf("get import by checksum: %w", err)

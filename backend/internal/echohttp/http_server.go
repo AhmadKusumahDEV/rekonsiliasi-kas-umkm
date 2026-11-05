@@ -62,7 +62,7 @@ func NewEchoWithObservability(cfg config.Config, s *service.Service, stack *obse
 	}))
 	e.Use(securityHeaders)
 	e.Use(corsMiddleware(cfg.Server.AllowedOrigins))
-	e.Use(middleware.BodyLimit("5M"))
+	e.Use(middleware.BodyLimit("12M"))
 	e.Use(middleware.RequestID())
 
 	e.GET("/health/live", liveness(s))
@@ -90,6 +90,7 @@ func NewEchoWithObservability(cfg config.Config, s *service.Service, stack *obse
 	umkm.POST("/imports/preview", previewImport(s))
 	umkm.POST("/imports", commitImport(s))
 	umkm.POST("/imports/flexible", flexibleImport(s))
+	umkm.POST("/imports/files", uploadImport(s))
 	umkm.POST("/imports/:id/cancel", cancelImport(s))
 	umkm.POST("/allocations", allocate(s))
 	umkm.POST("/allocations/:id/undo", undoAllocation(s))

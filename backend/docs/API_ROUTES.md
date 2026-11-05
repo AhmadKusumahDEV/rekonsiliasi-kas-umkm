@@ -34,6 +34,8 @@ ini.
 | GET | `/api/v1/umkm/audit` | Cookie | — | 200 |
 | DELETE | `/api/v1/umkm/data` | Cookie | Ya | 200 |
 | POST | `/api/v1/umkm/imports/preview` | Cookie | Ya | 200 |
+| POST | `/api/v1/umkm/imports/flexible` | Cookie | Ya | 200 |
+| POST | `/api/v1/umkm/imports/files` | Cookie | Ya | 200 |
 | POST | `/api/v1/umkm/imports` | Cookie | Ya | 201 |
 | POST | `/api/v1/umkm/imports/{id}/cancel` | Cookie | Ya | 200 |
 | POST | `/api/v1/umkm/allocations` | Cookie | Ya | 201 |

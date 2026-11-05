@@ -1,6 +1,7 @@
 package echohttp
 
 import (
+	"io"
 	"net/http"
 	"strconv"
 
@@ -105,6 +106,46 @@ func clearData(s *service.Service) echo.HandlerFunc {
 			return err
 		}
 		return c.JSON(http.StatusOK, map[string]bool{"ok": true})
+	}
+}
+
+func uploadImport(s *service.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		session, ok := currentSession(c)
+		if !ok {
+			return echo.ErrUnauthorized
+		}
+		header, err := c.FormFile("file")
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Pilih file CSV atau XLSX.")
+		}
+		if header.Size > 10<<20 {
+			return echo.NewHTTPError(http.StatusRequestEntityTooLarge, "File maksimal 10 MB.")
+		}
+		file, err := header.Open()
+		if err != nil {
+			return err
+		}
+		defer func() { _ = file.Close() }()
+		data, err := io.ReadAll(io.LimitReader(file, 10<<20))
+		if err != nil {
+			return err
+		}
+		kind := c.FormValue("kind")
+		sheet := c.FormValue("sheet")
+		result, err := s.ImportUploadedFile(c.Request().Context(), session.User, kind, sheet, header.Filename, data)
+		if err != nil {
+			if sheetErr, ok := service.AsSheetRequired(err); ok {
+				return c.JSON(http.StatusUnprocessableEntity, map[string]any{
+					"code":    422,
+					"status":  "unprocessable entity",
+					"message": "Pilih sheet yang ingin diimpor.",
+					"details": map[string]any{"sheets": sheetErr.Sheets},
+				})
+			}
+			return err
+		}
+		return c.JSON(http.StatusOK, result)
 	}
 }
 
