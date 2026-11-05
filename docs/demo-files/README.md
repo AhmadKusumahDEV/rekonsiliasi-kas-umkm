@@ -46,6 +46,19 @@ Dataset: 33 penjualan dan 32 mutasi bank. File dibuat oleh
 - 1 pencairan marketplace dengan fee Rp10.000.
 - 2 penerimaan non-operasional: bunga dan transfer antar rekening.
 
+## Happy path murni
+
+Folder `happy/` berisi 24 penjualan dan 24 penerimaan tanpa kasus fee,
+ambigu, tunai, atau non-operasional.
+
+| File | Isi |
+| --- | --- |
+| `happy/penjualan-happy-24.csv` | 24 penjualan |
+| `happy/mutasi-happy-24.csv` | 24 penerimaan |
+
+Hasil impor yang diharapkan: 20 pasangan aturan, 4 pasangan AI, 0 temuan.
+
+
 ## Cara memakai
 
 Untuk demo, pilih satu file penjualan dan satu file mutasi dari kombinasi di

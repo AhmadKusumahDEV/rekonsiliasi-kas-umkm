@@ -101,6 +101,19 @@ total_rows = list(bank)
 total_rows.append({"Tanggal": "2026-11-06", "Keterangan": "TOTAL", "Debit": 0, "Kredit": sum(r["Kredit"] for r in bank), "Saldo": 0})
 write_csv(os.path.join(OUT, "mutasi-total-row.csv"), bank_header, total_rows)
 
+happy_dir = os.path.join(OUT, "happy")
+os.makedirs(happy_dir, exist_ok=True)
+for src_name, dst_name in [
+    ("penjualan-33.csv", "penjualan-happy-24.csv"),
+    ("mutasi-32.csv", "mutasi-happy-24.csv"),
+]:
+    with open(os.path.join(OUT, src_name), newline="", encoding="utf-8") as src:
+        rows = list(csv.reader(src))
+    with open(os.path.join(happy_dir, dst_name), "w", newline="", encoding="utf-8") as dst:
+        writer = csv.writer(dst)
+        writer.writerow(rows[0])
+        writer.writerows(rows[1:25])
+
 print("files:", len(os.listdir(OUT)))
 print("sales:", len(sales), "receipts:", len(bank))
 
