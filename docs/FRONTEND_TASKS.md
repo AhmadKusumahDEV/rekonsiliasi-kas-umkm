@@ -114,6 +114,14 @@ Aturan tampilan:
 - Jangan menampilkan skor sebagai persentase keyakinan.
 
 
+## Laporan uji frontend
+
+Daftar kasus ada di [IMPORT_TEST_MATRIX.md](IMPORT_TEST_MATRIX.md). Salin
+[FRONTEND_TEST_REPORT.md](FRONTEND_TEST_REPORT.md) menjadi
+FRONTEND_TEST_REPORT_RUN.md saat menjalankan uji, isi hasil sebenarnya, dan
+lampirkan screenshot.
+
+
 ## Ringkasan API
 
 | Endpoint | Kegunaan |
