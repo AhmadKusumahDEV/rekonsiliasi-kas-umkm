@@ -19,3 +19,10 @@ frontend/ASSETS.md
 frontend/Caddyfile.example
 
 !google191985305be39b7b.html
+
+!docs-site
+!docs-site/**
+docs-site/node_modules/
+docs-site/.astro/
+docs-site/dist/
+!tools/build-panduan.mjs

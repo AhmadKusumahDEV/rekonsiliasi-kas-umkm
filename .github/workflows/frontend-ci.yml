@@ -2,9 +2,9 @@ name: Frontend CI
 on:
   push:
     branches: [main]
-    paths: ["frontend/**", "landing/**", "pwa/**", "tools/build-static.mjs", "vercel.json", ".vercelignore", ".github/workflows/frontend-ci.yml"]
+    paths: ["frontend/**", "landing/**", "pwa/**", "docs-site/**", "tools/build-*.mjs", "vercel.json", ".vercelignore", ".github/workflows/frontend-ci.yml"]
   pull_request:
-    paths: ["frontend/**", "landing/**", "pwa/**", "tools/build-static.mjs", "vercel.json", ".vercelignore", ".github/workflows/frontend-ci.yml"]
+    paths: ["frontend/**", "landing/**", "pwa/**", "docs-site/**", "tools/build-*.mjs", "vercel.json", ".vercelignore", ".github/workflows/frontend-ci.yml"]
 permissions:
   contents: read
 jobs:
@@ -19,6 +19,7 @@ jobs:
       - name: Syntax and proxy tests
         working-directory: frontend
         run: |
+          npm ci --prefix ../docs-site --no-fund --no-audit
           node --check assets/app.js
           node --check assets/design.js
           node --check assets/motion.js
@@ -28,5 +29,4 @@ jobs:
           node --check ../pwa/service-worker.js
           node --check ../pwa/register.js
           node --check ../pwa/offline.js
-          node ../tools/build-static.mjs
           node --test tests/*.test.mjs

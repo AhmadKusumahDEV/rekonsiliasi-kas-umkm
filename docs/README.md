@@ -11,6 +11,9 @@
 - [PWA: memasang dan menguji](../pwa/README.md)
 - [Akun dan skenario demo](DEMO.md)
 
+- [Panduan web: source, build, video, dan CSP](../docs-site/README.md)
+- [Status implementasi panduan dan hasil uji](PANDUAN_IMPLEMENTATION.md)
+
 ## Produk dan pengembangan
 
 - [Arsitektur, direktori, alur dan seluruh endpoint](../architecture.md)

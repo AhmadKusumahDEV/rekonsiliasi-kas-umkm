@@ -1,0 +1,146 @@
+{
+  "data": "synthetic only",
+  "sourceDirty": true,
+  "sourceAssets": [
+    {
+      "file": "frontend/assets/app.js",
+      "sha256": "0cdd7b60dc1f1667d3c0d3dd7b7f74cf33155ef08b488ee6e0f88b6767f2a6f0"
+    },
+    {
+      "file": "frontend/assets/import-flow.js",
+      "sha256": "84ac5373ef85cd1fe5885a198c73898d9568f5a2bc15b04b48ead1febd01b0d5"
+    },
+    {
+      "file": "frontend/assets/verification.js",
+      "sha256": "3d9bce6256a02582a32b0dbeb475ac131224409025f2814376663805bb6f0a03"
+    },
+    {
+      "file": "frontend/assets/efa.css",
+      "sha256": "8d1f6523c1b39fd73af3729a1317773568fa06af4b51da6c916fb0bba6bd9421"
+    }
+  ],
+  "sourceCommit": "2d08f0c727ab0ef79d7b448944ed710cc3dc9448",
+  "records": [
+    {
+      "id": "ringkasan",
+      "file": "images/ringkasan-1440.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "localhost with synthetic API fixtures",
+      "sha256": "c31ebdbcd46775d5f050772cb36d6a4ab7cace5080a7330f740c23e67bca11c4",
+      "capturedAt": "2026-11-05T05:55:17.614Z",
+      "labels": [
+        ".cash-account",
+        ".cash-totals"
+      ]
+    },
+    {
+      "id": "impor",
+      "file": "images/impor-1440.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "localhost with synthetic API fixtures",
+      "sha256": "46f74783c459ca868c8304b57c2363d2c06261ba45050c25df29999edbe56f29",
+      "capturedAt": "2026-11-05T05:55:18.428Z",
+      "labels": [
+        "#import-sale",
+        "#import-receipt",
+        "#flex-import button[type=submit]"
+      ]
+    },
+    {
+      "id": "verifikasi",
+      "file": "images/verifikasi-1440.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "localhost with synthetic API fixtures",
+      "sha256": "67a01ef64e586e30c7525dfba13002c402029061c974e22e42e4860d55f0f71c",
+      "capturedAt": "2026-11-05T05:55:19.160Z",
+      "labels": [
+        ".exception-card",
+        ".exception-card .inline-actions"
+      ]
+    },
+    {
+      "id": "transaksi",
+      "file": "images/transaksi-1440.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "localhost with synthetic API fixtures",
+      "sha256": "3e77a92502d2db67cca4ebd21ed7a153987a6f4d87073bdfa890900ed8ee8133",
+      "capturedAt": "2026-11-05T05:55:20.042Z",
+      "labels": [
+        ".toolbar",
+        ".table-scroll"
+      ]
+    },
+    {
+      "id": "laporan",
+      "file": "images/laporan-1440.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "localhost with synthetic API fixtures",
+      "sha256": "80365dfc318a82dc11243ddf1ccfc7edf8a53194e3f2827ce0e94b6e749fffd2",
+      "capturedAt": "2026-11-05T05:55:20.925Z",
+      "labels": [
+        "[data-action=export]",
+        ".metrics-wrap"
+      ]
+    },
+    {
+      "id": "pengaturan",
+      "file": "images/pengaturan-1440.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "localhost with synthetic API fixtures",
+      "sha256": "a5d4c8373b05c7d9cb6db6050a200dd424bf5b22b06c6df43420bf01b28a20d4",
+      "capturedAt": "2026-11-05T05:55:21.800Z",
+      "labels": [
+        ".details",
+        "[data-action=password]"
+      ]
+    },
+    {
+      "id": "reset",
+      "file": "images/reset-1440.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "localhost with synthetic API fixtures",
+      "sha256": "ba3908c0bf5f9bd81c65ede7ce838935372cd5ff188a1afde53cee6363449aba",
+      "capturedAt": "2026-11-05T05:55:23.153Z",
+      "labels": [
+        "[name=email]",
+        "button[type=submit]"
+      ]
+    },
+    {
+      "id": "kosongkan",
+      "file": "images/kosongkan-1440.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "localhost with synthetic API fixtures",
+      "sha256": "88241ddb81d013a73efebeb2e90559f15bb160d4bbf91baf6388fd4d8aa93a98",
+      "capturedAt": "2026-11-05T05:55:24.316Z",
+      "labels": [
+        "[name=clear_password]",
+        "[name=confirm]"
+      ]
+    }
+  ]
+}

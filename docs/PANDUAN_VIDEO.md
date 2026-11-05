@@ -3,6 +3,10 @@
 Jawaban singkat: ya, buat video, tetapi teks tetap menjadi sumber utama. Video
 menjadi pelengkap bagi yang malas membaca, bukan satu-satunya cara.
 
+> Rekaman rilis ini ada di `docs-site/public/video/`. Alur impor hanya CSV:
+> tidak ada pemilihan sheet/XLSX. Catat harian memakai CSV, bukan formulir
+> manual baru. Lihat [status implementasi](PANDUAN_IMPLEMENTATION.md).
+
 ## Prinsip
 
 1. Setiap tugas punya satu artikel teks yang lengkap dan bisa dicetak.

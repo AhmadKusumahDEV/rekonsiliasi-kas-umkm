@@ -1,0 +1,50 @@
+---
+title: "Impor penjualan dan mutasi bank"
+description: "Unggah dua catatan CSV, baca pratinjau, lalu simpan saat isinya benar."
+lastUpdated: 2026-11-05
+---
+
+import TutorialVideo from '../../../components/TutorialVideo.astro';
+
+<div class="read-watch"><a href="#langkah">Baca langkah</a><a href="#video">Tonton video</a></div>
+
+## Tujuan
+
+Memasukkan penjualan dan uang masuk dari file CSV. Memeriksa file belum mengubah catatan; penyimpanan dilakukan setelah kamu menyetujuinya.
+
+## Sebelum mulai
+
+- Siapkan CSV UTF-8. Dari Excel, pilih **Simpan sebagai → CSV UTF-8**.
+- Penjualan memakai tanggal, nama, nominal, kanal; referensi boleh kosong.
+- Lihat batas ukuran dan baris yang ditampilkan EFA. Jangan mengunggah file melebihi batas akunmu.
+
+Untuk latihan, pakai [CSV penjualan simulasi](/panduan/examples/penjualan.csv) dan [CSV mutasi simulasi](/panduan/examples/mutasi-bank.csv) pada akun latihan. Ini file yang dipakai video, bukan data usaha nyata.
+
+## Langkah
+
+1. Buka menu **Impor CSV** di aplikasi.
+2. Pilih file pada slot **Penjualan**. Gunakan **Unduh template penjualan** jika perlu contoh.
+3. Pilih file penerimaan pada slot **Mutasi bank**. Salah satu slot boleh kosong; jangan masukkan mutasi ke slot Penjualan.
+4. Tekan **Periksa file**, lalu tunggu kedua pratinjau yang kamu pilih selesai.
+5. Periksa tanggal, nama, nominal, jumlah baris siap, total, dan **Periksa peringatan ini**. Baris debit bukan uang masuk; saldo bukan nominal transaksi.
+6. Tekan **Simpan file yang sudah diperiksa** hanya jika benar. Penjualan disimpan lebih dulu. Jika file kedua gagal, hasil file pertama tetap tersimpan; periksa pesan sebelum mencoba file yang gagal lagi.
+7. Baca **baris tersimpan**, **pasangan otomatis**, **pasangan AI**, dan **dilewati** secara terpisah. Buka **Verifikasi** untuk keputusan yang tersisa. Angka AI dapat bernilai 0; itu tidak berarti impor gagal.
+
+<figure class="guide-figure">
+<img src="/panduan/images/impor-1440.png" alt="Gambar 1. Pilih slot, periksa file, lalu baca pratinjau sebelum menyimpan." loading="lazy" width="1440" height="900" />
+<figcaption>Gambar 1. Pilih slot, periksa file, lalu baca pratinjau sebelum menyimpan. Data simulasi, bukan transaksi pengguna.</figcaption>
+</figure>
+
+## Error umum
+
+- **“Pilih minimal satu file CSV.”** Isi salah satu slot, lalu periksa lagi.
+- **“Simpan file sebagai CSV UTF-8.”** Ekspor ulang dari spreadsheet. Mengganti ekstensi `.xlsx` menjadi `.csv` tidak mengubah formatnya.
+- **0 baris siap / debit dilewati:** baca peringatan. Pilih laporan yang memuat uang masuk; jangan memakai saldo rekening sebagai penerimaan.
+- **Satu file gagal disimpan:** jangan mengimpor ulang file yang sudah berhasil. Lihat hasil per slot; file yang berhasil tidak dikirim ulang saat melanjutkan penyimpanan yang sama.
+- **Baris melebihi batas:** pecah file. Batas yang ditampilkan aplikasi berasal dari akun/server, bukan janji angka tetap di panduan.
+
+## Halaman terkait
+
+[Format CSV](/panduan/referensi/format-csv/) · [Verifikasi](/panduan/tugas/verifikasi/) · [Melihat transaksi](/panduan/tugas/transaksi/)
+
+<TutorialVideo id="impor" />

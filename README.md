@@ -19,6 +19,8 @@ EFA juga mendukung pemasangan sebagai PWA. Pilih **Pasang EFA** pada
 footer landing, halaman masuk/daftar, atau Pengaturan. Lihat
 [cara memasang, batas offline, dan struktur PWA](pwa/README.md).
 
+Panduan web terpisah ada di `/panduan/`: [cara mengubah, build, screenshot, dan video](docs-site/README.md). [Status serta bukti pengujian](docs/PANDUAN_IMPLEMENTATION.md).
+
 ## Mulai lokal
 
 Prasyarat: Go sesuai backend/go.mod, PostgreSQL, dan Node.js 22+. Frontend adalah HTML/CSS/JavaScript biasa; tidak membutuhkan React, Vite, atau instalasi npm.
