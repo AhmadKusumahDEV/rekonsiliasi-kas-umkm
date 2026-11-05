@@ -127,13 +127,21 @@ type FlexibleImportRequest struct {
 }
 
 type FlexibleImportResponse struct {
-	CSV      string   `json:"csv"`
-	Count    int      `json:"count"`
-	Total    int64    `json:"total"`
-	Checksum string   `json:"checksum"`
-	Preview  []Entry  `json:"preview"`
-	Skipped  int      `json:"skipped"`
-	Warnings []string `json:"warnings"`
+	CSV      string        `json:"csv"`
+	Count    int           `json:"count"`
+	Total    int64         `json:"total"`
+	Checksum string        `json:"checksum"`
+	Preview  []Entry       `json:"preview"`
+	Skipped  int           `json:"skipped"`
+	Warnings []string      `json:"warnings"`
+	Source   *ImportSource `json:"source,omitempty"`
+}
+
+type ImportSource struct {
+	Format    string   `json:"format"`
+	Sheet     string   `json:"sheet,omitempty"`
+	HeaderRow int      `json:"header_row,omitempty"`
+	Sheets    []string `json:"sheets,omitempty"`
 }
 
 type CommitImportResponse struct {

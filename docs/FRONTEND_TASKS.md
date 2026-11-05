@@ -92,6 +92,28 @@ memeriksa dan mengimplementasikan bila belum ada.
 - Blocking atau bipartite matching.
 - Multi-mata uang.
 
+## Tampilan status AI
+
+Respons impor memuat ai_status. Gunakan pemetaan berikut:
+
+| ai_status | Copy yang ditampilkan |
+| --- | --- |
+| ok | “N pasangan dicek AI dan disimpan otomatis” |
+| no_candidates | “Tidak ada pasangan ambigu untuk AI” |
+| disabled | “Pemeriksaan AI tidak aktif; pencocokan memakai aturan” |
+| skipped | “Pemeriksaan AI dilewati; pencocokan memakai aturan” |
+| failed | “Pemeriksaan AI gagal. Hasil aturan tetap tersimpan; tinjau temuan manual” |
+
+Aturan tampilan:
+
+- Jangan menulis “AI mencocokkan semua transaksi”.
+- Pisahkan auto_matched (aturan) dan ai_matched (AI).
+- Di Verifikasi, sediakan bagian “Sudah beres otomatis” dengan label
+  “Cocok otomatis” atau “Dicek AI”, alasan, dan tombol batalkan.
+- Jangan memanggil Gemini dari frontend.
+- Jangan menampilkan skor sebagai persentase keyakinan.
+
+
 ## Ringkasan API
 
 | Endpoint | Kegunaan |

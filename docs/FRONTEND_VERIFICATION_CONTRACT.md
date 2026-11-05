@@ -93,9 +93,19 @@ Penjualan tunai dan penerimaan non-operasional akan ditolak `400`.
 
 ## Status AI
 
-Respons commit memuat ai_status: ok, disabled, no_candidates, skipped, atau
-failed. Nilai failed bukan berarti impor gagal; pasangan aturan tetap tersimpan
-dan sisanya masuk Verifikasi. Tampilkan sebagai catatan kecil, bukan error.
+Respons commit memuat ai_status.
+
+| Nilai | Arti | Copy UI |
+| --- | --- | --- |
+| ok | AI dipanggil dan selesai | “N pasangan dicek AI” |
+| no_candidates | Tidak ada pasangan di zona ambigu | “Tidak ada pasangan ambigu” |
+| disabled | AI tidak aktif | “Pencocokan memakai aturan” |
+| skipped | AI dilewati karena batas atau konfigurasi | “Pemeriksaan AI dilewati” |
+| failed | AI gagal, hasil aturan tetap ada | “Pemeriksaan AI gagal; tinjau manual” |
+
+ai_status failed bukan error impor. Jangan blokir pengguna atau menghapus hasil
+aturan. Tampilkan sebagai catatan kecil dan arahkan ke Verifikasi.
+
 
 
 ## Fee hint
