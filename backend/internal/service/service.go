@@ -4,6 +4,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -26,6 +27,18 @@ type Service struct {
 	stateNotifier       StateNotifier
 	passwordResetMailer email.Sender
 	aiReviewer          ai.Reviewer
+	logger              *slog.Logger
+}
+
+func (s *Service) SetLogger(logger *slog.Logger) {
+	s.logger = logger
+}
+
+func (s *Service) log() *slog.Logger {
+	if s.logger != nil {
+		return s.logger
+	}
+	return slog.Default()
 }
 
 // SetAIReviewer injects the optional Gemini reviewer. A nil reviewer keeps the

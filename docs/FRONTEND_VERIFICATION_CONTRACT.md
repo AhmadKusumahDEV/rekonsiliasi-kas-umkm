@@ -37,7 +37,7 @@ Aturan:
 ## Commit
 
 ```json
-{"id":"...","imported":13,"skipped":0,"auto_matched":11,"ai_matched":0}
+{"id":"...","imported":13,"skipped":0,"auto_matched":11,"ai_matched":0,"ai_status":"ok"}
 ```
 
 `auto_matched` menghitung pasangan, bukan baris. Tampilkan terpisah dari
@@ -90,6 +90,13 @@ di sisi penjualan. Untuk penjualan 150.000 dan penerimaan 143.500, gunakan
 `amount=143500`, `fee=6500`.
 
 Penjualan tunai dan penerimaan non-operasional akan ditolak `400`.
+
+## Status AI
+
+Respons commit memuat ai_status: ok, disabled, no_candidates, skipped, atau
+failed. Nilai failed bukan berarti impor gagal; pasangan aturan tetap tersimpan
+dan sisanya masuk Verifikasi. Tampilkan sebagai catatan kecil, bukan error.
+
 
 ## Fee hint
 
