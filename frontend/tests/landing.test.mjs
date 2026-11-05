@@ -6,7 +6,7 @@ import { join } from 'node:path';
 
 test('public build keeps landing and app routes separate without publishing source or private files', async () => {
   const output = await buildSite();
-  assert.deepEqual((await readdir(output)).sort(), ['app.html', 'artikel', 'assets', 'google191985305be39b7b.txt', 'index.html', 'landing', 'pwa', 'robots.txt', 'sitemap.xml', 'sw.js']);
+  assert.deepEqual((await readdir(output)).sort(), ['app.html', 'artikel', 'assets', 'google191985305be39b7b.txt', 'index.html', 'landing', 'panduan', 'pwa', 'robots.txt', 'sitemap.xml', 'sw.js']);
   const home = await readFile(join(output, 'index.html'), 'utf8');
   const articles = await readdir(join(output, 'artikel'));
   assert.equal(articles.length, 3);
@@ -27,6 +27,16 @@ test('public build keeps landing and app routes separate without publishing sour
   assert.match(await readFile(join(output, 'sitemap.xml'), 'utf8'), /saldo-rekening-bukan-laba/);
   assert.match(await readFile(join(output, 'robots.txt'), 'utf8'), /Disallow: \/app/);
   assert.match(home, /id="hero"/);
+  assert.match(home, /href="\/panduan\/">Panduan lengkap/);
+  const guideIndex = JSON.parse(await readFile(join(output,'panduan/search-index.json'),'utf8'));
+  assert.equal(guideIndex.length,16);
+  for (const page of guideIndex) {
+    const html = await readFile(join(output,page.url,'index.html'),'utf8');
+    assert.doesNotMatch(html, /<script\b(?![^>]*\bsrc=)[^>]*>\s*[^<\s]/i, page.url+' inline script');
+    assert.doesNotMatch(html, /\sstyle="|<style\b/i, page.url+' inline style');
+    assert.match(html, /efa-guide-search/);
+  }
+  assert.match(await readFile(join(output,'panduan/version.json'),'utf8'), /"version":"[a-f0-9]{16}"/);
   assert.match(home, /href="\/app#register"/);
   assert.match(home, /href="\/app#login"/);
   assert.match(app, /assets\/app\.js/);

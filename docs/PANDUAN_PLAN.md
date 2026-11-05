@@ -4,6 +4,12 @@ Dokumen ini merangkum hasil riset tiga sub agent tentang metode penyusunan
 panduan produk dan rencana penerapannya. Status: final, siap dieksekusi.
 Tanggal: 3 November 2026, diperbarui 5 November 2026.
 
+> Implementasi terbaru: [PANDUAN_IMPLEMENTATION.md](PANDUAN_IMPLEMENTATION.md).
+> Contoh riset di bawah yang menyebut sheet, menu lama, atau kolom wajib tujuh
+> tidak dipakai sebagai kontrak UI. Tutorial mengikuti dua slot CSV dan Verifikasi
+> saat ini. Runtime Pagefind diganti fallback pencarian statis untuk mempertahankan
+> CSP `script-src self`; Starlight dan build indeks Pagefind tetap tersedia.
+
 ## Keputusan final: dua format, satu sumber
 
 Panduan dibuat dalam dua cara untuk konten yang sama:

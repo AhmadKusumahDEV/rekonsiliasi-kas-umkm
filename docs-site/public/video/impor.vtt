@@ -1,0 +1,22 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:10.000
+Buka Impor CSV. Dua slot memisahkan penjualan dari mutasi bank.
+
+00:00:10.000 --> 00:00:20.000
+Pilih CSV penjualan dan CSV mutasi bank. Salah satu slot boleh kosong.
+
+00:00:20.000 --> 00:00:30.000
+Tekan Periksa file. Pratinjau belum menyimpan transaksi.
+
+00:00:30.000 --> 00:00:40.000
+Baca nominal, baris siap, dan peringatan. Baris debit bukan uang masuk.
+
+00:00:40.000 --> 00:00:50.000
+Tekan Simpan file yang sudah diperiksa setelah isinya benar.
+
+00:00:50.000 --> 00:01:00.000
+Baca baris tersimpan, pasangan otomatis, pasangan AI, dan baris dilewati.
+
+00:01:00.000 --> 00:01:05.000
+Buka Verifikasi untuk transaksi yang masih memerlukan keputusan.

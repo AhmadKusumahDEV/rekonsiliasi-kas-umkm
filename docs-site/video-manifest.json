@@ -1,0 +1,102 @@
+[
+  {
+    "id": "impor",
+    "title": "Memasukkan penjualan dan mutasi bank",
+    "duration": 65,
+    "sizeLabel": "0,8 MB",
+    "scenes": [
+      {
+        "at": "00:00",
+        "caption": "Buka Impor CSV. Dua slot memisahkan penjualan dari mutasi bank."
+      },
+      {
+        "at": "00:10",
+        "caption": "Pilih CSV penjualan dan CSV mutasi bank. Salah satu slot boleh kosong."
+      },
+      {
+        "at": "00:20",
+        "caption": "Tekan Periksa file. Pratinjau belum menyimpan transaksi."
+      },
+      {
+        "at": "00:30",
+        "caption": "Baca nominal, baris siap, dan peringatan. Baris debit bukan uang masuk."
+      },
+      {
+        "at": "00:40",
+        "caption": "Tekan Simpan file yang sudah diperiksa setelah isinya benar."
+      },
+      {
+        "at": "00:50",
+        "caption": "Baca baris tersimpan, pasangan otomatis, pasangan AI, dan baris dilewati."
+      },
+      {
+        "at": "01:00",
+        "caption": "Buka Verifikasi untuk transaksi yang masih memerlukan keputusan."
+      }
+    ]
+  },
+  {
+    "id": "verifikasi",
+    "title": "Memeriksa pasangan dan biaya layanan",
+    "duration": 55,
+    "sizeLabel": "0,6 MB",
+    "scenes": [
+      {
+        "at": "00:00",
+        "caption": "Buka Verifikasi. Pasangan yang sudah selesai tidak perlu disetujui lagi."
+      },
+      {
+        "at": "00:09",
+        "caption": "Baca penjualan, penerimaan, sisa, alasan, dan saran biaya."
+      },
+      {
+        "at": "00:18",
+        "caption": "Tekan Periksa dan setujui untuk membuka formulir. Belum ada perubahan data."
+      },
+      {
+        "at": "00:27",
+        "caption": "Periksa Rp190.000 diterima dan biaya Rp10.000 untuk penjualan Rp200.000."
+      },
+      {
+        "at": "00:36",
+        "caption": "Tulis alasan yang sesuai bukti, lalu Simpan pasangan bila benar."
+      },
+      {
+        "at": "00:45",
+        "caption": "Lihat keputusan pencocokan. Riwayat dan laporan membantu menelusuri hasilnya."
+      }
+    ]
+  },
+  {
+    "id": "catat-harian",
+    "title": "Mencatat penjualan harian dan membaca Ringkasan",
+    "duration": 55,
+    "sizeLabel": "0,8 MB",
+    "scenes": [
+      {
+        "at": "00:00",
+        "caption": "Buka Ringkasan dan periksa nama usaha. Penerimaan bukan laba."
+      },
+      {
+        "at": "00:09",
+        "caption": "Catat total harian di template CSV: tanggal, nama, nominal, dan kanal."
+      },
+      {
+        "at": "00:18",
+        "caption": "Unggah CSV pada slot Penjualan. Tidak ada formulir catat manual di Ringkasan."
+      },
+      {
+        "at": "00:27",
+        "caption": "Periksa pratinjau, lalu simpan bila tanggal, kanal, dan nominal benar."
+      },
+      {
+        "at": "00:36",
+        "caption": "Kembali ke Ringkasan untuk membaca penjualan tercatat dan tagihan belum cocok."
+      },
+      {
+        "at": "00:45",
+        "caption": "Buka Laporan untuk rekap. Tunai yang ditandai lunas tidak perlu pasangan bank."
+      }
+    ]
+  }
+]

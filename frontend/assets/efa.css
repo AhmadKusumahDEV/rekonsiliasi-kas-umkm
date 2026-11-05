@@ -140,3 +140,7 @@ body[data-kind="umkm"] .toast { background: var(--efa-charcoal); color: #ffffff;
 .danger-zone { margin-top:28px;border-color:#c87979!important; }
 .danger-zone h2 { color:#9a3030; }
 @media(max-width:650px){.import-slots{grid-template-columns:1fr}.import-flow{padding:18px!important}}
+
+/* keep help beside the task without replacing the working form. */
+.context-help { margin: -.5rem 0 1.5rem; font-size: .95rem; }
+.context-help a { color: var(--blue, #24658c); text-underline-offset: .2em; }

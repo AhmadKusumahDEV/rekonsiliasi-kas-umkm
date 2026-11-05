@@ -1,0 +1,49 @@
+---
+title: "Catat penjualan harian dan baca Ringkasan"
+description: "Gunakan CSV harian untuk memasukkan angka, lalu baca kondisi kas usaha."
+lastUpdated: 2026-11-05
+---
+
+import TutorialVideo from '../../../components/TutorialVideo.astro';
+
+<div class="read-watch"><a href="#langkah">Baca langkah</a><a href="#video">Tonton video</a></div>
+
+## Tujuan
+
+Melihat penjualan, penerimaan, dan tagihan yang belum cocok. **Ringkasan tidak memiliki formulir catat manual**; penjualan harian dimasukkan melalui CSV.
+
+## Sebelum mulai
+
+- Pastikan akun membuka usaha yang tepat.
+- Siapkan total penjualan per tanggal dan kanal, atau rincian per pesanan. Pilih satu tingkat catatan; jangan mencatat total harian dan rincian yang sama dua kali.
+- Gunakan nama seperti “Penjualan harian” bila tidak mencatat per pelanggan.
+
+[Unduh contoh satu baris harian](/panduan/examples/harian.csv) untuk mengikuti video dengan data simulasi.
+
+## Langkah
+
+1. Buka **Ringkasan** dan periksa nama usaha.
+2. Untuk mencatat hari baru, tekan **Impor CSV**, lalu **Unduh template penjualan**.
+3. Isi tanggal, nama, nominal, dan kanal di spreadsheet. Referensi boleh kosong. Satu baris per tanggal dan kanal boleh digunakan untuk rekap harian.
+4. Simpan sebagai CSV UTF-8, unggah pada slot **Penjualan**, lalu tekan **Periksa file**.
+5. Periksa tanggal, kanal, nominal, dan total. Tekan **Simpan file yang sudah diperiksa** setelah sesuai.
+6. Kembali ke **Ringkasan**. Baca **Penjualan tercatat**, **Penerimaan tercatat**, **Sudah cocok**, dan **Tagihan belum cocok**.
+7. Tekan **Buka Verifikasi** untuk sisa yang perlu diperiksa, atau buka **Laporan** untuk mengunduh rekap. Penjualan tunai yang ditandai lunas tidak memerlukan penerimaan bank.
+
+<figure class="guide-figure">
+<img src="/panduan/images/ringkasan-1440.png" alt="Gambar 3. Ringkasan memakai seluruh catatan aktif, bukan hanya baris tabel yang terlihat." loading="lazy" width="1440" height="900" />
+<figcaption>Gambar 3. Ringkasan memakai seluruh catatan aktif, bukan hanya baris tabel yang terlihat. Data simulasi, bukan transaksi pengguna.</figcaption>
+</figure>
+
+## Error umum
+
+- **Tidak menemukan tombol catat manual:** gunakan template CSV dari Impor CSV. Panduan ini tidak menambahkan fitur catat manual baru.
+- **Angka bertambah dua kali:** periksa apakah total harian dan rincian pesanan sama-sama dimasukkan. Jangan mengandalkan deteksi duplikat untuk catatan dengan isi berbeda.
+- **Sisa tagihan besar:** telusuri data yang belum terpasang, pembayaran sebagian, dan pencairan tertunda. Sisa bukan otomatis kerugian.
+- **Penerimaan dianggap laba:** angka ini belum mengurangi seluruh biaya usaha, pajak, dan kewajiban lain.
+
+## Halaman terkait
+
+[Impor CSV](/panduan/tugas/impor/) · [Format CSV](/panduan/referensi/format-csv/) · [Laporan](/panduan/tugas/laporan/)
+
+<TutorialVideo id="catat-harian" />

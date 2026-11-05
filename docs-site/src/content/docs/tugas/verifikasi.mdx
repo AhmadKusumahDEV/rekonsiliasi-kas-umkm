@@ -1,0 +1,47 @@
+---
+title: "Periksa dan setujui pasangan transaksi"
+description: "Selesaikan catatan yang masih membutuhkan pilihan atau penjelasan biaya."
+lastUpdated: 2026-11-05
+---
+
+import TutorialVideo from '../../../components/TutorialVideo.astro';
+
+<div class="read-watch"><a href="#langkah">Baca langkah</a><a href="#video">Tonton video</a></div>
+
+## Tujuan
+
+Memastikan satu penjualan terhubung ke penerimaan yang tepat. Hanya transaksi yang masih memerlukan keputusan muncul di antrean.
+
+## Sebelum mulai
+
+- Masukkan catatan penjualan dan penerimaan yang relevan.
+- Siapkan bukti pembayaran atau laporan biaya bila nominalnya berbeda.
+- Baca **sisa**, bukan hanya nominal awal. Saran biaya belum menjadi biaya yang disetujui.
+
+## Langkah
+
+1. Buka **Verifikasi**. Menu lama Cocokkan kas dan Perlu diperiksa mengarah ke halaman ini.
+2. Periksa nama, tanggal, referensi, nominal, dan sisa di kedua sisi kartu. Satu pasangan bisa tampil dalam satu kartu.
+3. Baca alasan dan kategorinya: siap diperiksa, kandidat perlu dipilih, masih ada sisa, atau periksa manual.
+4. Tekan **Periksa dan setujui** untuk pasangan yang jelas. Untuk kandidat mirip, tekan **Pilih kandidat**; gunakan **Alokasi manual** bila perlu memilih sendiri. Jangan memilih hanya karena nominal sama.
+5. Periksa formulir: uang yang dialokasikan dan biaya layanan adalah dua angka berbeda. Contoh: penjualan Rp200.000, diterima Rp190.000, biaya terkonfirmasi Rp10.000.
+6. Isi alasan sesuai bukti, lalu tekan **Simpan pasangan** jika keduanya benar. Bila ada sisa karena pembayaran bertahap, alokasikan hanya yang sudah diterima.
+7. Lihat **Keputusan pencocokan** dan **Riwayat**. Jika salah, gunakan **Batalkan pasangan**, baca konfirmasi, lalu periksa kembali; jejak keputusan tetap tersedia.
+
+<figure class="guide-figure">
+<img src="/panduan/images/verifikasi-1440.png" alt="Gambar 2. Periksa dua sisi, alasan, sisa, dan biaya sebelum menyetujui." loading="lazy" width="1440" height="900" />
+<figcaption>Gambar 2. Periksa dua sisi, alasan, sisa, dan biaya sebelum menyetujui. Data simulasi, bukan transaksi pengguna.</figcaption>
+</figure>
+
+## Error umum
+
+- **Tidak ada keputusan pada tampilan ini:** periksa filter dan Transaksi. Pasangan selesai, tunai lunas, dan penerimaan non-operasional tidak perlu disetujui lagi.
+- **Nominal melebihi sisa terbaru:** ada data yang berubah. Muat ulang dan periksa saldo sebelum mengirim kembali.
+- **Banyak kandidat:** pilih berdasarkan bukti; jangan mengambil kandidat pertama. **Cari secara manual** tersedia jika daftar kandidat dibatasi.
+- **Saran biaya belum jelas:** jangan menyetujuinya. Cocokkan dengan rincian bank atau platform terlebih dahulu.
+
+## Halaman terkait
+
+[Arti status](/panduan/referensi/status/) · [Mengapa ada selisih](/panduan/penjelasan/selisih/) · [Transaksi](/panduan/tugas/transaksi/)
+
+<TutorialVideo id="verifikasi" />
