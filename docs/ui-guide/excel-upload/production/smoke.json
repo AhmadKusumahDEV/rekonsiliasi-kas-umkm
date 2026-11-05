@@ -1,0 +1,73 @@
+{
+  "checkedAt": "2026-11-05T18:13:56.859Z",
+  "origin": "https://efa.madgo.my.id",
+  "method": "Actual production assets and real API, no network mocks or static overrides",
+  "checks": [
+    "login through actual production UI",
+    "20 sales and 21 bank XLSX preview requests to real API",
+    "verification uses existing QA state",
+    "real 422 and sheet resubmission work on 375 px"
+  ],
+  "calls": [
+    {
+      "status": 200,
+      "count": 0,
+      "skipped": 20,
+      "source": {
+        "format": "xlsx",
+        "sheet": "Penjualan",
+        "header_row": 8,
+        "sheets": [
+          "Penjualan"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "count": 0,
+      "skipped": 21,
+      "source": {
+        "format": "xlsx",
+        "sheet": "Mutasi Bank",
+        "header_row": 1,
+        "sheets": [
+          "Mutasi Bank"
+        ]
+      }
+    },
+    {
+      "status": 422
+    },
+    {
+      "status": 200,
+      "count": 1,
+      "skipped": 0,
+      "source": {
+        "format": "xlsx",
+        "sheet": "Rekap",
+        "header_row": 1,
+        "sheets": [
+          "Penjualan",
+          "Rekap"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "count": 0,
+      "skipped": 21,
+      "source": {
+        "format": "xlsx",
+        "sheet": "Mutasi Bank",
+        "header_row": 1,
+        "sheets": [
+          "Mutasi Bank"
+        ]
+      }
+    }
+  ],
+  "pageErrors": [],
+  "clientXlsxReads": 0,
+  "entriesUnchanged": 42,
+  "importCommitted": false
+}

@@ -3,8 +3,9 @@ Frontend upload Excel sudah siap untuk review.
 Branch: feat/excel-upload-frontend
 PR: https://github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/pull/31
 Preview: https://temukas-ra38o68kk-hash-a09b.vercel.app/app#imports
+Produksi: https://efa.madgo.my.id/app#imports
 
-Main terbaru sudah digabung, termasuk PR panduan #29. Tidak ada perubahan source backend. PR tidak di-merge otomatis dan produksi belum diganti dengan versi Excel ini.
+Main terbaru sudah digabung, termasuk PR panduan #29. Tidak ada perubahan source backend. Versi Excel dipasang ke produksi pada 6 November 2026 atas instruksi Evan. PR tidak di-merge otomatis.
 
 CSV/XLSX dikirim sebagai file multipart + kind, bukan dibaca sebagai teks di browser. Respons 422 membuka pemilih sheet dan mengirim ulang file yang sama dengan field sheet. Penyimpanan memakai response.csv. Warnings, jumlah baris/pasangan, lima status AI, dan pesan error sudah ditampilkan. Tidak ada panggilan Gemini dari frontend.
 
@@ -35,4 +36,6 @@ Akses preview:
    https://temukas-ra38o68kk-hash-a09b.vercel.app
 3. Jangan mengganti allowed_origins menjadi wildcard dengan credential.
 
-E2E API live sudah dijalankan tanpa mengganti frontend produksi: hanya aset statis branch disajikan lewat Playwright pada origin produksi yang diizinkan; seluruh request API tetap ke backend asli. Screenshot berasal dari pengujian tersebut. Preview Vercel tidak diklaim sudah lolos alur login sebelum CORS origin preview diizinkan.
+E2E sebelum deploy memakai aset statis branch pada origin produksi dan request API asli. Sesudah deploy, login, pratinjau XLSX 20/21 baris, Verifikasi, dan pemilih sheet pada 375 px juga diuji langsung pada aset produksi tanpa override/mock. Data QA tetap 42 entri; pemeriksaan pascadeploy tidak menyimpan impor baru. Bukti produksi ada di production/.
+
+Batas CORS di atas hanya berlaku untuk hostname preview. Domain produksi sudah diizinkan dan tes browser produksi lulus. Deployment produksi: dpl_Ai3vfFJXEyVkqK4yjGkbjgL3bHxo.

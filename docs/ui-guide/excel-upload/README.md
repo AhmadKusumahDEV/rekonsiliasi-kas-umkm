@@ -9,6 +9,8 @@ Screenshot pada `screenshots/` berasal dari frontend branch yang terhubung ke ba
 3. Buka `05-pilih-sheet-mobile.png` dan `06-sheet-terpilih-mobile.png` untuk pemilihan sheet di HP.
 4. File `KIRIM_KE_TIM.txt` berisi ringkasan yang dapat langsung dikirim bersama PR.
 
+Folder `production/` berisi pemeriksaan langsung sesudah deployment 6 November 2026: aset produksi asli, API asli, dan tanpa mock. Lihat `smoke.json`; pemeriksaan ini tidak menyimpan impor baru.
+
 ## Data latihan
 
 `fixtures/penjualan-20.xlsx`, `mutasi-bank-21.xlsx`, `dua-sheet.xlsx`, dan `csv-lama.csv` adalah data sintetis. Gunakan workspace latihan kosong. Penolakan diuji dengan workbook terenkripsi/rusak, workbook terlalu banyak sheet/baris, serta signature XLS/PDF. Fixture penolakan XLS/PDF bukan dokumen operasional.

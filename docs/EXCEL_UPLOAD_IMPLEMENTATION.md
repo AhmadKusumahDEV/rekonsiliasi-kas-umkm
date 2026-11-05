@@ -58,3 +58,11 @@ Screenshot memuat data QA sintetis, bukan data pelanggan. Panduan pengguna serta
 `frontend/assets/import-flow.js` mengelola state slot dan sheet. `api-client.js` menangani multipart/progres serta mempertahankan error details. `import-status.js` menyimpan batas transport, copy status/error, dan label hasil otomatis. Tes browser berada di `frontend/tests/browser/excel-upload.cjs`; skenario backend live dan capture ada di `docs/ui-guide/excel-upload/live-e2e.cjs`.
 
 Tidak ada perubahan source backend dibanding main. Perbaikan kecil build mengganti HTML output yang tersalin dengan atribut Hidden di Windows sebelum menambahkan tag analytics; source artikel tetap utuh.
+
+## Deployment produksi — 6 November 2026
+
+Atas instruksi Evan, deployment Excel yang sudah diuji dipromosikan ke `https://efa.madgo.my.id`. Vercel menunjuk `dpl_Ai3vfFJXEyVkqK4yjGkbjgL3bHxo`, status Ready. PR #31 tetap terbuka; deployment tidak melakukan merge GitHub.
+
+Pemeriksaan pascadeploy memakai aset produksi dan API asli, tanpa route override atau mock: login melalui form, pratinjau workbook penjualan 20 baris dan mutasi bank 21 baris, Verifikasi, serta 422/pemilihan sheet pada 375 px lulus. Karena file 20/21 baris pernah diimpor pada QA sebelumnya, backend mengenalinya sebagai duplikat dan melewatinya; hasil ini bukan impor baru. Sheet Rekap menghasilkan satu baris pratinjau. Tidak ada commit impor pada pemeriksaan pascadeploy; data QA tetap 42 entri. Tidak ada error JavaScript dan tidak ada pembacaan XLSX client.
+
+Bukti serta screenshot produksi berada di [`ui-guide/excel-upload/production/`](ui-guide/excel-upload/production/). Batas CORS hostname preview yang disebut di atas tidak berlaku untuk domain produksi yang sudah diizinkan.
