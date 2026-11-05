@@ -14,6 +14,7 @@ import (
 	"github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/models"
 	sqlc "github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/backend/internal/repository/rekonsiliasi_repository_sqlc"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type aiScoredPair struct {
@@ -30,6 +31,10 @@ func shortImportRef(id string) string {
 }
 
 func aiErrorKind(err error) string {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		return "database"
+	}
 	switch {
 	case err == nil:
 		return ""
@@ -110,9 +115,6 @@ func (s *Service) applyAIReview(ctx context.Context, tx pgx.Tx, queries *sqlc.Qu
 			if receipt.Kind != "receipt" || used[receipt.ID] || isNonOperationalReceipt(receipt) {
 				continue
 			}
-			if importID != "" && sale.BatchID != importID && receipt.BatchID != importID {
-				continue
-			}
 			if sale.Amount != receipt.Amount || sale.Amount <= 0 {
 				continue
 			}
@@ -124,6 +126,7 @@ func (s *Service) applyAIReview(ctx context.Context, tx pgx.Tx, queries *sqlc.Qu
 		}
 	}
 	if len(all) == 0 {
+		s.log().DebugContext(ctx, "ai review skipped", "event", "ai_review_skipped", "ai_reason", "no_candidates")
 		return 0, "no_candidates", nil
 	}
 
@@ -143,12 +146,16 @@ func (s *Service) applyAIReview(ctx context.Context, tx pgx.Tx, queries *sqlc.Qu
 		if pair.score < minimum || pair.score >= threshold {
 			continue
 		}
+		if importID != "" && pair.sale.BatchID != importID && pair.receipt.BatchID != importID {
+			continue
+		}
 		if saleCounts[pair.sale.ID] != 1 || receiptCounts[pair.receipt.ID] != 1 {
 			continue
 		}
 		candidates = append(candidates, pair)
 	}
 	if len(candidates) == 0 {
+		s.log().DebugContext(ctx, "ai review skipped", "event", "ai_review_skipped", "ai_reason", "no_candidates")
 		return 0, "no_candidates", nil
 	}
 	sort.SliceStable(candidates, func(i, j int) bool { return candidates[i].score > candidates[j].score })
@@ -177,6 +184,7 @@ func (s *Service) applyAIReview(ctx context.Context, tx pgx.Tx, queries *sqlc.Qu
 			SaleAmount:     pair.sale.Amount,
 			ReceiptAmount:  pair.receipt.Amount,
 			Channel:        pair.sale.Channel,
+			ChannelEqual:   strings.EqualFold(strings.TrimSpace(pair.sale.Channel), strings.TrimSpace(pair.receipt.Channel)),
 			NameSimilarity: nameSim,
 			DateDeltaDays:  dateDelta,
 			ReferenceEqual: normalizeReference(pair.sale.Reference) == normalizeReference(pair.receipt.Reference),

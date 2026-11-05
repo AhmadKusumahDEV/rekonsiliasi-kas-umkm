@@ -337,7 +337,10 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 	}
 	s.publishState(user.WorkspaceID, version)
 	// Auto-match is a convenience layer: a failure here must not undo a valid import.
-	autoResult, _ := s.autoMatchWorkspace(ctx, user, importID)
+	autoResult, autoErr := s.autoMatchWorkspace(ctx, user, importID)
+	if autoErr != nil {
+		s.log().WarnContext(ctx, "auto match failed after import commit", "event", "auto_match_failed", "error_type", aiErrorKind(autoErr), "import_ref", shortImportRef(importID))
+	}
 	return models.CommitImportResponse{ID: importID, Imported: len(newRows), Skipped: skipped, AutoMatched: autoResult.Rule, AIMatched: autoResult.AI, AIStatus: autoResult.Status}, nil
 }
 

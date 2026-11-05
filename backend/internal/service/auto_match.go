@@ -249,15 +249,18 @@ func (s *Service) autoMatchWorkspace(ctx context.Context, user models.User, impo
 
 	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
+		result.Status = "failed"
 		return result, err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 	queries := sqlc.New(tx)
 	if err = lockWorkspace(ctx, queries, user.WorkspaceID); err != nil {
+		result.Status = "failed"
 		return result, err
 	}
 	rows, err := queries.ListUmkmUnallocatedEntries(ctx, user.WorkspaceID)
 	if err != nil {
+		result.Status = "failed"
 		return result, fmt.Errorf("list unallocated entries: %w", err)
 	}
 	entries := make([]models.Entry, 0, len(rows))
@@ -303,7 +306,11 @@ func (s *Service) autoMatchWorkspace(ctx context.Context, user models.User, impo
 		} else {
 			aiCount, aiStatus, aiErr := s.applyAIReview(ctx, tx, queries, user, entries, used, threshold, importID)
 			if aiErr != nil {
-				_, _ = tx.Exec(ctx, "ROLLBACK TO SAVEPOINT ai_review")
+				if _, rbErr := tx.Exec(ctx, "ROLLBACK TO SAVEPOINT ai_review"); rbErr != nil {
+					result.Status = "failed"
+					s.log().WarnContext(ctx, "ai savepoint rollback failed", "event", "ai_review_failed", "ai_error_type", "database")
+					return result, rbErr
+				}
 				result.Status = "failed"
 				s.log().WarnContext(ctx, "ai review failed; deterministic matches kept", "event", "ai_review_failed", "ai_error_type", aiErrorKind(aiErr), "import_ref", shortImportRef(importID))
 			} else {
