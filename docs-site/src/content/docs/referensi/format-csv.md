@@ -6,7 +6,7 @@ lastUpdated: 2026-11-05
 
 ## Penjualan
 
-[Unduh template penjualan](/assets/template-penjualan.csv). Gunakan CSV UTF-8, bukan XLSX, PDF, gambar, atau dokumen yang hanya diganti nama ekstensi.
+[Unduh template penjualan](/assets/template-penjualan.csv). Gunakan CSV UTF-8 atau unggah workbook XLSX dengan kolom yang setara. XLS lama, PDF, gambar, dan file yang hanya diganti nama ekstensi tidak diterima.
 
 | Kolom | Isi | Wajib |
 | --- | --- | --- |
@@ -35,6 +35,12 @@ Tanggal,Keterangan,Debit,Kredit,Saldo
 ```
 
 **Kredit** mewakili uang masuk. **Debit** bukan penerimaan. **Saldo** tidak dijumlahkan sebagai transaksi. Baca peringatan pratinjau karena tidak semua variasi laporan bank atau marketplace dapat diterima dengan struktur yang sama.
+
+## Workbook Excel
+
+File XLSX dikonversi di server, bukan dibaca sebagai teks oleh browser. Maksimal 10 MB per file dan 20 sheet. Bila beberapa sheet berisi data, EFA meminta satu pilihan; **Pilih sheet lain** dapat digunakan sebelum menyimpan. Nama sheet dan baris header ditampilkan pada pratinjau.
+
+Hasil konversi tetap dibatasi 1 MB CSV dan 500 baris. Lepas perlindungan sandi sebelum mengunggah; workbook rusak atau terenkripsi ditolak.
 
 ## Batas dan duplikat
 

@@ -1,3 +1,4 @@
+const {fixtureRequest}=require('./fixture-request.cjs');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs/promises');
 const base=process.env.HANDOFF_URL||'http://127.0.0.1:3058';
@@ -16,7 +17,7 @@ const results=[];
   const data={workspace:{id:'w',name:'Kontrak Fixture',version:1},state:{entries,imports:[],allocations:[]},events:[],users:[]};
   const flags={loggedIn:true,csrf:'old',password:'Original!2026',data,exceptions,suggestions:[{sale:entries[0],receipt:entries[1],reason:'Unik dari server'}],calls:[],commits:[],allocations:[],failReceipt:false,zeroReceipt:false,failExceptions:false,writeFail:'',forgotFail:0,clearFail:0,holdCommit:false};
   await page.route('**/api/v1/**',async route=>{
-   const req=route.request(),url=new URL(req.url()),path=url.pathname,method=req.method(),body=req.postData()?req.postDataJSON():null;flags.calls.push({path,method,body});
+   const req=route.request(),url=new URL(req.url()),path=url.pathname,method=req.method(),body=await fixtureRequest(req);flags.calls.push({path,method,body});
    const send=(value,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(value)});
    const user={id:'u',workspace_id:'w',name:'Fixture',email:'fixture@example.test',role:'owner'};
    if(path.endsWith('/config'))return send({kind:'umkm',brand:'EFA',limits:{max_import_rows:500,max_csv_bytes:1048576,max_entries:10000}});
@@ -28,7 +29,8 @@ const results=[];
    if(path.endsWith('/umkm/exceptions'))return flags.failExceptions?send({message:'Antrean tidak tersedia'},503):send(flags.exceptions);
    if(path.endsWith('/umkm/suggestions'))return send(flags.suggestions);
    if(path.endsWith('/umkm/audit'))return send(data.events);
-   if(path.endsWith('/imports/flexible')){
+   if(path.endsWith('/imports/files')){
+    if(body.invalidUTF8)return send({message:'File harus CSV UTF-8.'},400);
     const zero=body.kind==='receipt'&&flags.zeroReceipt;
     return send({csv:'CANONICAL_'+body.kind,count:zero?0:2,total:zero?0:200000,skipped:0,warnings:[body.kind==='receipt'?'Baris debit dilewati.':'Referensi kosong dinormalkan.'],preview:zero?[]:[entries[0],entries[1]],checksum:body.kind});
    }
@@ -62,7 +64,7 @@ const results=[];
   assert.deepEqual(t.flags.commits,[{kind:'sale',csv:'CANONICAL_sale'},{kind:'receipt',csv:'CANONICAL_receipt'}]);
  });
  await check('one slot is valid; no selected file yields an actionable error',async t=>{
-  await t.open('imports');await t.page.locator('#flex-import button[type=submit]').click();await t.page.getByText('Pilih minimal satu file CSV.',{exact:true}).waitFor();
+  await t.open('imports');await t.page.locator('#flex-import button[type=submit]').click();await t.page.getByText('Pilih minimal satu file CSV atau XLSX.',{exact:true}).waitFor();
   await t.page.locator('#import-receipt').setInputFiles(t.file('bank.csv'));await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('[data-action=flow-save]').click();await t.page.getByText('2 baris tersimpan · 1 pasangan otomatis · 0 pasangan AI · 0 dilewati.',{exact:true}).waitFor();assert.equal(t.flags.commits.length,1);assert.equal(t.flags.commits[0].kind,'receipt');
  });
  await check('debit-only preview keeps warnings and never offers an empty commit',async t=>{
@@ -79,9 +81,9 @@ const results=[];
   assert.equal(t.flags.commits.length,1);await t.page.locator('[data-action=flow-save]').evaluate(node=>node.click());assert.equal(t.flags.commits.length,1);
   t.flags.holdCommit=false;t.flags.releaseCommit();await t.page.getByText('2 baris tersimpan · 0 pasangan otomatis · 0 pasangan AI · 0 dilewati.',{exact:true}).waitFor();
  });
- await check('binary files and invalid UTF-8 are rejected before flexible endpoint',async t=>{
-  await t.open('imports');for(const file of [t.file('bank.xlsx'),{name:'bank.csv',mimeType:'text/csv',buffer:Buffer.from([255,254])}]){await t.page.locator('#import-receipt').setInputFiles(file);await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('#flow-preview [role=alert]').waitFor();}
-  assert.equal(t.flags.calls.some(x=>x.path.endsWith('/imports/flexible')),false);
+ await check('unsupported formats fail locally; invalid CSV encoding is reported by the server',async t=>{
+  await t.open('imports');await t.page.locator('#import-receipt').setInputFiles(t.file('bank.pdf'));await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('#flow-preview [role=alert]').waitFor();assert.equal(t.flags.calls.some(x=>x.path.endsWith('/imports/files')),false);
+  await t.page.locator('#import-receipt').setInputFiles({name:'bank.csv',mimeType:'text/csv',buffer:Buffer.from([255,254])});await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('#flow-preview [role=alert]').waitFor();assert.equal(t.flags.calls.filter(x=>x.path.endsWith('/imports/files')).length,1);assert.equal(t.flags.commits.length,0);
  });
  await check('verification groups unique/fee pairs, excludes settled cash and non-operational',async t=>{
   await t.open('verifikasi');await t.page.getByRole('heading',{name:'Verifikasi',exact:true}).waitFor();assert.equal(await t.page.locator('.exception-card').count(),3);assert.equal(await t.page.locator('.exception-card').filter({hasText:'CASH'}).count(),0);assert.equal(await t.page.locator('.exception-card').filter({hasText:'INTEREST'}).count(),0);

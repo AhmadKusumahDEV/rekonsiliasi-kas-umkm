@@ -1,0 +1,95 @@
+{
+  "data": "isolated synthetic QA workspace",
+  "frontend": "branch source served at production origin using static-only Playwright overrides",
+  "api": "https://temukas.madgo.my.id",
+  "sharedWorkspaceChanged": false,
+  "productionFrontendChanged": false,
+  "checks": [
+    "XLSX 20 sale + 21 receipt previews from live API",
+    "canonical response.csv committed; actual AI status shown",
+    "verification page uses live backend state",
+    "real 422 sheet selection on 375 px, same workbook resent with sheet=Rekap",
+    "legacy 7-column CSV uploaded and committed through the real file endpoint"
+  ],
+  "calls": [
+    {
+      "path": "/api/v1/umkm/imports/files",
+      "status": 200,
+      "count": 20,
+      "source": {
+        "format": "xlsx",
+        "sheet": "Penjualan",
+        "header_row": 8,
+        "sheets": [
+          "Penjualan"
+        ]
+      }
+    },
+    {
+      "path": "/api/v1/umkm/imports/files",
+      "status": 200,
+      "count": 21,
+      "source": {
+        "format": "xlsx",
+        "sheet": "Mutasi Bank",
+        "header_row": 1,
+        "sheets": [
+          "Mutasi Bank"
+        ]
+      }
+    },
+    {
+      "path": "/api/v1/umkm/imports",
+      "status": 201,
+      "imported": 20,
+      "auto_matched": 0,
+      "ai_matched": 0,
+      "ai_status": "no_candidates"
+    },
+    {
+      "path": "/api/v1/umkm/imports",
+      "status": 201,
+      "imported": 21,
+      "auto_matched": 0,
+      "ai_matched": 0,
+      "ai_status": "no_candidates"
+    },
+    {
+      "path": "/api/v1/umkm/imports/files",
+      "status": 422
+    },
+    {
+      "path": "/api/v1/umkm/imports/files",
+      "status": 200,
+      "count": 1,
+      "source": {
+        "format": "xlsx",
+        "sheet": "Rekap",
+        "header_row": 1,
+        "sheets": [
+          "Penjualan",
+          "Rekap"
+        ]
+      }
+    },
+    {
+      "path": "/api/v1/umkm/imports/files",
+      "status": 200,
+      "count": 1,
+      "source": {
+        "format": "csv"
+      }
+    },
+    {
+      "path": "/api/v1/umkm/imports",
+      "status": 201,
+      "imported": 1,
+      "auto_matched": 0,
+      "ai_matched": 0,
+      "ai_status": "no_candidates"
+    }
+  ],
+  "pageErrors": [],
+  "clientXlsxReads": 0,
+  "entries": 42
+}

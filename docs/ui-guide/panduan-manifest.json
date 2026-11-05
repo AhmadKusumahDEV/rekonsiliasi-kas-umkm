@@ -4,11 +4,11 @@
   "sourceAssets": [
     {
       "file": "frontend/assets/app.js",
-      "sha256": "0cdd7b60dc1f1667d3c0d3dd7b7f74cf33155ef08b488ee6e0f88b6767f2a6f0"
+      "sha256": "7b5ad820b45420d01112d0585af7e8dd69c4414001377e649bf38786c2ac2c11"
     },
     {
       "file": "frontend/assets/import-flow.js",
-      "sha256": "84ac5373ef85cd1fe5885a198c73898d9568f5a2bc15b04b48ead1febd01b0d5"
+      "sha256": "bdf531259c3b9ac04c9e110df2aac036b8557b42b58e49ab5c49adbe75064553"
     },
     {
       "file": "frontend/assets/verification.js",
@@ -16,10 +16,10 @@
     },
     {
       "file": "frontend/assets/efa.css",
-      "sha256": "8d1f6523c1b39fd73af3729a1317773568fa06af4b51da6c916fb0bba6bd9421"
+      "sha256": "33b07c6a72d2ce616521ee3ae23b1a0fae5c44ba1091a3653e532617fade10da"
     }
   ],
-  "sourceCommit": "2d08f0c727ab0ef79d7b448944ed710cc3dc9448",
+  "sourceCommit": "221a33c9b68760f8d643bf7be52d6ded0ec59f6f",
   "records": [
     {
       "id": "ringkasan",
@@ -30,7 +30,7 @@
       },
       "source": "localhost with synthetic API fixtures",
       "sha256": "c31ebdbcd46775d5f050772cb36d6a4ab7cace5080a7330f740c23e67bca11c4",
-      "capturedAt": "2026-11-05T05:55:17.614Z",
+      "capturedAt": "2026-11-05T15:21:31.199Z",
       "labels": [
         ".cash-account",
         ".cash-totals"
@@ -44,8 +44,8 @@
         "height": 900
       },
       "source": "localhost with synthetic API fixtures",
-      "sha256": "46f74783c459ca868c8304b57c2363d2c06261ba45050c25df29999edbe56f29",
-      "capturedAt": "2026-11-05T05:55:18.428Z",
+      "sha256": "b5734d94b406ef0e6d3c7c902197cedb11d72fdc561115621530ae40c32d5152",
+      "capturedAt": "2026-11-05T15:21:31.909Z",
       "labels": [
         "#import-sale",
         "#import-receipt",
@@ -61,7 +61,7 @@
       },
       "source": "localhost with synthetic API fixtures",
       "sha256": "67a01ef64e586e30c7525dfba13002c402029061c974e22e42e4860d55f0f71c",
-      "capturedAt": "2026-11-05T05:55:19.160Z",
+      "capturedAt": "2026-11-05T15:21:32.614Z",
       "labels": [
         ".exception-card",
         ".exception-card .inline-actions"
@@ -76,7 +76,7 @@
       },
       "source": "localhost with synthetic API fixtures",
       "sha256": "3e77a92502d2db67cca4ebd21ed7a153987a6f4d87073bdfa890900ed8ee8133",
-      "capturedAt": "2026-11-05T05:55:20.042Z",
+      "capturedAt": "2026-11-05T15:21:33.236Z",
       "labels": [
         ".toolbar",
         ".table-scroll"
@@ -91,7 +91,7 @@
       },
       "source": "localhost with synthetic API fixtures",
       "sha256": "80365dfc318a82dc11243ddf1ccfc7edf8a53194e3f2827ce0e94b6e749fffd2",
-      "capturedAt": "2026-11-05T05:55:20.925Z",
+      "capturedAt": "2026-11-05T15:21:33.866Z",
       "labels": [
         "[data-action=export]",
         ".metrics-wrap"
@@ -105,8 +105,8 @@
         "height": 900
       },
       "source": "localhost with synthetic API fixtures",
-      "sha256": "a5d4c8373b05c7d9cb6db6050a200dd424bf5b22b06c6df43420bf01b28a20d4",
-      "capturedAt": "2026-11-05T05:55:21.800Z",
+      "sha256": "a7e88cec1593ba32904cc6f43ff7131550a52a4f6283c2500cc2b9427f19e7cf",
+      "capturedAt": "2026-11-05T15:21:34.477Z",
       "labels": [
         ".details",
         "[data-action=password]"
@@ -120,8 +120,8 @@
         "height": 900
       },
       "source": "localhost with synthetic API fixtures",
-      "sha256": "ba3908c0bf5f9bd81c65ede7ce838935372cd5ff188a1afde53cee6363449aba",
-      "capturedAt": "2026-11-05T05:55:23.153Z",
+      "sha256": "d304a5792654ba94cac718c23dbcd9786b877a8ede264d0f4e9441b4f3a8d724",
+      "capturedAt": "2026-11-05T15:21:35.241Z",
       "labels": [
         "[name=email]",
         "button[type=submit]"
@@ -135,8 +135,8 @@
         "height": 900
       },
       "source": "localhost with synthetic API fixtures",
-      "sha256": "88241ddb81d013a73efebeb2e90559f15bb160d4bbf91baf6388fd4d8aa93a98",
-      "capturedAt": "2026-11-05T05:55:24.316Z",
+      "sha256": "6d500a035d3d307fe44d012b8551fb899ec4a8592f53aa6cc291b14233a72a40",
+      "capturedAt": "2026-11-05T15:21:35.982Z",
       "labels": [
         "[name=clear_password]",
         "[name=confirm]"

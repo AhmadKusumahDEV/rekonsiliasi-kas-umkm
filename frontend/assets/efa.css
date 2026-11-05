@@ -144,3 +144,28 @@ body[data-kind="umkm"] .toast { background: var(--efa-charcoal); color: #ffffff;
 /* keep help beside the task without replacing the working form. */
 .context-help { margin: -.5rem 0 1.5rem; font-size: .95rem; }
 .context-help a { color: var(--blue, #24658c); text-underline-offset: .2em; }
+
+/* file and sheet selection follow the same two-slot layout. */
+.upload-file { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: baseline; overflow-wrap: anywhere; }
+.upload-file span, .upload-source { color: #536779; font-size: .9rem; }
+.upload-progress { display: grid; gap: .5rem; margin: 1rem 0; }
+.upload-progress label { font-size: .95rem; }
+.upload-progress progress { width: 100%; height: .65rem; accent-color: #24658c; }
+.upload-sheet-dialog { width: min(36rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; }
+.upload-sheet-dialog h2 { margin-top: 0; }
+.upload-sheet-dialog p { overflow-wrap: anywhere; }
+.upload-sheet-dialog label { display: grid; gap: .7rem; }
+.upload-sheet-dialog select { width: 100%; min-width: 0; }
+.upload-sheet-dialog .form-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .7rem; margin-top: 1.4rem; }
+.ai-status { padding-left: .8rem; border-left: 3px solid #5aa2e0; color: #294a5d; }
+.ai-status[data-ai-status="failed"] { border-color: #f59e0b; }
+.automatic-results { margin-top: 1.6rem; }
+.automatic-list { display: grid; gap: 0; }
+.automatic-list article { padding: 1.2rem 0; border-bottom: 1px solid #dce6ed; overflow-wrap: anywhere; }
+.automatic-list article:last-child { border-bottom: 0; }
+.automatic-list h3 { font-size: 1rem; margin: .7rem 0; }
+@media(max-width:600px) {
+  .import-slots label>span { font-size: 1rem; }
+  .upload-sheet-dialog { padding: 1.1rem; }
+  .upload-sheet-dialog select, .upload-sheet-dialog button { min-height: 44px; font-size: 1rem; }
+}

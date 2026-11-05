@@ -38,6 +38,34 @@ test("team errors preserve message and request ID; 401 signals session expiry", 
   assert.equal(unauthorized, "/api/v1/auth/me");
 });
 
+test('multipart preserves the original file and browser boundary; 422 sheet details survive', async()=>{
+  const form=new FormData();form.append('file',new Blob([new Uint8Array([80,75,3,4,255])]),'penjualan.xlsx');form.append('kind','sale');
+  const file=form.get('file');let sent;
+  const api=createAPIClient({getCSRF:()=> 'csrf',fetchImpl:async(url,options)=>{sent=options;return Response.json({message:'Pilih sheet.',details:{sheets:['Penjualan','Rekap']}},{status:422})}});
+  await assert.rejects(api('/api/v1/umkm/imports/files',{method:'POST',body:form,headers:{'Content-Type':'application/json'}}),err=>err.status===422&&err.details.sheets[1]==='Rekap');
+  assert.equal(sent.body,form);assert.equal(sent.body.get('file'),file);assert.equal(sent.headers.has('Content-Type'),false);assert.equal(sent.headers.get('X-CSRF-Token'),'csrf');assert.equal(sent.credentials,'include');
+});
+
+test('multipart XHR reports actual upload progress and uses the shared response contract',async()=>{
+  const original=globalThis.XMLHttpRequest,events=[];let sent;
+  class FakeXHR extends EventTarget {
+    constructor(){super();this.upload=new EventTarget();this.status=200;this.responseText='{"count":20}';this.headers={};}
+    open(method,url){this.method=method;this.url=url;}
+    setRequestHeader(name,value){this.headers[name]=value;}
+    getResponseHeader(){return 'application/json';}
+    send(body){sent=this;this.body=body;queueMicrotask(()=>{
+      const event=new Event('progress');Object.assign(event,{loaded:10,total:20,lengthComputable:true});this.upload.dispatchEvent(event);this.upload.dispatchEvent(new Event('load'));this.dispatchEvent(new Event('load'));this.dispatchEvent(new Event('loadend'));
+    });}
+    abort(){this.dispatchEvent(new Event('abort'));this.dispatchEvent(new Event('loadend'));}
+  }
+  globalThis.XMLHttpRequest=FakeXHR;
+  try {
+    const api=createAPIClient({getCSRF:()=> 'test-csrf'}),body=new FormData();body.append('file',new Blob(['binary']),'data.xlsx');
+    assert.deepEqual(await api('/api/v1/umkm/imports/files',{method:'POST',body,onUploadProgress:event=>events.push(event)}),{count:20});
+    assert.equal(sent.body,body);assert.equal(sent.withCredentials,true);assert.equal(sent.headers['x-csrf-token'],'test-csrf');assert.equal(sent.headers['content-type'],undefined);assert.deepEqual(events,[{phase:'upload',loaded:10,total:20},{phase:'processing'}]);
+  }finally{globalThis.XMLHttpRequest=original;}
+});
+
 test("proxy HTML is not shown as a successful empty JSON response", async () => {
   const api = createAPIClient({ getCSRF: () => "", fetchImpl: async () => new Response("<html>proxy</html>") });
   await assert.rejects(api("/api/v1/config"), /Respons server tidak sesuai/);

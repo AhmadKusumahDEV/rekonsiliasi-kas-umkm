@@ -2,6 +2,8 @@
 
 Status pengerjaan frontend dan bukti verifikasi tersedia di [implementasi handoff](FRONTEND_HANDOFF_IMPLEMENTATION.md).
 
+Update upload Excel: [kontrak XLSX](EXCEL_UPLOAD_FRONTEND.md) dan [hasil implementasi frontend](EXCEL_UPLOAD_IMPLEMENTATION.md) menggantikan batas CSV-only pada bagian lama di bawah.
+
 Dokumen ini adalah pintu masuk untuk frontend. Backend sudah tersedia;
 beberapa layar belum ada.
 
@@ -86,7 +88,7 @@ memeriksa dan mengimplementasikan bila belum ada.
 ## Yang tidak perlu dibangun sekarang
 
 - Panggilan langsung ke Gemini dari frontend.
-- Unggah XLSX atau PDF.
+- Unggah PDF atau format XLS lama. XLSX sudah masuk scope upload file.
 - OCR struk.
 - Bank rules buatan pengguna.
 - Blocking atau bipartite matching.

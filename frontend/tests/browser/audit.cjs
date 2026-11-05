@@ -1,3 +1,4 @@
+const {fixtureRequest}=require('./fixture-request.cjs');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs=require('node:fs/promises'),assert=require('node:assert/strict');
 const base=process.env.AUDIT_URL || 'http://127.0.0.1:3058',results=[];
@@ -28,7 +29,8 @@ const sleep=n=>new Promise(r=>setTimeout(r,n));
     return send(snapshot);
    }
    if(path.endsWith('/umkm/suggestions'))return fixture.failSuggestions?send({message:'Fixture suggestions unavailable'},503):send(fixture.suggestionsOverride|| (data.state.allocations.length?[]:[{sale,receipt,reason:'Fixture'}]));
-   if(path.endsWith('/imports/flexible')){
+   if(path.endsWith('/imports/files')){
+    const body=await fixtureRequest(req);if(body.invalidUTF8)return send({message:'File harus CSV UTF-8.'},400);
     if(fixture.holdPreview){fixture.previewHeld=true;await new Promise(resolve=>fixture.previewRelease=resolve);}
     return send({csv:'CANONICAL',preview:[{...sale,id:'c'.repeat(32),source_id:'S2',reference:'INV-2',amount:50000}],count:1,total:50000,skipped:1,warnings:[],checksum:'test'});
    }
@@ -80,8 +82,8 @@ const sleep=n=>new Promise(r=>setTimeout(r,n));
    await page.goto(base+'/app#reconcile');await page.reload();await page.locator('.content h1').waitFor();
    assert.equal(await page.locator('[data-action=match]').count(),0);
   });
-  await check('invalid UTF-8 CSV rejected before preview API',async t=>{
-   await previewSetup(t);await t.page.locator('#import-sale').setInputFiles({name:'broken.csv',mimeType:'text/csv',buffer:Buffer.from([0xff,0xfe,0x41])});await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('#flow-preview [role=alert]').waitFor();assert.equal(t.fixture.calls.filter(c=>c.path.endsWith('/imports/flexible')).length,0);
+  await check('invalid UTF-8 CSV rejected by upload API without committing',async t=>{
+   await previewSetup(t);await t.page.locator('#import-sale').setInputFiles({name:'broken.csv',mimeType:'text/csv',buffer:Buffer.from([0xff,0xfe,0x41])});await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('#flow-preview [role=alert]').waitFor();assert.equal(t.fixture.calls.filter(c=>c.path.endsWith('/imports/files')).length,1);
   });
   await check('authenticated data failure offers recovery instead of login',async({page,fixture})=>{
    fixture.failState=true;await page.goto(base+'/app#overview');await page.reload();

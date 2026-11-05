@@ -35,6 +35,8 @@ export async function buildSite() {
   for (const file of ['index.html', ...((await readdir(join(output, 'artikel'))).map(name => 'artikel/' + name))]) {
     const path = join(output, file);
     const html = await readFile(path, 'utf8');
+    // Windows copies can retain Hidden; replace generated HTML instead of truncating it.
+    await rm(path, { force: true });
     await writeFile(path, html.replace('</head>', '<script defer src="/landing/assets/analytics.js"></script></head>'));
   }
   await buildPanduan(root, output);

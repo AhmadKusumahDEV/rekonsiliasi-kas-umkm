@@ -17,6 +17,6 @@ lastUpdated: 2026-11-05
 | Pratinjau / preview | Pemeriksaan sebelum data disimpan |
 | Audit / Riwayat | Catatan siapa melakukan apa dan kapan |
 | Pencairan / settlement | Dana yang dilepas penyedia menurut jadwalnya |
-| CSV / unggah / upload | File teks tabel yang diimpor; Excel perlu disimpan sebagai CSV UTF-8 |
+| CSV / unggah / upload | File teks tabel yang diimpor; Excel XLSX juga bisa diunggah langsung |
 
 [Mulai cepat](/panduan/mulai-cepat/) · [Pertanyaan umum](/panduan/faq/)

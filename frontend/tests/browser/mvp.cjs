@@ -1,3 +1,4 @@
+const {fixtureRequest}=require('./fixture-request.cjs');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs/promises');
 const base=process.env.MVP_URL||'http://127.0.0.1:3058';
@@ -28,7 +29,7 @@ const results=[];
    if(path.endsWith('/umkm/suggestions'))return send(flags.failSuggestions?{message:'Unavailable'}:suggestions,flags.failSuggestions?503:200);
    if(path.endsWith('/umkm/exceptions'))return send(flags.failExceptions?{message:'Unavailable'}:exceptions,flags.failExceptions?503:200);
    if(path.endsWith('/umkm/audit')){const before=Number(url.searchParams.get('before_id')||201);return send(events.filter(e=>e.id<before).slice(0,50));}
-   if(path.endsWith('/imports/flexible'))return send({csv:'CANONICAL',preview:[entry('3','sale',1,'NEW1'),entry('4','sale',1,'NEW2'),entry('5','sale',1,'NEW3')],count:3,skipped:0,total:3,checksum:'x'});
+   if(path.endsWith('/imports/files'))return send({csv:'CANONICAL',preview:[entry('3','sale',1,'NEW1'),entry('4','sale',1,'NEW2'),entry('5','sale',1,'NEW3')],count:3,skipped:0,total:3,warnings:[],checksum:'x'});
    if(path.endsWith('/umkm/allocations')){
     flags.writes.push({body:req.postDataJSON(),csrf:req.headers()['x-csrf-token']});
     if(flags.writeFailure==='network'){flags.writeFailure='';return r.abort('failed');}
@@ -84,9 +85,9 @@ const results=[];
   await t.page.getByText('Data terhubung',{exact:true}).waitFor();
   assert.ok(t.flags.calls.filter(x=>x.endsWith('/umkm/state')).length>before+2);
  });
- await check('server byte and row limits are honored',async t=>{
-  t.flags.limits.max_csv_bytes=24;await t.open('imports');await t.page.locator('#import-sale').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.alloc(25,65)});await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('#flow-preview [role=alert]').waitFor();assert.equal(t.flags.calls.some(x=>x.includes('/imports/flexible')),false);
-  await t.page.locator('#import-sale').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.from('valid')});await t.page.locator('#flex-import button[type=submit]').click();await t.page.getByText('Baris CSV melebihi batas server.',{exact:true}).waitFor();assert.equal(await t.page.locator('[data-action=flow-save]').count(),0);
+ await check('canonical CSV byte and row limits are honored after raw upload',async t=>{
+  t.flags.limits.max_csv_bytes=4;t.flags.limits.max_import_rows=5;await t.open('imports');await t.page.locator('#import-sale').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.alloc(25,65)});await t.page.locator('#flex-import button[type=submit]').click();await t.page.locator('#flow-preview [role=alert]').waitFor();assert.equal(t.flags.calls.filter(x=>x.endsWith('/imports/files')).length,1);assert.equal(await t.page.locator('[data-action=flow-save]').count(),0);
+  t.flags.limits.max_csv_bytes=1000;t.flags.limits.max_import_rows=2;await t.open('imports');await t.page.locator('#import-sale').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.from('valid')});await t.page.locator('#flex-import button[type=submit]').click();await t.page.getByText('Hasil konversi melebihi batas server. Kurangi baris atau pilih sheet yang lebih kecil.',{exact:true}).waitFor();assert.equal(await t.page.locator('[data-action=flow-save]').count(),0);
  });
  await check('missing limits do not fall back to hardcoded policy',async t=>{
   t.flags.noLimits=true;await t.open('imports');await t.page.locator('#import-sale').setInputFiles({name:'x.csv',mimeType:'text/csv',buffer:Buffer.from('valid')});await t.page.locator('#flex-import button[type=submit]').click();await t.page.getByText(/Batas impor belum tersedia dari server/).first().waitFor();assert.equal(t.flags.calls.some(x=>x.includes('/imports/flexible')),false);
