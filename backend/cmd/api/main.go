@@ -66,8 +66,12 @@ func run() error {
 
 	httpClient := stack.HTTPClient(&http.Client{Timeout: 30 * time.Second})
 	svc := service.NewService(cfg, db, httpClient)
+	svc.SetLogger(logger)
 	if reviewer := ai.NewFromEnv(); reviewer != nil {
 		svc.SetAIReviewer(reviewer)
+		logger.InfoContext(ctx, "ai reviewer configured", "event", "ai_config", "ai_enabled", true, "ai_model", strings.TrimSpace(os.Getenv("GEMINI_MODEL")), "api_key_present", true)
+	} else {
+		logger.InfoContext(ctx, "ai reviewer disabled", "event", "ai_config", "ai_enabled", false, "api_key_present", strings.TrimSpace(os.Getenv("GEMINI_API_KEY")) != "")
 	}
 	if strings.TrimSpace(cfg.Email.APIKey) != "" {
 		svc.SetPasswordResetMailer(email.NewResend(cfg.Email.APIKey, cfg.Email.From, httpClient))

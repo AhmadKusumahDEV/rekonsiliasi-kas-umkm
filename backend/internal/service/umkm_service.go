@@ -338,7 +338,7 @@ func (s *Service) CommitImport(ctx context.Context, user models.User, req models
 	s.publishState(user.WorkspaceID, version)
 	// Auto-match is a convenience layer: a failure here must not undo a valid import.
 	autoResult, _ := s.autoMatchWorkspace(ctx, user, importID)
-	return models.CommitImportResponse{ID: importID, Imported: len(newRows), Skipped: skipped, AutoMatched: autoResult.Rule, AIMatched: autoResult.AI}, nil
+	return models.CommitImportResponse{ID: importID, Imported: len(newRows), Skipped: skipped, AutoMatched: autoResult.Rule, AIMatched: autoResult.AI, AIStatus: autoResult.Status}, nil
 }
 
 func (s *Service) Allocate(ctx context.Context, user models.User, req models.AllocationRequest) (models.Allocation, error) {

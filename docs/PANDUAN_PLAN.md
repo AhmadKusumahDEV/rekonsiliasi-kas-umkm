@@ -1,9 +1,53 @@
 # Rencana Panduan Pengguna EFA
 
 Dokumen ini merangkum hasil riset tiga sub agent tentang metode penyusunan
-panduan produk, memilih gabungan metode yang paling sesuai untuk EFA, lalu
-menyusun rencana penerapannya. Status: rencana, belum diimplementasikan.
-Tanggal: 3 November 2026.
+panduan produk dan rencana penerapannya. Status: final, siap dieksekusi.
+Tanggal: 3 November 2026, diperbarui 5 November 2026.
+
+## Keputusan final: dua format, satu sumber
+
+Panduan dibuat dalam dua cara untuk konten yang sama:
+
+1. **Tutorial halaman** - teks langkah demi langkah untuk setiap halaman yang
+   dipakai pengguna, dengan screenshot bernomor.
+2. **Video pendek** - 3-4 video 45-90 detik, ditempel di akhir artikel yang
+   relevan, bukan halaman terpisah.
+
+Pengguna memilih sendiri: membaca langkah atau menonton video di akhir. Tidak
+ada konten yang ditulis dua kali; video adalah ringkasan dari artikel yang sama.
+
+## Landing page dan panduan
+
+Landing page sudah punya bagian "Cara kerja" empat langkah. Bagian itu tetap
+singkat dan berfungsi sebagai penjelasan produk, bukan tutorial.
+
+| Tempat | Isi | Tujuan |
+| --- | --- | --- |
+| Landing page | 4 langkah ringkas, contoh selisih, CTA daftar | Meyakinkan dan menjelaskan alur |
+| Panduan | Langkah rinci per halaman, error umum, screenshot, video | Menuntun saat memakai aplikasi |
+| Dalam aplikasi | Bantuan kontekstual di layar rawan | Menjawab saat pengguna macet |
+
+Aturannya:
+
+- Landing tidak perlu menjelaskan setiap field atau error.
+- Panduan tidak perlu mengulang cerita pemasaran.
+- Landing menautkan "Panduan lengkap"; panduan menautkan kembali ke aplikasi.
+- Video utama cukup satu teaser di landing, sisanya di akhir artikel panduan.
+
+
+## Peta halaman dan video
+
+| Halaman | Tutorial teks | Video di akhir |
+| --- | --- | --- |
+| Impor | Ya, dua slot dan template | Ya, 60-90 detik |
+| Verifikasi | Ya, alasan dan fee hint | Ya, 45-60 detik |
+| Ringkasan dan catat harian | Ya | Ya, 45-60 detik |
+| Transaksi dan laporan | Ya | Tidak wajib |
+| Pengaturan, reset password, hapus data | Ya | Tidak wajib |
+
+Halaman lain tetap punya tutorial teks. Video hanya untuk tiga alur yang paling
+sering gagal, supaya perawatan tidak membengkak.
+
 
 ## Ringkasan keputusan
 

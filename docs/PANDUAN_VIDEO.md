@@ -40,7 +40,7 @@ teks.
 
 | Lokasi | Perilaku |
 | --- | --- |
-| Artikel panduan | Video di atas langkah, bisa ditutup |
+| Artikel panduan | Video di akhir langkah, opsional, bisa ditutup |
 | Dalam aplikasi | Tautan “Lihat cara 60 detik” di layar impor |
 | Halaman offline PWA | Hanya teks dan poster, video tidak diwajibkan |
 
