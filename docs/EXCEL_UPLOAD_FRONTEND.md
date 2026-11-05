@@ -73,6 +73,13 @@ Catatan batas:
 | 429 | Terlalu banyak unggahan | Minta coba lagi |
 | 503 | Layanan file tidak siap | Tawarkan coba lagi |
 
+## Laporan uji
+
+Gunakan [IMPORT_TEST_MATRIX.md](IMPORT_TEST_MATRIX.md) sebagai daftar kasus.
+Salin [FRONTEND_TEST_REPORT.md](FRONTEND_TEST_REPORT.md) menjadi
+FRONTEND_TEST_REPORT_RUN.md, isi hasil sebenarnya, dan lampirkan screenshot.
+
+
 ## Checklist E2E
 
 - XLSX penjualan 20 baris berhasil.
