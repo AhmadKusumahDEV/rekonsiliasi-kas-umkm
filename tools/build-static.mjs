@@ -3,6 +3,7 @@ import { cp, mkdir, rm, lstat, readFile, writeFile, readdir } from 'node:fs/prom
 import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { buildPanduan } from './build-panduan.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export async function buildSite() {
@@ -36,8 +37,10 @@ export async function buildSite() {
     const html = await readFile(path, 'utf8');
     await writeFile(path, html.replace('</head>', '<script defer src="/landing/assets/analytics.js"></script></head>'));
   }
+  await buildPanduan(root, output);
   await writeFile(join(output, 'robots.txt'), 'User-agent: *\nAllow: /\nDisallow: /app\nSitemap: https://efa.madgo.my.id/sitemap.xml\n');
-  const pages = ['', ...((await readdir(join(output, 'artikel'))).map(name => 'artikel/' + name.replace(/\.html$/, '')))];
+  const guides = JSON.parse(await readFile(join(output,'panduan/search-index.json'),'utf8')).map(x=>x.url.slice(1));
+  const pages = ['', ...((await readdir(join(output, 'artikel'))).map(name => 'artikel/' + name.replace(/\.html$/, ''))), ...guides];
   await writeFile(join(output, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + pages.map(path => '<url><loc>https://efa.madgo.my.id/' + path + '</loc></url>').join('') + '</urlset>');
   // changing any published asset updates the worker, without a manual cache bump.
   const hash = createHash('sha256');

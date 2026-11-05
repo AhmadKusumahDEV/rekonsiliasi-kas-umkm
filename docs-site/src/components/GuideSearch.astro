@@ -1,0 +1,59 @@
+<efa-guide-search>
+  <button class="guide-search-open" type="button" aria-label="Cari panduan" aria-keyshortcuts="Control+K" disabled>Cari panduan <kbd>Ctrl K</kbd></button>
+  <dialog aria-label="Cari panduan EFA">
+    <div class="guide-search-box">
+      <div class="guide-search-heading"><label for="guide-query">Apa yang ingin kamu lakukan?</label><button type="button" data-close aria-label="Tutup pencarian">Tutup</button></div>
+      <input id="guide-query" type="search" placeholder="Coba: unggah CSV, selisih, unduh rekap" autocomplete="off" />
+      <p role="status" data-search-status>Ketik judul atau kendala yang kamu alami.</p>
+      <ul data-search-results></ul>
+      <p><a href="/panduan/">Lihat semua panduan</a></p>
+    </div>
+  </dialog>
+</efa-guide-search>
+<script>
+  class GuideSearch extends HTMLElement {
+    constructor() {
+      super();
+      const button = this.querySelector<HTMLButtonElement>('.guide-search-open')!;
+      const dialog = this.querySelector('dialog')!;
+      const input = this.querySelector('input')!;
+      const status = this.querySelector<HTMLElement>('[data-search-status]')!;
+      const results = this.querySelector('[data-search-results]')!;
+      let index: {title:string;description:string;text:string;url:string}[] | null = null;
+      let loading: Promise<void> | null = null;
+      const normal = (s:string) => s.toLocaleLowerCase('id').normalize('NFKD').replace(/\p{Diacritic}/gu,'');
+      const synonyms: Record<string,string> = {upload:'impor',unggah:'impor',excel:'csv',rekonsiliasi:'verifikasi',cocokkan:'verifikasi',cocok:'verifikasi',pengecualian:'selisih',rekap:'laporan',ekspor:'laporan',unduh:'laporan',password:'sandi'};
+      const render = () => {
+        results.replaceChildren();
+        if (!index) return;
+        const words = normal(input.value.trim()).split(/\s+/).filter(Boolean).slice(0,12);
+        if (!words.length) { status.textContent='Ketik judul atau kendala yang kamu alami.'; return; }
+        const matches = index.map(item => {
+          const title=normal(item.title), all=normal(item.title+' '+item.description+' '+item.text);
+          const score=words.reduce((sum,word)=>sum+(title.includes(word)?6:all.includes(word)?1:0)+(synonyms[word]&&title.includes(synonyms[word])?4:0),0);
+          const valid=words.every(word=>all.includes(word)||(synonyms[word]&&all.includes(synonyms[word])));
+          return {item,score:valid?score:0};
+        }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,8);
+        status.textContent=matches.length?`${matches.length} panduan ditemukan.`:'Belum ada hasil. Coba kata lebih singkat, misalnya CSV, biaya, atau sandi.';
+        for (const {item} of matches) {
+          const li=document.createElement('li'),a=document.createElement('a'),strong=document.createElement('strong'),small=document.createElement('span');
+          a.href=item.url;strong.textContent=item.title;small.textContent=item.description;a.append(strong,small);li.append(a);results.append(li);
+        }
+      };
+      const load = () => loading ||= fetch('/panduan/search-index.json').then(r=>{if(!r.ok)throw Error('Search unavailable');return r.json()}).then(data=>{index=data;render()}).catch(()=>{
+        loading=null;status.textContent='Pencarian belum termuat. Tutup lalu buka lagi, atau pilih Lihat semua panduan.';
+      });
+      const open = () => { if(dialog.open)return;dialog.showModal();input.focus();void load(); };
+      button.disabled=false;button.addEventListener('click',open);
+      this.querySelector('[data-close]')!.addEventListener('click',()=>dialog.close());
+      input.addEventListener('input',render);
+      dialog.addEventListener('keydown',event=>{
+        if(event.key==='Escape') { event.preventDefault(); dialog.close(); }
+      });
+      dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
+      dialog.addEventListener('close',()=>button.focus());
+      document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();dialog.open?dialog.close():open()}});
+    }
+  }
+  customElements.define('efa-guide-search', GuideSearch);
+</script>

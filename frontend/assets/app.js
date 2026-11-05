@@ -726,6 +726,8 @@ function renderPage() {
         "Halaman tidak tersedia",
         "Kembali ke ringkasan untuk melanjutkan.",
       ) + '<a class="button" href="#overview">Ringkasan</a>';
+  const guide = ({overview:'ringkasan',entries:'transaksi',verifikasi:'verifikasi',imports:'impor',reports:'laporan',settings:'pengaturan',history:'transaksi'})[route];
+  if (guide) main.querySelector('.page-title')?.insertAdjacentHTML('afterend', `<p class="context-help"><a href="/panduan/tugas/${guide}/" target="_blank" rel="noopener" aria-label="Panduan halaman ini (tab baru)">Panduan halaman ini</a></p>`);
   presentView(main, route);
   if (route === "history" && !state.audit.loading && (!state.audit.loaded || (!state.audit.error && state.audit.version !== state.data.workspace.version))) void loadAudit(state.audit.loaded);
   document
@@ -754,7 +756,7 @@ function auth(register = false) {
   root.innerHTML =
     '<main id="main" class="auth auth-umkm ' +
     (register ? "is-register" : "") +
-    '"><section class="auth-form">' + maxyBrand("Easy Financial Audit", "#login") + '<div class="auth-inner"><a class="auth-home" href="/"><span aria-hidden="true">←</span> Kembali ke beranda</a><div class="auth-heading"><span class="auth-product">Easy Financial Audit</span><small>' +
+    '"><section class="auth-form">' + maxyBrand("Easy Financial Audit", "#login") + '<div class="auth-inner"><a class="auth-home" href="/"><span aria-hidden="true">←</span> Kembali ke beranda</a><a class="auth-home" href="/panduan/" target="_blank" rel="noopener">Panduan penggunaan</a><div class="auth-heading"><span class="auth-product">Easy Financial Audit</span><small>' +
     (register ? "Mulai catatan usahamu" : "Selamat datang kembali") +
     "</small><h2>" +
     (register ? "Mulai catatan usahamu." : "Selamat datang kembali.") +
@@ -1274,7 +1276,7 @@ function passwordHelp(route){
  }else state.resetToken='';
  const valid=/^[a-f0-9]{64}$/i.test(state.resetToken||'');
  document.title=(route==='forgot'?'Lupa kata sandi':'Reset kata sandi')+' · EFA';
- root.innerHTML=`<main id="main" class="auth auth-umkm"><section class="auth-form">${maxyBrand('Easy Financial Audit','#login')}<div class="auth-inner"><a class="auth-home" href="/">Kembali ke beranda</a><h1>${route==='forgot'?'Lupa kata sandi?':'Buat kata sandi baru'}</h1><p>${route==='forgot'?'Masukkan email akunmu. Jika terdaftar, tautan reset akan dikirim.':'Simpan kata sandi baru, lalu masuk kembali.'}</p>${route==='reset'&&!valid?'<p class="error" role="alert">Tautan reset tidak valid atau tidak lengkap. <a href="#forgot">Minta tautan baru</a>.</p>':`<form data-form="${route}">${formError}${route==='forgot'?field('Email','email','email','','required maxlength="254" autocomplete="email"'):field('Kata sandi baru','password','password','','required minlength="12" maxlength="72" autocomplete="new-password"')+field('Ulangi kata sandi baru','confirm_password','password','','required minlength="12" maxlength="72" autocomplete="new-password"')}<button type="submit" class="primary">${route==='forgot'?'Kirim tautan reset':'Simpan kata sandi baru'}</button></form>`}<p class="auth-switch"><a href="#login">Kembali masuk</a>${route==='reset'?' · <a href="#forgot">Minta tautan baru</a>':''}</p></div></section>${authScene(false)}</main>`;
+ root.innerHTML=`<main id="main" class="auth auth-umkm"><section class="auth-form">${maxyBrand('Easy Financial Audit','#login')}<div class="auth-inner"><a class="auth-home" href="/">Kembali ke beranda</a><a class="auth-home" href="/panduan/tugas/reset-password/" target="_blank" rel="noopener">Panduan reset kata sandi</a><h1>${route==='forgot'?'Lupa kata sandi?':'Buat kata sandi baru'}</h1><p>${route==='forgot'?'Masukkan email akunmu. Jika terdaftar, tautan reset akan dikirim.':'Simpan kata sandi baru, lalu masuk kembali.'}</p>${route==='reset'&&!valid?'<p class="error" role="alert">Tautan reset tidak valid atau tidak lengkap. <a href="#forgot">Minta tautan baru</a>.</p>':`<form data-form="${route}">${formError}${route==='forgot'?field('Email','email','email','','required maxlength="254" autocomplete="email"'):field('Kata sandi baru','password','password','','required minlength="12" maxlength="72" autocomplete="new-password"')+field('Ulangi kata sandi baru','confirm_password','password','','required minlength="12" maxlength="72" autocomplete="new-password"')}<button type="submit" class="primary">${route==='forgot'?'Kirim tautan reset':'Simpan kata sandi baru'}</button></form>`}<p class="auth-switch"><a href="#login">Kembali masuk</a>${route==='reset'?' · <a href="#forgot">Minta tautan baru</a>':''}</p></div></section>${authScene(false)}</main>`;
  presentAuth(root,false);
 }
 init();

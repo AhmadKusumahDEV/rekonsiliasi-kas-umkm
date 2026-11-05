@@ -1,0 +1,37 @@
+---
+import manifest from '../../video-manifest.json';
+const { id } = Astro.props;
+const item = manifest.find(x => x.id === id);
+if (!item) throw new Error(`Unknown tutorial video: ${id}`);
+---
+<section class="tutorial-video" id="video" aria-label={`Video: ${item.title}`}>
+  <h2>Tonton video</h2>
+  <p>{item.duration} detik · 720p · tanpa suara · data simulasi. Direkam 5 November 2026.</p>
+  <p>Teks di atas sudah memuat seluruh langkah. Video tidak wajib ditonton.</p>
+  <video controls playsinline preload="none" poster={`/panduan/video/${id}-poster.png`} width="1280" height="720" aria-label={item.title}>
+    <source src={`/panduan/video/${id}.mp4`} type="video/mp4" />
+    <track kind="captions" src={`/panduan/video/${id}.vtt`} srclang="id" label="Bahasa Indonesia" />
+    Browser ini belum mendukung video. Ikuti langkah tertulis di atas.
+  </video>
+  <div class="video-options">
+    <label>Kecepatan video
+      <select data-video-speed aria-label={`Kecepatan video ${item.title}`}>
+        <option value="0.75">0,75×</option><option value="1" selected>1×</option><option value="1.25">1,25×</option><option value="1.5">1,5×</option>
+      </select>
+    </label>
+    <a href={`/panduan/video/${id}.mp4`} download>Unduh video ({item.sizeLabel})</a>
+  </div>
+  <p class="video-error" role="status" hidden>Video belum dapat dimuat. Kamu tetap bisa mengikuti langkah dan transkrip di halaman ini.</p>
+  <details><summary>Baca transkrip video</summary><ol>{item.scenes.map(scene => <li><strong>{scene.at}.</strong> {scene.caption}</li>)}</ol></details>
+</section>
+<script>
+  document.querySelectorAll<HTMLElement>('.tutorial-video').forEach(section => {
+    const video = section.querySelector('video')!;
+    section.querySelector('select')?.addEventListener('change', event => {
+      video.playbackRate = Number((event.target as HTMLSelectElement).value);
+    });
+    const unavailable = () => { section.querySelector<HTMLElement>('.video-error')!.hidden = false; };
+    video.addEventListener('error', unavailable);
+    video.querySelector('source')?.addEventListener('error', unavailable);
+  });
+</script>
