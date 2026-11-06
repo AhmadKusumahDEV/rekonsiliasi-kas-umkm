@@ -37,7 +37,7 @@ Dataset: 33 penjualan dan 32 mutasi bank. File dibuat oleh
 
 ## Isi dataset
 
-- 20 pasangan exact, siap dicocokkan otomatis.
+- 20 pasangan aturan yang siap dicocokkan otomatis.
 - 4 pasangan AI: referensi, nominal, kanal, dan tanggal sama, nama berbeda.
 - 3 pasangan selisih fee QRIS Rp6.500.
 - 2 penjualan dan 2 penerimaan nominal sama tanpa referensi.
@@ -87,4 +87,6 @@ Untuk demo, pilih satu file penjualan dan satu file mutasi dari kombinasi di
 atas. Untuk menguji Excel, gunakan kombinasi B, C, D, atau E.
 Untuk demo cepat tanpa temuan, gunakan `happy-excel/`. Untuk menunjukkan
 penanganan selisih, gunakan `edge-cases/`.
+Tanpa AI aktif, keempat pasangan ambigu di folder `happy*` tetap muncul sebagai
+temuan, jadi sebutkan status AI sebelum demo.
 

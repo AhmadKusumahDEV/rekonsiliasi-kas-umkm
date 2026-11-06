@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Generate demo import files for EFA. Run from repository root."""
 import csv
+import io
 import os
+import re
+import zipfile
+from datetime import datetime
 from openpyxl import Workbook
 
-OUT = os.path.join("docs", "demo-files")
+OUT = os.environ.get("DEMO_OUT") or os.path.join("docs", "demo-files")
 os.makedirs(OUT, exist_ok=True)
 
 names = ["Budi","Rani","Sari","Dedi","Ayu","Toko A","Citra","Eka","Fajar","Gita",
@@ -68,8 +72,39 @@ def write_csv(path, header, rows, delimiter=","):
         for row in rows:
             w.writerow([row[h] for h in header])
 
+def amount_value(value):
+    if isinstance(value, (int, float)):
+        return int(value)
+    digits = "".join(ch for ch in str(value) if ch.isdigit())
+    return int(digits or 0)
+
+
+def normalize_zip(path):
+    # openpyxl menulis timestamp zip saat runtime; samakan agar byte stabil.
+    with zipfile.ZipFile(path) as src:
+        items = [(info, src.read(info.filename)) for info in src.infolist()]
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as dst:
+        for info, data in items:
+            if info.filename == "docProps/core.xml":
+                data = re.sub(
+                    rb"(<dcterms:modified[^>]*>)[^<]*(</dcterms:modified>)",
+                    rb"\g<1>2026-01-01T00:00:00Z\g<2>",
+                    data,
+                )
+            entry = zipfile.ZipInfo(info.filename, date_time=(2026, 1, 1, 0, 0, 0))
+            entry.compress_type = zipfile.ZIP_DEFLATED
+            entry.external_attr = info.external_attr
+            dst.writestr(entry, data)
+    with open(path, "wb") as handle:
+        handle.write(buffer.getvalue())
+
+
 def write_xlsx(path, header, rows, metadata_rows=0, extra_sheet=None):
     wb = Workbook()
+    # Stempel waktu tetap supaya hasil generate tidak berubah tiap dijalankan.
+    wb.properties.created = datetime(2026, 1, 1, 0, 0, 0)
+    wb.properties.modified = datetime(2026, 1, 1, 0, 0, 0)
     ws = wb.active
     ws.title = "Penjualan" if header == sales_header else "Mutasi"
     for _ in range(metadata_rows):
@@ -82,6 +117,7 @@ def write_xlsx(path, header, rows, metadata_rows=0, extra_sheet=None):
         sh.append(header)
         sh.append([extra_sheet[h] for h in header])
     wb.save(path)
+    normalize_zip(path)
 
 write_csv(os.path.join(OUT, "penjualan-33.csv"), sales_header, sales)
 write_csv(os.path.join(OUT, "penjualan-33-semicolon.csv"), sales_header, sales, ";")
@@ -184,8 +220,9 @@ def write_pair(folder, name, sale_rows, bank_rows, sale_fmt="csv", bank_fmt="csv
         write_xlsx(os.path.join(folder, f"{name}-penjualan.xlsx"), sales_header, sale_rows, metadata_rows=metadata_rows)
     rows = list(bank_rows)
     if total_row:
-        numeric = [r["Kredit"] for r in bank_rows if isinstance(r["Kredit"], (int, float))]
-        total_value = sum(numeric) if len(numeric) == len(bank_rows) else "Rp 3.218.500"
+        total_value = sum(amount_value(r["Kredit"]) for r in bank_rows)
+        if any(isinstance(r["Kredit"], str) for r in bank_rows):
+            total_value = "Rp " + f"{total_value:,}".replace(",", ".")
         rows = rows + [{"Tanggal": "2026-11-30", "Keterangan": "TOTAL", "Debit": 0,
                         "Kredit": total_value, "Saldo": 0}]
     if bank_fmt == "csv":

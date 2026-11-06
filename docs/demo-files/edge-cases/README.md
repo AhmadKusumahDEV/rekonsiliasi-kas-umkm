@@ -24,14 +24,17 @@ tinggal menekan konfirmasi.
 
 ## 02-bayar-sebagian
 
-INV-311 senilai Rp500.000 dibayar Rp300.000 lalu Rp200.000. INV-312 dibayar
-penuh tetapi keterangan mutasi tidak memuat referensi. Keduanya menunggu
-keputusan manual karena nominal tiap baris tidak sama dengan nilai penjualan.
+INV-311 senilai Rp500.000 dibayar Rp300.000 lalu Rp200.000, jadi tidak ada satu
+baris pun yang nominalnya sama. INV-312 dibayar penuh, tetapi keterangan
+mutasinya `TRF AYU` tidak memuat referensi sehingga tidak boleh dicocokkan
+otomatis. Keduanya menunggu keputusan manual.
 
 ## 03-tunai-dan-belum-bayar
 
 Dua penjualan tunai langsung lunas tanpa mutasi bank. Dua penjualan transfer dan
 QRIS belum dibayar, jadi muncul sebagai dua temuan.
+File `tunai-mutasi.csv` hanya berisi baris header, jadi cukup unggah penjualannya
+saja; server menolak impor penerimaan tanpa baris transaksi.
 
 ## 04-nominal-kembar
 
@@ -43,6 +46,8 @@ keempat baris menunggu Verifikasi.
 
 Satu penjualan cocok otomatis. Bunga tabungan, transfer antar rekening sendiri,
 dan biaya admin diabaikan sebagai penerimaan non-operasional.
+Baris `BIAYA ADMIN` bertipe Debit sehingga dilewati karena bukan uang masuk;
+bunga dan transfer antar rekening sendiri dilewati karena non-operasional.
 
 ## 06-format-berantakan
 
