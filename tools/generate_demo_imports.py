@@ -117,3 +117,160 @@ for src_name, dst_name in [
 print("files:", len(os.listdir(OUT)))
 print("sales:", len(sales), "receipts:", len(bank))
 
+
+# --- happy-33: 33 baris bersih, 29 pasangan aturan + 4 pasangan zona AI ---
+clean_sales = []
+clean_bank = []
+clean_balance = 25_000_000
+
+
+def clean_sale(ref, name, amount, channel, date):
+    clean_sales.append({"tanggal": date, "referensi": ref, "nama": name, "nominal": amount, "kanal": channel})
+
+
+def clean_receipt(date, desc, amount):
+    global clean_balance
+    clean_balance += amount
+    clean_bank.append({"Tanggal": date, "Keterangan": desc, "Debit": 0, "Kredit": amount, "Saldo": clean_balance})
+
+
+for i in range(1, 30):
+    day = 1 + (i - 1) // 4
+    date = f"2026-11-{day:02d}"
+    ref = f"INV-2{i:02d}"
+    name = names[(i - 1) % len(names)]
+    amount = 60_000 + i * 7_000
+    channel = "transfer" if i % 2 else "qris"
+    clean_sale(ref, name, amount, channel, date)
+    prefix = "TRF" if channel == "transfer" else "QRIS"
+    clean_receipt(date, f"{prefix} {ref} {name.upper()}", amount)
+
+# Zona AI: nominal, tanggal, dan referensi sama, tetapi nama pembayar berbeda.
+ai_pairs_33 = [
+    ("Budi", "SITI", 100_000),
+    ("Citra", "DINA", 125_000),
+    ("Sari", "RINA", 150_000),
+    ("Dedi", "DEWI", 175_000),
+]
+for idx, (seller, payer, amount) in enumerate(ai_pairs_33, start=30):
+    ref = f"INV-2{idx:02d}"
+    clean_sale(ref, seller, amount, "transfer", "2026-11-08")
+    clean_receipt("2026-11-08", f"TRF {ref} {payer}", amount)
+
+excel_dir = os.path.join(OUT, "happy-excel")
+os.makedirs(excel_dir, exist_ok=True)
+write_xlsx(os.path.join(excel_dir, "penjualan-happy-33.xlsx"), sales_header, clean_sales)
+write_xlsx(os.path.join(excel_dir, "mutasi-happy-33.xlsx"), bank_header, clean_bank)
+
+hybrid_dir = os.path.join(OUT, "happy-hybrid")
+os.makedirs(hybrid_dir, exist_ok=True)
+write_csv(os.path.join(hybrid_dir, "penjualan-happy-33.csv"), sales_header, clean_sales)
+write_xlsx(os.path.join(hybrid_dir, "mutasi-happy-33.xlsx"), bank_header, clean_bank)
+
+# --- edge case: konten sulit, kolom tetap sesuai template resmi ---
+edge_root = os.path.join(OUT, "edge-cases")
+
+
+def edge_dir(name):
+    path = os.path.join(edge_root, name)
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def write_pair(folder, name, sale_rows, bank_rows, sale_fmt="csv", bank_fmt="csv", metadata_rows=0, total_row=False):
+    if sale_fmt == "csv":
+        write_csv(os.path.join(folder, f"{name}-penjualan.csv"), sales_header, sale_rows)
+    else:
+        write_xlsx(os.path.join(folder, f"{name}-penjualan.xlsx"), sales_header, sale_rows, metadata_rows=metadata_rows)
+    rows = list(bank_rows)
+    if total_row:
+        numeric = [r["Kredit"] for r in bank_rows if isinstance(r["Kredit"], (int, float))]
+        total_value = sum(numeric) if len(numeric) == len(bank_rows) else "Rp 3.218.500"
+        rows = rows + [{"Tanggal": "2026-11-30", "Keterangan": "TOTAL", "Debit": 0,
+                        "Kredit": total_value, "Saldo": 0}]
+    if bank_fmt == "csv":
+        write_csv(os.path.join(folder, f"{name}-mutasi.csv"), bank_header, rows)
+    else:
+        write_xlsx(os.path.join(folder, f"{name}-mutasi.xlsx"), bank_header, rows)
+
+
+# 01: biaya layanan memotong nominal (QRIS, marketplace, admin bank)
+f = edge_dir("01-selisih-fee")
+s = [
+    {"tanggal": "2026-11-02", "referensi": "INV-301", "nama": "Budi", "nominal": 150_000, "kanal": "qris"},
+    {"tanggal": "2026-11-02", "referensi": "INV-302", "nama": "Rani", "nominal": 200_000, "kanal": "marketplace"},
+    {"tanggal": "2026-11-03", "referensi": "INV-303", "nama": "Sari", "nominal": 90_000, "kanal": "qris"},
+]
+b = [
+    {"Tanggal": "2026-11-02", "Keterangan": "QRIS INV-301 BUDI", "Debit": 0, "Kredit": 143_500, "Saldo": 10_143_500},
+    {"Tanggal": "2026-11-03", "Keterangan": "PENCAIRAN SHOPEE INV-302 RANI", "Debit": 0, "Kredit": 190_000, "Saldo": 10_333_500},
+    {"Tanggal": "2026-11-03", "Keterangan": "QRIS INV-303 SARI", "Debit": 0, "Kredit": 83_500, "Saldo": 10_417_000},
+    {"Tanggal": "2026-11-03", "Keterangan": "BIAYA ADMIN BULANAN", "Debit": 2_500, "Kredit": 0, "Saldo": 10_414_500},
+]
+write_pair(f, "fee", s, b)
+
+# 02: satu penjualan dibayar dua kali (pembayaran sebagian)
+f = edge_dir("02-bayar-sebagian")
+s = [
+    {"tanggal": "2026-11-04", "referensi": "INV-311", "nama": "Dedi", "nominal": 500_000, "kanal": "transfer"},
+    {"tanggal": "2026-11-04", "referensi": "INV-312", "nama": "Ayu", "nominal": 250_000, "kanal": "transfer"},
+]
+b = [
+    {"Tanggal": "2026-11-04", "Keterangan": "TRF INV-311 DEDI DP 1", "Debit": 0, "Kredit": 300_000, "Saldo": 11_300_000},
+    {"Tanggal": "2026-11-05", "Keterangan": "TRF INV-311 DEDI PELUNASAN", "Debit": 0, "Kredit": 200_000, "Saldo": 11_500_000},
+    {"Tanggal": "2026-11-04", "Keterangan": "TRF AYU", "Debit": 0, "Kredit": 250_000, "Saldo": 11_750_000},
+]
+write_pair(f, "sebagian", s, b)
+
+# 03: penjualan tunai dan penjualan belum dibayar
+f = edge_dir("03-tunai-dan-belum-bayar")
+s = [
+    {"tanggal": "2026-11-05", "referensi": "INV-321", "nama": "Eka", "nominal": 60_000, "kanal": "tunai"},
+    {"tanggal": "2026-11-05", "referensi": "INV-322", "nama": "Fajar", "nominal": 75_000, "kanal": "tunai"},
+    {"tanggal": "2026-11-06", "referensi": "INV-323", "nama": "Indra", "nominal": 400_000, "kanal": "transfer"},
+    {"tanggal": "2026-11-06", "referensi": "INV-324", "nama": "Gita", "nominal": 320_000, "kanal": "qris"},
+]
+b = []
+write_pair(f, "tunai", s, b)
+
+# 04: nominal kembar tanpa referensi -> harus masuk Verifikasi
+f = edge_dir("04-nominal-kembar")
+s = [
+    {"tanggal": "2026-11-07", "referensi": "", "nama": "Hana", "nominal": 95_000, "kanal": "transfer"},
+    {"tanggal": "2026-11-07", "referensi": "", "nama": "Hana", "nominal": 95_000, "kanal": "transfer"},
+]
+b = [
+    {"Tanggal": "2026-11-07", "Keterangan": "TRF HANA", "Debit": 0, "Kredit": 95_000, "Saldo": 12_045_000},
+    {"Tanggal": "2026-11-07", "Keterangan": "TRF HANA", "Debit": 0, "Kredit": 95_000, "Saldo": 12_140_000},
+]
+write_pair(f, "kembar", s, b)
+
+# 05: baris non-operasional di mutasi bank
+f = edge_dir("05-non-operasional")
+s = [
+    {"tanggal": "2026-11-09", "referensi": "INV-331", "nama": "Joko", "nominal": 180_000, "kanal": "transfer"},
+]
+b = [
+    {"Tanggal": "2026-11-09", "Keterangan": "TRF INV-331 JOKO", "Debit": 0, "Kredit": 180_000, "Saldo": 12_320_000},
+    {"Tanggal": "2026-11-09", "Keterangan": "BUNGA TABUNGAN", "Debit": 0, "Kredit": 2_500, "Saldo": 12_322_500},
+    {"Tanggal": "2026-11-09", "Keterangan": "TRANSFER ANTAR REKENING SENDIRI", "Debit": 0, "Kredit": 500_000, "Saldo": 12_822_500},
+    {"Tanggal": "2026-11-09", "Keterangan": "BIAYA ADMIN", "Debit": 6_500, "Kredit": 0, "Saldo": 12_816_000},
+]
+write_pair(f, "non-operasional", s, b)
+
+# 06: format berantakan tetapi kolom tetap resmi
+f = edge_dir("06-format-berantakan")
+s = [
+    {"tanggal": "01/11/2026", "referensi": "INV-341", "nama": "Kirana", "nominal": "Rp 1.250.000", "kanal": "transfer"},
+    {"tanggal": "02/11/2026", "referensi": "INV-342", "nama": "Lina", "nominal": "Rp 875.000", "kanal": "qris"},
+    {"tanggal": "03/11/2026", "referensi": "INV-343", "nama": "Miko", "nominal": "Rp 1.100.000", "kanal": "transfer"},
+]
+b = [
+    {"Tanggal": "01/11/2026", "Keterangan": "TRF INV-341 KIRANA", "Debit": 0, "Kredit": "Rp 1.250.000", "Saldo": "Rp 13.250.000"},
+    {"Tanggal": "02/11/2026", "Keterangan": "QRIS INV-342 LINA", "Debit": 0, "Kredit": "Rp 868.500", "Saldo": "Rp 14.118.500"},
+    {"Tanggal": "03/11/2026", "Keterangan": "TRF INV-343 MIKO", "Debit": 0, "Kredit": "Rp 1.100.000", "Saldo": "Rp 15.218.500"},
+]
+write_pair(f, "berantakan", s, b, sale_fmt="xlsx", bank_fmt="xlsx", metadata_rows=7, total_row=True)
+
+print("happy-33 sales:", len(clean_sales), "receipts:", len(clean_bank))
+

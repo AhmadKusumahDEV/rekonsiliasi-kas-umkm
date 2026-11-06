@@ -58,9 +58,30 @@ ambigu, tunai, atau non-operasional.
 
 Hasil impor yang diharapkan: 20 pasangan aturan, 4 pasangan AI, 0 temuan.
 
+## Happy path 33 baris
+
+Dua folder ini memakai dataset bersih 33 penjualan dan 33 penerimaan: 29
+pasangan cocok lewat aturan, 4 pasangan masuk zona ambigu dan diselesaikan AI.
+
+| Folder | Penjualan | Mutasi |
+| --- | --- | --- |
+| `happy-excel/` | XLSX | XLSX |
+| `happy-hybrid/` | CSV | XLSX |
+
+Hasil impor yang diharapkan: 29 pasangan aturan, 4 pasangan AI, 0 temuan.
+
+## Edge case
+
+Folder `edge-cases/` berisi enam skenario kecil. Semua memakai kolom resmi
+`tanggal,referensi,nama,nominal,kanal` dan `Tanggal,Keterangan,Debit,Kredit,Saldo`;
+yang dibuat sulit adalah isinya. Rincian hasil per skenario ada di
+`edge-cases/README.md`.
+
 
 ## Cara memakai
 
 Untuk demo, pilih satu file penjualan dan satu file mutasi dari kombinasi di
 atas. Untuk menguji Excel, gunakan kombinasi B, C, D, atau E.
+Untuk demo cepat tanpa temuan, gunakan `happy-excel/`. Untuk menunjukkan
+penanganan selisih, gunakan `edge-cases/`.
 
