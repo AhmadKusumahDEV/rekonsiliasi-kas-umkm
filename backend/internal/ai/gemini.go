@@ -75,9 +75,9 @@ func NewFromEnv() *Client {
 	if base == "" {
 		base = "https://generativelanguage.googleapis.com/v1beta"
 	}
-	timeout := 8 * time.Second
+	timeout := reviewTimeout
 	if raw := strings.TrimSpace(os.Getenv("GEMINI_TIMEOUT")); raw != "" {
-		if parsed, err := time.ParseDuration(raw); err == nil && parsed > 0 && parsed <= 30*time.Second {
+		if parsed, err := time.ParseDuration(raw); err == nil && parsed > 0 && parsed <= reviewTimeout {
 			timeout = parsed
 		}
 	}
@@ -99,7 +99,8 @@ func (c *Client) endpoint() string {
 }
 
 type part struct {
-	Text string `json:"text"`
+	Text    string `json:"text"`
+	Thought bool   `json:"thought"`
 }
 
 type content struct {
@@ -134,7 +135,8 @@ type generateRequest struct {
 
 type generateResponse struct {
 	Candidates []struct {
-		Content content `json:"content"`
+		Content      content `json:"content"`
+		FinishReason string  `json:"finishReason"`
 	} `json:"candidates"`
 }
 
@@ -200,10 +202,17 @@ func (c *Client) Review(ctx context.Context, candidates []Candidate) ([]Verdict,
 	if err = json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&parsed); err != nil {
 		return nil, err
 	}
-	if len(parsed.Candidates) == 0 || len(parsed.Candidates[0].Content.Parts) == 0 {
+	if len(parsed.Candidates) == 0 {
 		return nil, errors.New("gemini: jawaban kosong")
 	}
-	raw := verdictPayload(parsed.Candidates[0].Content.Parts)
+	candidate := parsed.Candidates[0]
+	raw, err := verdictPayload(candidate.Content.Parts)
+	if err != nil {
+		if candidate.FinishReason != "" {
+			return nil, fmt.Errorf("%w (finishReason=%s)", err, candidate.FinishReason)
+		}
+		return nil, err
+	}
 	var verdicts struct {
 		Verdicts []Verdict `json:"verdicts"`
 	}
@@ -213,23 +222,26 @@ func (c *Client) Review(ctx context.Context, candidates []Candidate) ([]Verdict,
 	return filterVerdicts(candidates, verdicts.Verdicts), nil
 }
 
-// verdictPayload picks the part that holds the JSON answer. A model may return
-// a reasoning part before the answer, and only the answer parses as JSON.
-func verdictPayload(parts []part) string {
-	fallback := ""
+// verdictPayload picks the part that holds the verdicts answer. A model may
+// return a reasoning part or another JSON object before the answer, so the
+// payload must parse and must contain the verdicts key.
+func verdictPayload(parts []part) (string, error) {
 	for i := len(parts) - 1; i >= 0; i-- {
+		if parts[i].Thought {
+			continue
+		}
 		text := strings.TrimSpace(parts[i].Text)
 		if text == "" {
 			continue
 		}
-		if fallback == "" {
-			fallback = text
+		var probe struct {
+			Verdicts json.RawMessage `json:"verdicts"`
 		}
-		if json.Valid([]byte(text)) {
-			return text
+		if err := json.Unmarshal([]byte(text), &probe); err == nil && probe.Verdicts != nil {
+			return text, nil
 		}
 	}
-	return fallback
+	return "", errors.New("gemini: jawaban tanpa verdicts")
 }
 
 func filterVerdicts(candidates []Candidate, verdicts []Verdict) []Verdict {
