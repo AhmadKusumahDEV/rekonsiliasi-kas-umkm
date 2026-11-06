@@ -68,6 +68,8 @@ $scenarios = @(
     @{ Name = "edge-06-messy"; Sale = "edge-cases/06-format-berantakan/berantakan-penjualan.xlsx"; Receipt = "edge-cases/06-format-berantakan/berantakan-mutasi.xlsx" }
 )
 
+$report = @()
+try {
 $report = foreach ($scenario in $scenarios) {
     Clear-Data
     $salePreview = Import-File -Kind "sale" -Path (Join-Path $Root $scenario.Sale)
@@ -92,8 +94,11 @@ $report = foreach ($scenario in $scenarios) {
         Peringatan  = (($receiptPreview.warnings + $salePreview.warnings) -join "; ")
     }
 }
+}
+finally {
+    Clear-Data
+}
 
 $report | Format-Table -AutoSize -Wrap
-Clear-Data
 Write-Host ""
 Write-Host "akun verifikasi: $email / $password"

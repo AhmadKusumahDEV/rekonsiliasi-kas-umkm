@@ -11,8 +11,14 @@
 /.vercel/
 /dist/
 
+# Situs dokumentasi.
 /docs-site/.astro/
 /docs-site/dist/
 
-/docs-site/.astro/
-/docs-site/dist/
+# Artefak audit dan otomasi browser lokal.
+/.playwright-mcp/
+/.tmp-live-compare/
+/audit-screenshots/
+
+# Fixture besar dibuat ulang oleh tools/generate_error_cases.py.
+/docs/demo-files/error-cases/12-besar-1mb.csv
