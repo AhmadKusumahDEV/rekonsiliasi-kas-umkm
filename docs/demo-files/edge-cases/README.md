@@ -46,7 +46,7 @@ dan biaya admin diabaikan sebagai penerimaan non-operasional.
 
 ## 06-format-berantakan
 
-Kolom resmi, tetapi header di baris 8, tanggal `dd/mm/yyyy`, nominal `Rp 1.250.000`,
-baris TOTAL di akhir, dan dua sheet. Hasilnya 3 penjualan dan 3 penerimaan
-terbaca, 2 pasangan cocok otomatis, dan pasangan QRIS Rp875.000 yang cair
-Rp868.500 menunggu Verifikasi.
+Kolom resmi, tetapi file penjualan menaruh header di baris 8, tanggalnya
+`dd/mm/yyyy`, nominalnya `Rp 1.250.000`, dan file mutasi diakhiri baris TOTAL.
+Hasilnya 3 penjualan dan 3 penerimaan terbaca, 2 pasangan cocok otomatis, dan
+pasangan QRIS Rp875.000 yang cair Rp868.500 menunggu Verifikasi.

@@ -69,6 +69,9 @@ pasangan cocok lewat aturan, 4 pasangan masuk zona ambigu dan diselesaikan AI.
 | `happy-hybrid/` | CSV | XLSX |
 
 Hasil impor yang diharapkan: 29 pasangan aturan, 4 pasangan AI, 0 temuan.
+Angka 4 pasangan AI hanya tercapai bila server memasang `AI_ENABLED=true`,
+`GEMINI_API_KEY`, dan `AI_MIN_SCORE` tidak lebih tinggi dari 0,90; rinciannya ada
+di `happy-excel/README.md`.
 
 ## Edge case
 
