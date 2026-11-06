@@ -73,23 +73,27 @@ $report = foreach ($scenario in $scenarios) {
     $salePreview = Import-File -Kind "sale" -Path (Join-Path $Root $scenario.Sale)
     $null = Commit-File -Kind "sale" -Csv $salePreview.csv
     $receiptPreview = Import-File -Kind "receipt" -Path (Join-Path $Root $scenario.Receipt)
-    $commit = Commit-File -Kind "receipt" -Csv $receiptPreview.csv
+    $commit = $null
+    if ($receiptPreview.count -gt 0) {
+        $commit = Commit-File -Kind "receipt" -Csv $receiptPreview.csv
+    }
     $state = Invoke-RestMethod -Uri "$Base/api/v1/umkm/state" -Method Get -WebSession $session
+    $exceptions = Invoke-RestMethod -Uri "$Base/api/v1/umkm/exceptions" -Method Get -WebSession $session
 
     [pscustomobject]@{
         Skenario    = $scenario.Name
-        Baris       = $commit.imported
-        Aturan      = $commit.auto_matched
-        AI          = $commit.ai_matched
-        StatusAI    = $commit.ai_status
-        Penjualan   = @($state.entries | Where-Object { $_.kind -eq "sale" }).Count
-        Penerimaan  = @($state.entries | Where-Object { $_.kind -eq "receipt" }).Count
-        Temuan      = @($state.exceptions).Count
-        SisaTagihan = $state.summary.sales_remaining
-        Peringatan  = ($receiptPreview.warnings -join "; ")
+        Aturan      = if ($commit) { $commit.auto_matched } else { 0 }
+        AI          = if ($commit) { $commit.ai_matched } else { 0 }
+        StatusAI    = if ($commit) { $commit.ai_status } else { "-" }
+        Penjualan   = @($state.state.entries | Where-Object { $_.kind -eq "sale" }).Count
+        Penerimaan  = @($state.state.entries | Where-Object { $_.kind -eq "receipt" }).Count
+        Alokasi     = @($state.state.allocations).Count
+        Temuan      = ($exceptions | Measure-Object).Count
+        Peringatan  = (($receiptPreview.warnings + $salePreview.warnings) -join "; ")
     }
 }
 
 $report | Format-Table -AutoSize -Wrap
+Clear-Data
 Write-Host ""
 Write-Host "akun verifikasi: $email / $password"
