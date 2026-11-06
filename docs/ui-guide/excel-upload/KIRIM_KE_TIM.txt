@@ -1,0 +1,41 @@
+Frontend upload Excel sudah siap untuk review.
+
+Branch: feat/excel-upload-frontend
+PR: https://github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/pull/31
+Preview: https://temukas-ra38o68kk-hash-a09b.vercel.app/app#imports
+Produksi: https://efa.madgo.my.id/app#imports
+
+Main terbaru sudah digabung, termasuk PR panduan #29. Tidak ada perubahan source backend. Versi Excel dipasang ke produksi pada 6 November 2026 atas instruksi Evan. PR tidak di-merge otomatis.
+
+CSV/XLSX dikirim sebagai file multipart + kind, bukan dibaca sebagai teks di browser. Respons 422 membuka pemilih sheet dan mengirim ulang file yang sama dengan field sheet. Penyimpanan memakai response.csv. Warnings, jumlah baris/pasangan, lima status AI, dan pesan error sudah ditampilkan. Tidak ada panggilan Gemini dari frontend.
+
+Pengujian:
+- 31 unit/build dan 63 skenario browser lulus.
+- Backend live: XLSX penjualan 20 baris, mutasi bank 21 baris, CSV lama, multi-sheet, file rusak/terenkripsi/XLS/PDF, serta batas sheet/baris/ukuran diuji.
+- Upload dan commit memakai workspace QA terpisah, total akhir 42 entri sintetis. Data pengguna/demo bersama tidak diubah.
+- Mobile 375 px dapat memilih file dan sheet. Desktop dan tablet juga diuji.
+- Status AI live pada data QA: no_candidates. Cabang status lain, termasuk gagal AI tanpa menggagalkan impor, diuji dengan fixture; bukan klaim hasil Gemini live.
+
+Screenshot hasil impor dan Verifikasi:
+https://github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/tree/feat/excel-upload-frontend/docs/ui-guide/excel-upload/screenshots
+
+Nama berkas:
+01-pratinjau-xlsx-desktop.png
+02-hasil-impor-desktop.png
+03-verifikasi-desktop.png
+05-pilih-sheet-mobile.png
+06-sheet-terpilih-mobile.png
+07-verifikasi-mobile.png
+
+Laporan dan metode tes:
+https://github.com/AhmadKusumahDEV/rekonsiliasi-kas-umkm/blob/feat/excel-upload-frontend/docs/EXCEL_UPLOAD_IMPLEMENTATION.md
+
+Akses preview:
+1. Preview dilindungi login Vercel workspace hash-a09b.
+2. Backend saat ini mengizinkan origin produksi EFA. Agar API login/upload bisa dicoba langsung dari preview, tambahkan origin berikut ke allowed_origins backend lalu reload/deploy konfigurasi backend:
+   https://temukas-ra38o68kk-hash-a09b.vercel.app
+3. Jangan mengganti allowed_origins menjadi wildcard dengan credential.
+
+E2E sebelum deploy memakai aset statis branch pada origin produksi dan request API asli. Sesudah deploy, login, pratinjau XLSX 20/21 baris, Verifikasi, dan pemilih sheet pada 375 px juga diuji langsung pada aset produksi tanpa override/mock. Data QA tetap 42 entri; pemeriksaan pascadeploy tidak menyimpan impor baru. Bukti produksi ada di production/.
+
+Batas CORS di atas hanya berlaku untuk hostname preview. Domain produksi sudah diizinkan dan tes browser produksi lulus. Deployment produksi: dpl_Ai3vfFJXEyVkqK4yjGkbjgL3bHxo.

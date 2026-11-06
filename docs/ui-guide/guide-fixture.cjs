@@ -1,3 +1,4 @@
+const {fixtureRequest}=require('../../frontend/tests/browser/fixture-request.cjs');
 const assert=require('node:assert/strict');
 function setupFixture(page,{empty=false,authenticated=true}={}) {
  const entry=(id,kind,amount,extra={})=>({id:id.repeat(32),source_id:id,kind,amount,reference:'INV-102',name:'Rani',channel:'qris',date:'2026-11-03',canceled:false,...extra});
@@ -10,7 +11,7 @@ function setupFixture(page,{empty=false,authenticated=true}={}) {
  page.route('**/api/v1/**',async route=>{
   const req=route.request(),url=new URL(req.url());
   assert(['127.0.0.1','localhost'].includes(url.hostname),'Documentation fixtures must stay local');
-  const path=url.pathname,method=req.method(),body=req.postData()?req.postDataJSON():null;flags.calls.push({path,method});
+  const path=url.pathname,method=req.method(),body=await fixtureRequest(req);flags.calls.push({path,method});
   const send=(value,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(value)});
   if(path.endsWith('/config'))return send({kind:'umkm',brand:'EFA',limits:{max_import_rows:500,max_csv_bytes:1048576,max_entries:10000}});
   if(path.endsWith('/auth/me'))return send(flags.authenticated?{user,csrf:'documentation-fixture'}:{message:'Masuk dahulu'},flags.authenticated?200:401);
@@ -22,7 +23,7 @@ function setupFixture(page,{empty=false,authenticated=true}={}) {
    if(flags.allocated||!data.state.entries.some(x=>x.kind==='receipt'))return send([]);
    return send([sales[0],receipts[0]].map((e,i)=>({entry:e,status:'unmatched',remaining:e.amount,candidate_count:0,candidate_ids:[],suggestion_available:false,reason:'Nominal berbeda. Periksa bukti potongan layanan.',...(i===0?{fee_hint:{amount:10000,label:'Biaya layanan',source:'bank',confidence:'tinggi',reason:'Saran Rp10.000 perlu dikonfirmasi dari bukti.'}}:{})})));
   }
-  if(path.endsWith('/imports/flexible')){
+  if(path.endsWith('/imports/files')){
    const items=body.kind==='sale'?(body.csv.includes('INV-102')?sales:[sales[1]]):receipts;flags.previewItems[body.kind]=items;
    return send({csv:'CANONICAL_'+body.kind,count:items.length,total:items.reduce((s,x)=>s+x.amount,0),skipped:0,warnings:body.kind==='receipt'?['Baris debit bukan uang masuk dan dilewati.']:[],preview:items,checksum:'simulation'});
   }

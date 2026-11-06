@@ -14,7 +14,7 @@ Tidak. Teks memuat seluruh langkah; video adalah ringkasan opsional tanpa suara,
 
 ## Bisakah mengunggah Excel atau foto struk?
 
-Alur panduan ini hanya CSV. Simpan spreadsheet sebagai CSV UTF-8; XLSX, PDF, dan OCR foto bukan bagian alur ini.
+CSV dan Excel (.xlsx) diterima. Untuk workbook dengan beberapa sheet, pilih satu saat diminta. XLS lama, PDF, dan OCR foto belum didukung. File maksimal 10 MB; hasil konversi tetap maksimal 1 MB CSV dan 500 baris.
 
 ## Apakah dua slot harus terisi sekaligus?
 
@@ -26,7 +26,7 @@ Pasangan mungkin sudah selesai otomatis, atau data berupa tunai lunas/non-operas
 
 ## Mengapa pasangan AI bernilai 0?
 
-Layanan mungkin dinonaktifkan, tidak memiliki kandidat yang sesuai, atau tidak menghasilkan pasangan. Baca hasil impor dan selesaikan sisanya di Verifikasi.
+Baca status di bawah hasil: tidak ada kandidat ambigu, dinonaktifkan, dilewati, atau gagal. AI gagal tidak membatalkan hasil aturan yang sudah tersimpan; periksa sisanya di Verifikasi.
 
 ## Apakah unggahan ulang pasti tidak menambah data?
 

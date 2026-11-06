@@ -14,6 +14,8 @@
 - [Panduan web: source, build, video, dan CSP](../docs-site/README.md)
 - [Status implementasi panduan dan hasil uji](PANDUAN_IMPLEMENTATION.md)
 
+- [Upload Excel: implementasi frontend, pengujian, screenshot](EXCEL_UPLOAD_IMPLEMENTATION.md)
+
 ## Produk dan pengembangan
 
 - [Arsitektur, direktori, alur dan seluruh endpoint](../architecture.md)

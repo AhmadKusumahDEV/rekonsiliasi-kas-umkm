@@ -1,8 +1,9 @@
-import {createImportFlow} from "./import-flow.js?v=handoff1";
+import {createImportFlow} from "./import-flow.js?v=excel1";
+import {allocationOrigin,readableAllocationReason} from "./import-status.js?v=excel1";
 import {allocatable,verificationRows,appRoute} from "./verification.js?v=handoff1";
 import { importLimits, validateImportSize, uniqueSuggestion, auditTarget, mergeAudit } from "./mvp.js?v=handoff1";
 import { apiURL } from "./api-config.js?v=team2";
-import { createAPIClient } from "./api-client.js?v=team2";
+import { createAPIClient } from "./api-client.js?v=excel1";
 import { validatePassword, selectAllocation } from "./validation.js?v=handoff1";
 import { authScene } from "./auth-scene.js?v=team2";
 import { dashboard, maxyBrand, shell } from "./design.js?v=handoff1";
@@ -277,6 +278,16 @@ function entriesPage() {
   );
 }
 
+function automatedResults() {
+  const entries = new Map((state.data.state.entries || []).map(entry => [entry.id, entry]));
+  const allocations = (state.data.state.allocations || []).filter(item => !item.reversed && allocationOrigin(item));
+  if (!allocations.length) return '';
+  return `<details class="panel automatic-results"><summary>Sudah beres otomatis (${allocations.length})</summary><p>Pasangan ini sudah tersimpan dari hasil backend dan tidak memerlukan persetujuan ulang. Periksa alasannya; batalkan jika tidak sesuai bukti.</p><div class="automatic-list">${allocations.map(item => {
+    const sale = entries.get(item.sale_id), receipt = entries.get(item.receipt_id);
+    return `<article><span class="tag info">${allocationOrigin(item)==='ai'?'Dicek AI':'Cocok otomatis'}</span><h3>${e(sale?.reference || sale?.name || 'Penjualan')} · ${e(receipt?.reference || receipt?.name || 'Penerimaan')}</h3><p>${e(money(item.amount))}${item.fee?' · Biaya '+e(money(item.fee)):''}</p><p>${e(readableAllocationReason(item.reason))}</p>${button('Batalkan pasangan','undo',item.id,'small danger')}</article>`;
+  }).join('')}</div></details>`;
+}
+
 function allocationHistory() {
   const allocations = (state.data.state.allocations || []).slice().reverse();
   const entries = state.data.state.entries || [];
@@ -284,7 +295,7 @@ function allocationHistory() {
     const x = entries.find((x) => x.id === id);
     return x ? x.reference || x.source_id : "Transaksi";
   };
-  return `<section class="allocation-history"><div class="section-title"><h2>Keputusan pencocokan</h2></div>${allocations.length ? `<div class="table-scroll" role="region" aria-label="Tabel data, geser untuk melihat kolom lain" tabindex="0"><table><thead><tr><th>Penjualan / penerimaan</th><th>Dialokasikan</th><th>Biaya</th><th>Catatan</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${allocations.map((x) => `<tr><td>${e(ref(x.sale_id))}<span class="sub">${e(ref(x.receipt_id))}</span></td><td>${e(money(x.amount))}</td><td>${e(money(x.fee))}</td><td>${e(x.reason || "Tanpa catatan")}</td><td>${x.reversed ? "Dibatalkan" : "Aktif"}</td><td>${x.reversed ? "" : button("Batalkan pasangan", "undo", x.id, "small danger")}</td></tr>`).join("")}</tbody></table></div>` : empty("Belum ada keputusan", "Pasangan yang kamu simpan akan muncul di sini dan dapat dibatalkan.")}</section>`;
+  return `<section class="allocation-history"><div class="section-title"><h2>Keputusan pencocokan</h2></div>${allocations.length ? `<div class="table-scroll" role="region" aria-label="Tabel data, geser untuk melihat kolom lain" tabindex="0"><table><thead><tr><th>Penjualan / penerimaan</th><th>Dialokasikan</th><th>Biaya</th><th>Catatan</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${allocations.map((x) => `<tr><td>${e(ref(x.sale_id))}<span class="sub">${e(ref(x.receipt_id))}</span></td><td>${e(money(x.amount))}</td><td>${e(money(x.fee))}</td><td>${e(readableAllocationReason(x.reason || "Tanpa catatan"))}</td><td>${x.reversed ? "Dibatalkan" : "Aktif"}</td><td>${x.reversed ? "" : button("Batalkan pasangan", "undo", x.id, "small danger")}</td></tr>`).join("")}</tbody></table></div>` : empty("Belum ada keputusan", "Pasangan yang kamu simpan akan muncul di sini dan dapat dibatalkan.")}</section>`;
 }
 
 function importsPage() {
@@ -364,7 +375,7 @@ async function loadAudit(reset = false) {
 function limitDescription() {
   try {
     const limits = importLimits(state.config);
-    return `Maksimal ${limits.max_import_rows.toLocaleString('id-ID')} baris data dan ${limits.max_csv_bytes.toLocaleString('id-ID')} byte per file; ${limits.max_entries.toLocaleString('id-ID')} transaksi per ruang kerja.`;
+    return `Maksimal ${limits.max_import_rows.toLocaleString('id-ID')} baris data dan ${limits.max_csv_bytes.toLocaleString('id-ID')} byte hasil CSV per impor; unggahan mentah maksimal 10 MB; ${limits.max_entries.toLocaleString('id-ID')} transaksi per ruang kerja.`;
   } catch { return 'Batas impor belum tersedia dari server; impor dinonaktifkan sampai konfigurasi dimuat ulang.'; }
 }
 
@@ -391,7 +402,7 @@ function exceptionsPage() {
   }).join('')+'</div>':empty('Tidak ada keputusan pada tampilan ini','Pasangan yang sudah tersimpan tidak muncul lagi. Periksa filter atau tambahkan catatan yang belum lengkap.');
  }
  const nonop=data.state.entries.filter(x=>!x.canceled&&x.category==='non_operational');
- return title('Verifikasi','Tinjau alasan dan sisa transaksi. Simpan hanya setelah pasangan dan biaya diperiksa.',button('Alokasi manual','allocate','','primary'))+content+`<details class="panel"><summary>Penerimaan non-operasional (${nonop.length})</summary><p>Bunga, administrasi, atau perpindahan dana bukan pembayaran pelanggan. Data tetap tercatat tanpa tombol alokasi.</p>${nonop.map(x=>`<p><strong>${e(x.name)}</strong> · ${e(x.reference||x.source_id)} · ${e(money(x.amount))}</p>`).join('')}</details>`+allocationHistory();
+ return title('Verifikasi','Tinjau alasan dan sisa transaksi. Simpan hanya setelah pasangan dan biaya diperiksa.',button('Alokasi manual','allocate','','primary'))+content+`<details class="panel"><summary>Penerimaan non-operasional (${nonop.length})</summary><p>Bunga, administrasi, atau perpindahan dana bukan pembayaran pelanggan. Data tetap tercatat tanpa tombol alokasi.</p>${nonop.map(x=>`<p><strong>${e(x.name)}</strong> · ${e(x.reference||x.source_id)} · ${e(money(x.amount))}</p>`).join('')}</details>`+automatedResults()+allocationHistory();
 }
 
 function showAuditEntity(target) {
@@ -1111,6 +1122,7 @@ document.addEventListener("click", async (event) => {
   let busyForm, controls;
   try {
     if(action==='flow-save'){await importFlow.commit();return;}
+    if(action==='flow-sheet'){await importFlow.changeSheet(id);return;}
     if(action==='verification-pair'){
       const row=verificationRows(state.data.exceptions||[],state.data.suggestions,balance).find(x=>x.match?.sale.id===id);
       if(!row?.match)throw Error('Usulan berubah. Muat ulang dan periksa kembali.');
