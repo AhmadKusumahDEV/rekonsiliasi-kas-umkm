@@ -311,3 +311,27 @@ write_pair(f, "berantakan", s, b, sale_fmt="xlsx", bank_fmt="xlsx", metadata_row
 
 print("happy-33 sales:", len(clean_sales), "receipts:", len(clean_bank))
 
+
+
+# --- minimal kolom: hanya tanggal, nama/keterangan, nominal ---
+minim_dir = os.path.join(OUT, "minim-column")
+os.makedirs(minim_dir, exist_ok=True)
+
+minim_sales = []
+for i in range(1, 34):
+    day = 12 + (i - 1) // 12
+    minim_sales.append((
+        f"2026-11-{day:02d}",
+        names[(i - 1) % len(names)],
+        55_000 + i * 7_500,
+    ))
+
+write_csv(os.path.join(minim_dir, "penjualan-minim.csv"), ["tanggal", "nama", "nominal"], [
+    {"tanggal": date, "nama": name, "nominal": amount} for date, name, amount in minim_sales
+])
+
+write_csv(os.path.join(minim_dir, "mutasi-minim.csv"), ["tanggal", "keterangan", "nominal"], [
+    {"tanggal": date, "keterangan": name.upper(), "nominal": amount} for date, name, amount in minim_sales
+])
+
+print("minim-column: 33 penjualan, 33 penerimaan")
