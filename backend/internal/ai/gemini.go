@@ -75,9 +75,9 @@ func NewFromEnv() *Client {
 	if base == "" {
 		base = "https://generativelanguage.googleapis.com/v1beta"
 	}
-	timeout := 8 * time.Second
+	timeout := reviewTimeout
 	if raw := strings.TrimSpace(os.Getenv("GEMINI_TIMEOUT")); raw != "" {
-		if parsed, err := time.ParseDuration(raw); err == nil && parsed > 0 && parsed <= 30*time.Second {
+		if parsed, err := time.ParseDuration(raw); err == nil && parsed > 0 && parsed <= reviewTimeout {
 			timeout = parsed
 		}
 	}
@@ -99,7 +99,8 @@ func (c *Client) endpoint() string {
 }
 
 type part struct {
-	Text string `json:"text"`
+	Text    string `json:"text"`
+	Thought bool   `json:"thought"`
 }
 
 type content struct {
@@ -107,8 +108,23 @@ type content struct {
 }
 
 type generationConfig struct {
-	Temperature      float64 `json:"temperature"`
-	ResponseMimeType string  `json:"responseMimeType"`
+	Temperature      float64         `json:"temperature"`
+	ResponseMimeType string          `json:"responseMimeType"`
+	ThinkingConfig   *thinkingConfig `json:"thinkingConfig,omitempty"`
+}
+
+// thinkingConfig disables the reasoning phase for models that support it.
+// Without it gemini-2.5-flash spends several seconds thinking before it emits
+// the JSON verdicts, which is close to the deadline of a demo import.
+type thinkingConfig struct {
+	ThinkingBudget int `json:"thinkingBudget"`
+}
+
+const reviewTimeout = 30 * time.Second
+
+// supportsNoThinking reports whether the model accepts thinkingBudget 0.
+func supportsNoThinking(model string) bool {
+	return strings.HasPrefix(strings.ToLower(model), "gemini-2.5-flash")
 }
 
 type generateRequest struct {
@@ -119,7 +135,8 @@ type generateRequest struct {
 
 type generateResponse struct {
 	Candidates []struct {
-		Content content `json:"content"`
+		Content      content `json:"content"`
+		FinishReason string  `json:"finishReason"`
 	} `json:"candidates"`
 }
 
@@ -149,9 +166,13 @@ func (c *Client) Review(ctx context.Context, candidates []Candidate) ([]Verdict,
 	if err != nil {
 		return nil, err
 	}
+	config := generationConfig{Temperature: 0, ResponseMimeType: "application/json"}
+	if supportsNoThinking(c.Model) {
+		config.ThinkingConfig = &thinkingConfig{ThinkingBudget: 0}
+	}
 	reqBody := generateRequest{
 		Contents:          []content{{Parts: []part{{Text: "Kandidat:\n" + string(payload)}}}},
-		GenerationConfig:  generationConfig{Temperature: 0, ResponseMimeType: "application/json"},
+		GenerationConfig:  config,
 		SystemInstruction: content{Parts: []part{{Text: reviewPrompt}}},
 	}
 	body, err := json.Marshal(reqBody)
@@ -166,7 +187,7 @@ func (c *Client) Review(ctx context.Context, candidates []Candidate) ([]Verdict,
 	httpReq.Header.Set("x-goog-api-key", c.APIKey)
 	client := c.HTTP
 	if client == nil {
-		client = &http.Client{Timeout: 8 * time.Second}
+		client = &http.Client{Timeout: reviewTimeout}
 	}
 	resp, err := client.Do(httpReq)
 	if err != nil {
@@ -181,10 +202,17 @@ func (c *Client) Review(ctx context.Context, candidates []Candidate) ([]Verdict,
 	if err = json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&parsed); err != nil {
 		return nil, err
 	}
-	if len(parsed.Candidates) == 0 || len(parsed.Candidates[0].Content.Parts) == 0 {
+	if len(parsed.Candidates) == 0 {
 		return nil, errors.New("gemini: jawaban kosong")
 	}
-	raw := parsed.Candidates[0].Content.Parts[0].Text
+	candidate := parsed.Candidates[0]
+	raw, err := verdictPayload(candidate.Content.Parts)
+	if err != nil {
+		if candidate.FinishReason != "" {
+			return nil, fmt.Errorf("%w (finishReason=%s)", err, candidate.FinishReason)
+		}
+		return nil, err
+	}
 	var verdicts struct {
 		Verdicts []Verdict `json:"verdicts"`
 	}
@@ -192,6 +220,28 @@ func (c *Client) Review(ctx context.Context, candidates []Candidate) ([]Verdict,
 		return nil, fmt.Errorf("gemini: json tidak valid: %w", err)
 	}
 	return filterVerdicts(candidates, verdicts.Verdicts), nil
+}
+
+// verdictPayload picks the part that holds the verdicts answer. A model may
+// return a reasoning part or another JSON object before the answer, so the
+// payload must parse and must contain the verdicts key.
+func verdictPayload(parts []part) (string, error) {
+	for i := len(parts) - 1; i >= 0; i-- {
+		if parts[i].Thought {
+			continue
+		}
+		text := strings.TrimSpace(parts[i].Text)
+		if text == "" {
+			continue
+		}
+		var probe struct {
+			Verdicts json.RawMessage `json:"verdicts"`
+		}
+		if err := json.Unmarshal([]byte(text), &probe); err == nil && probe.Verdicts != nil {
+			return text, nil
+		}
+	}
+	return "", errors.New("gemini: jawaban tanpa verdicts")
 }
 
 func filterVerdicts(candidates []Candidate, verdicts []Verdict) []Verdict {
